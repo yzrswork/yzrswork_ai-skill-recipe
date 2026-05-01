@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>はなび</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%;
+    height: 100%;
+    background: #000;
+    overflow: hidden;
+    overscroll-behavior: none;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  canvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+(() => {
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  let dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let W = 0, H = 0;
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = Math.floor(W * dpr);
+    canvas.height = Math.floor(H * dpr);
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // Web Audio
+  let audioCtx = null;
+  function ensureAudio() {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    }
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+
+  function playLaunch() {
+    const ac = ensureAudio();
+    if (!ac) return;
+    const t = ac.currentTime;
+    // whistle: rising sine
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(400, t);
+    o.frequency.exponentialRampToValueAtTime(1400, t + 0.35);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.18, t + 0.05);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+    o.connect(g).connect(ac.destination);
+    o.start(t);
+    o.stop(t + 0.45);
+  }
+
+  function playBoom() {
+    const ac = ensureAudio();
+    if (!ac) return;
+    const t = ac.currentTime;
+    // noise burst
+    const dur = 0.6;
+    const buffer = ac.createBuffer(1, Math.floor(ac.sampleRate * dur), ac.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+    }
+    const src = ac.createBufferSource();
+    src.buffer = buffer;
+    const filter = ac.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 900;
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.6, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(filter).connect(g).connect(ac.destination);
+    src.start(t);
+
+    // low thump
+    const o = ac.createOscillator();
+    const og = ac.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(120, t);
+    o.frequency.exponentialRampToValueAtTime(40, t + 0.3);
+    og.gain.setValueAtTime(0.5, t);
+    og.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+    o.connect(og).connect(ac.destination);
+    o.start(t);
+    o.stop(t + 0.45);
+  }
+
+  // Particles
+  const particles = [];
+  const rockets = [];
+
+  const COLORS = [
+    [255, 80, 80],
+    [255, 180, 60],
+    [255, 240, 80],
+    [120, 255, 120],
+    [80, 220, 255],
+    [120, 140, 255],
+    [255, 120, 230],
+    [255, 255, 255],
+  ];
+
+  function pickColor() {
+    return COLORS[(Math.random() * COLORS.length) | 0];
+  }
+
+  function spawnFirework(tx, ty) {
+    // rocket from bottom rises to (tx, ty) then explodes
+    rockets.push({
+      x: tx,
+      y: H + 10,
+      tx, ty,
+      vy: -Math.max(6, (H - ty) / 22),
+      color: pickColor(),
+      trail: 0,
+    });
+    playLaunch();
+  }
+
+  function explode(x, y, color) {
+    const count = 70 + ((Math.random() * 40) | 0);
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 5 + 1.5;
+      particles.push({
+        x, y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 1,
+        decay: 0.012 + Math.random() * 0.012,
+        color,
+        size: 2 + Math.random() * 1.5,
+      });
+    }
+    playBoom();
+  }
+
+  function update() {
+    // fade trail
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.globalCompositeOperation = 'lighter';
+
+    // rockets
+    for (let i = rockets.length - 1; i >= 0; i--) {
+      const r = rockets[i];
+      r.x += 0;
+      r.y += r.vy;
+      r.vy += 0.05; // slight gravity slowing it
+      // draw rocket
+      const [cr, cg, cb] = r.color;
+      ctx.fillStyle = `rgba(${cr},${cg},${cb},1)`;
+      ctx.beginPath();
+      ctx.arc(r.x, r.y, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      // trail spark
+      ctx.fillStyle = `rgba(255,220,150,0.7)`;
+      ctx.beginPath();
+      ctx.arc(r.x + (Math.random() - 0.5) * 2, r.y + 4, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (r.y <= r.ty) {
+        explode(r.x, r.y, r.color);
+        rockets.splice(i, 1);
+      }
+    }
+
+    // particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.04;
+      p.vx *= 0.99;
+      p.vy *= 0.99;
+      p.life -= p.decay;
+      if (p.life <= 0) {
+        particles.splice(i, 1);
+        continue;
+      }
+      const [cr, cg, cb] = p.color;
+      const a = Math.max(0, p.life);
+      ctx.fillStyle = `rgba(${cr},${cg},${cb},${a})`;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * (0.6 + a * 0.8), 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+
+  function handlePoint(x, y) {
+    ensureAudio();
+    spawnFirework(x, y);
+  }
+
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    for (const t of e.changedTouches) {
+      const rect = canvas.getBoundingClientRect();
+      handlePoint(t.clientX - rect.left, t.clientY - rect.top);
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    handlePoint(e.clientX - rect.left, e.clientY - rect.top);
+  });
+
+  // prevent double-tap zoom / scroll bounces
+  document.addEventListener('gesturestart', (e) => e.preventDefault());
+  document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+})();
+</script>
+</body>
+</html>
