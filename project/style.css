@@ -229,12 +229,17 @@ button{
 }
 .fly-to-target{animation:flyToTarget 600ms cubic-bezier(.5,-.2,.7,.5) forwards;}
 
-/* 数えゲームのリンゴ */
+/* 数えゲームのリンゴ
+ * flex:0 1 auto = 自然サイズで表示、足りなければ縮む。
+ * choices-area(flex:1) が縦の残りを優先的に確保し、
+ * 数字ボタンの最終行が画面外にはみ出さないようにする。 */
 .count-stage{
-  flex:1;
+  flex:0 1 auto;
+  min-height:0;
   display:flex;align-items:center;justify-content:center;
   flex-wrap:wrap;
   gap:12px;padding:12px;
+  overflow:hidden;
 }
 .count-item{
   font-size:64px;
