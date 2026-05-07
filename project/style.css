@@ -170,6 +170,11 @@ button{
 .choices-grid.cols-3{grid-template-columns:repeat(3,1fr);}
 .choices-grid.cols-5{grid-template-columns:repeat(5,1fr);}
 
+/* iPhone縦などの狭幅では5列を3列に折り返し（最後のボタン見切れ防止） */
+@media (max-width:520px){
+  .choices-grid.cols-5{grid-template-columns:repeat(3,1fr);}
+}
+
 /* 選択ボール (色当て) */
 .color-ball,.shape-tile,.number-tile{
   min-width:88px;min-height:88px;
