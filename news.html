@@ -286,10 +286,7 @@
     letter-spacing: 0.08em;
     list-style: none;
   }
-  .fetch-warnings {
-    min-height: 0;
-    margin-bottom: 40px;
-  }
+  .fetch-warnings { margin-bottom: 40px; }
   .fetch-warning {
     font-family: var(--mono);
     font-size: 11px;
@@ -453,12 +450,12 @@
     (function () {
       'use strict';
 
-      var PROXY    = 'https://api.allorigins.win/get?url=';
-      var TIMEOUT  = 10000;
+      var TIMEOUT  = 8000;   /* ms per proxy attempt */
       var MAX_EACH = 10;
 
       var SOURCES = [
-        { id: 'hackaday', url: 'https://hackaday.com/blog/feed/',
+        { id: 'hackaday',
+          url: 'https://hackaday.com/blog/feed/',
           label: 'HACKADAY / EN', cls: 'hackaday' },
         { id: 'qiita',
           url: 'https://qiita.com/tags/%E9%9B%BB%E5%AD%90%E5%B7%A5%E4%BD%9C/feed',
@@ -473,40 +470,52 @@
       }
 
       function stripTags(html) {
-        try { return new DOMParser().parseFromString(html, 'text/html').body.textContent || ''; }
-        catch (_) { return html.replace(/<[^>]*>/g, ''); }
+        try {
+          return new DOMParser()
+            .parseFromString(html, 'text/html').body.textContent || '';
+        } catch (_) {
+          return html.replace(/<[^>]*>/g, '');
+        }
       }
 
+      /* Safari requires 'T' separator; rss2json returns space-separated dates */
       function fmtDate(s) {
         try {
-          var d = new Date(s);
-          if (isNaN(d)) return '';
+          if (!s) return '';
+          var d = new Date(String(s).replace(' ', 'T'));
+          if (isNaN(d.getTime())) return '';
           return d.getFullYear() + '.' +
             String(d.getMonth() + 1).padStart(2, '0') + '.' +
             String(d.getDate()).padStart(2, '0');
         } catch (_) { return ''; }
       }
 
+      function safeDate(s) {
+        if (!s) return new Date(0);
+        var d = new Date(String(s).replace(' ', 'T'));
+        return isNaN(d.getTime()) ? new Date(0) : d;
+      }
+
       function txt(el) { return el ? (el.textContent || '').trim() : ''; }
 
-      /* ── XML parsing (RSS 2.0 + Atom) ────── */
-      function parseDoc(xmlStr, source) {
+      /* ── XML parsing: handles RSS 2.0 and Atom ── */
+      function parseXml(xmlStr, source) {
         var doc = new DOMParser().parseFromString(xmlStr, 'application/xml');
 
-        /* parseerror detection works across browsers */
+        /* parseerror is a real element name in the error document */
         if (doc.documentElement.nodeName === 'parsererror' ||
             doc.getElementsByTagName('parsererror').length) {
           throw new Error('XML parse error');
         }
 
         /*
-         * getElementsByTagName ignores XML namespaces and matches by local
-         * name — required for Qiita's Atom feed (xmlns="…/Atom") where
-         * querySelector('entry') can silently return 0 results in some
-         * browser/parser combinations.
+         * getElementsByTagName matches by local name and ignores XML
+         * namespaces — essential for Qiita's Atom feed which has
+         * xmlns="http://www.w3.org/2005/Atom" on the root element.
+         * querySelector('entry') can silently return 0 results there.
          */
-        var entryEls = doc.getElementsByTagName('entry');   /* Atom  */
-        var itemEls  = doc.getElementsByTagName('item');    /* RSS 2 */
+        var entryEls = doc.getElementsByTagName('entry'); /* Atom  */
+        var itemEls  = doc.getElementsByTagName('item');  /* RSS 2 */
         var isAtom   = entryEls.length > 0;
         var rows     = Array.from(isAtom ? entryEls : itemEls).slice(0, MAX_EACH);
 
@@ -517,15 +526,15 @@
           /* link */
           var link = '';
           if (isAtom) {
-            /* Atom: <link href="..." rel="alternate"/> */
-            var links = Array.from(el.getElementsByTagName('link'));
-            var alt   = links.filter(function (l) {
-              var rel = l.getAttribute('rel');
-              return !rel || rel === 'alternate';
-            })[0] || links[0];
-            if (alt) link = (alt.getAttribute('href') || txt(alt)).trim();
+            /* <link href="..." rel="alternate"/> */
+            var linkEls = Array.from(el.getElementsByTagName('link'));
+            var best = linkEls.filter(function (l) {
+              var r = l.getAttribute('rel');
+              return !r || r === 'alternate';
+            })[0] || linkEls[0];
+            if (best) link = (best.getAttribute('href') || txt(best)).trim();
           } else {
-            /* RSS 2: <link>URL</link>  — textContent holds the URL */
+            /* <link>https://...</link> */
             link = txt(el.getElementsByTagName('link')[0]);
           }
           if (!link) link = '#';
@@ -533,44 +542,110 @@
           /* date */
           var dateRaw = '';
           if (isAtom) {
-            var pub = el.getElementsByTagName('published')[0] ||
-                      el.getElementsByTagName('updated')[0];
-            dateRaw = txt(pub);
+            var pubEl = el.getElementsByTagName('published')[0] ||
+                        el.getElementsByTagName('updated')[0];
+            dateRaw = txt(pubEl);
           } else {
             dateRaw = txt(el.getElementsByTagName('pubDate')[0]);
           }
-          var pubDate = dateRaw ? new Date(dateRaw) : new Date(0);
 
           /* description */
           var descEl = isAtom
             ? (el.getElementsByTagName('summary')[0] ||
                el.getElementsByTagName('content')[0])
             : el.getElementsByTagName('description')[0];
-          var raw  = txt(descEl);
-          var body = stripTags(raw).replace(/\s+/g, ' ').trim();
+          var body = stripTags(txt(descEl)).replace(/\s+/g, ' ').trim();
           var desc = body.length > 100 ? body.slice(0, 100) + '…' : body;
 
-          return { source: source, title: title, link: link,
-                   pubDate: pubDate, pubDateStr: fmtDate(dateRaw), desc: desc };
+          return {
+            source: source, title: title, link: link,
+            pubDate: safeDate(dateRaw), pubDateStr: fmtDate(dateRaw), desc: desc,
+          };
         });
       }
 
-      /* ── fetch via CORS proxy ─────────────── */
-      function fetchFeed(source) {
-        var ctrl  = new AbortController();
-        var timer = setTimeout(function () { ctrl.abort(); }, TIMEOUT);
-        var url   = PROXY + encodeURIComponent(source.url);
+      /* ── JSON parsing for rss2json.com ──────── */
+      function parseJson(j, source) {
+        if (!j || j.status !== 'ok' || !Array.isArray(j.items)) {
+          throw new Error('rss2json: unexpected response');
+        }
+        return j.items.slice(0, MAX_EACH).map(function (item) {
+          var body = stripTags(item.description || item.content || '')
+                       .replace(/\s+/g, ' ').trim();
+          var desc = body.length > 100 ? body.slice(0, 100) + '…' : body;
+          var dateStr = String(item.pubDate || '');
+          return {
+            source: source,
+            title:  item.title || '(no title)',
+            link:   item.link  || '#',
+            pubDate: safeDate(dateStr),
+            pubDateStr: fmtDate(dateStr),
+            desc: desc,
+          };
+        });
+      }
 
-        return fetch(url, { signal: ctrl.signal })
-          .then(function (r) {
-            if (!r.ok) throw new Error('HTTP ' + r.status);
-            return r.json();
-          })
-          .then(function (j) {
-            if (!j || !j.contents) throw new Error('empty proxy response');
-            return parseDoc(j.contents, source);
-          })
-          .finally(function () { clearTimeout(timer); });
+      /*
+       * ── Three-proxy cascade ───────────────────────────────────────────
+       *
+       * Each entry is a function(url, source, abortSignal) → Promise<Article[]>
+       * Tried in order; on any failure the next proxy is attempted automatically.
+       *
+       * 1. allorigins.win  — wraps response in JSON {contents:"<xml>"}
+       * 2. corsproxy.io    — returns raw XML/Atom directly
+       * 3. rss2json.com    — server-side RSS/Atom→JSON; also fixes Safari date parsing
+       */
+      var PROXIES = [
+        function allorigins(url, source, sig) {
+          return fetch(
+            'https://api.allorigins.win/get?url=' + encodeURIComponent(url),
+            { signal: sig }
+          )
+            .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+            .then(function (j) {
+              if (!j || !j.contents) throw new Error('empty contents');
+              return parseXml(j.contents, source);
+            });
+        },
+
+        function corsproxy(url, source, sig) {
+          return fetch(
+            'https://corsproxy.io/?' + encodeURIComponent(url),
+            { signal: sig }
+          )
+            .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+            .then(function (t) {
+              if (!t) throw new Error('empty response');
+              return parseXml(t, source);
+            });
+        },
+
+        function rss2json(url, source, sig) {
+          return fetch(
+            'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(url),
+            { signal: sig }
+          )
+            .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+            .then(function (j) { return parseJson(j, source); });
+        },
+      ];
+
+      function fetchFeed(source) {
+        function attempt(i) {
+          if (i >= PROXIES.length) {
+            return Promise.reject(new Error('all proxies failed for ' + source.id));
+          }
+          var ctrl  = new AbortController();
+          var timer = setTimeout(function () { ctrl.abort(); }, TIMEOUT);
+
+          return PROXIES[i](source.url, source, ctrl.signal)
+            .finally(function () { clearTimeout(timer); })
+            .catch(function (err) {
+              console.warn('[news] proxy[' + i + '] ' + source.id + ':', err.message);
+              return attempt(i + 1);
+            });
+        }
+        return attempt(0);
       }
 
       /* ── render ───────────────────────────── */
@@ -585,18 +660,13 @@
         if (!articles.length) { setMsg('該当する記事がありません'); return; }
 
         articles.forEach(function (a, i) {
-          var num   = String(i + 1).padStart(2, '0');
-          var label = esc(a.title) + ' (' + esc(a.source.label) + ')';
-          var cap   = a.desc
-            ? '<span class="caption">' + esc(a.desc) + '</span>'
-            : '';
-
-          var li = document.createElement('li');
+          var num = String(i + 1).padStart(2, '0');
+          var li  = document.createElement('li');
           li.className = 'news-item';
           li.innerHTML =
             '<a href="' + esc(a.link) + '"' +
                 ' target="_blank" rel="noopener noreferrer"' +
-                ' aria-label="' + label + '">' +
+                ' aria-label="' + esc(a.title) + ' (' + esc(a.source.label) + ')">' +
               '<span class="num">' + esc(num) + '</span>' +
               '<span class="article-meta">' +
                 '<span class="source-label ' + a.source.cls + '">' +
@@ -606,7 +676,7 @@
               '</span>' +
               '<span class="title">' + esc(a.title) + '</span>' +
               '<span class="arrow" aria-hidden="true">→</span>' +
-              cap +
+              (a.desc ? '<span class="caption">' + esc(a.desc) + '</span>' : '') +
             '</a>';
           list.appendChild(li);
         });
@@ -614,7 +684,7 @@
 
       /* ── init ─────────────────────────────── */
       function init() {
-        /* Wrap each promise so one failure never aborts the other */
+        /* Each source fetches independently; one failure never blocks the other */
         var wrapped = SOURCES.map(function (src) {
           return fetchFeed(src).then(
             function (arts) { return { ok: true,  val: arts, src: src }; },
@@ -629,7 +699,7 @@
 
             results.forEach(function (r) {
               if (r.ok) { all = all.concat(r.val); }
-              else       { console.warn(r.src.label, r.err); failed.push(r.src.label); }
+              else       { console.error('[news]', r.src.label, r.err); failed.push(r.src.label); }
             });
 
             if (!all.length) {
@@ -648,7 +718,7 @@
             }
           })
           .catch(function (e) {
-            console.error(e);
+            console.error('[news]', e);
             setMsg('記事を取得できませんでした。時間を置いて再読込してください。');
           });
       }
