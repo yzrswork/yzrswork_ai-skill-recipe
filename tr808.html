@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>TR-808 KIDS</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+html,body{width:100%;height:100%;overflow:hidden;background:#1a1a1a;font-family:-apple-system,"SF Pro",system-ui,sans-serif;user-select:none;-webkit-user-select:none;overscroll-behavior:none;}
+body{display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
+#landscape-warn{display:none;position:fixed;inset:0;background:#1a1a1a;z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:16px;color:#f5f5f5;font-size:24px;text-align:center;}
+@media (orientation:landscape) and (max-height:500px){#landscape-warn{display:flex;}}
+#app{flex:1;display:flex;min-height:0;}
+#wood-left,#wood-right{width:12px;background:linear-gradient(180deg,#5c3a1e,#3d2611);flex-shrink:0;}
+#main{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden;}
+#header{height:48px;background:#2a2a2a;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border-bottom:1px solid #3a3a3a;flex-shrink:0;}
+#header h1{color:#e8c547;font-size:18px;font-weight:700;letter-spacing:2px;}
+#mode-btns{display:flex;gap:8px;}
+.mode-btn{background:#3a3a3a;border:2px solid #4a4a4a;border-radius:8px;color:#f5f5f5;font-size:22px;width:40px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.mode-btn.active{border-color:#d96f3d;background:#3d2a1e;}
+.mode-btn:last-child.active{border-color:#c73e3e;background:#3d1e1e;}
+#timbre-row{height:80px;background:#2a2a2a;display:flex;padding:8px;gap:6px;border-bottom:1px solid #3a3a3a;flex-shrink:0;}
+.timbre-btn{flex:1;border-radius:10px;border:2px solid transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:10px;color:#f5f5f5;font-weight:600;}
+.timbre-btn:active{transform:scale(0.95);}
+.timbre-btn.active{border-color:#e8c547;}
+.timbre-btn .icon{font-size:24px;}
+#t0{background:#1e3a5f;}#t1{background:#3a1e5f;}#t2{background:#5f4a1e;}#t3{background:#1e5f2e;}
+#knobs-row{height:120px;background:#2a2a2a;display:flex;padding:8px;gap:4px;border-bottom:1px solid #3a3a3a;flex-shrink:0;align-items:center;justify-content:space-around;}
+.knob-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;width:72px;}
+.knob{width:60px;height:60px;cursor:pointer;touch-action:none;}
+.knob-label{color:#aaa;font-size:10px;font-weight:600;letter-spacing:1px;}
+#visualizer{height:50px;background:#1a1a1a;border-bottom:1px solid #3a3a3a;flex-shrink:0;}
+#vis-canvas{width:100%;height:100%;}
+#notes-area{height:0;background:#111;overflow:hidden;position:relative;border-bottom:1px solid #3a3a3a;flex-shrink:0;transition:height 0.3s;}
+#notes-area.game-active{height:160px;}
+#notes-canvas{position:absolute;inset:0;width:100%;height:100%;}
+#song-select{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:12px;padding:8px;}
+.song-btn{flex:1;background:#2a2a2a;border:2px solid #c73e3e;border-radius:10px;color:#f5f5f5;font-size:12px;font-weight:700;padding:8px 4px;cursor:pointer;text-align:center;}
+.song-btn:active{background:#3d1e1e;}
+#score-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.88);display:none;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:#f5f5f5;}
+#score-overlay.show{display:flex;}
+#score-stars{font-size:36px;letter-spacing:4px;}
+#score-text{font-size:14px;color:#e8c547;}
+#score-counts{font-size:12px;color:#aaa;}
+#score-retry{background:#c73e3e;border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;padding:10px 24px;cursor:pointer;margin-top:4px;}
+#judgment{position:absolute;top:4px;left:50%;transform:translateX(-50%);font-size:30px;pointer-events:none;opacity:0;transition:opacity 0.4s;}
+#keyboard-wrap{flex:1;position:relative;min-height:0;touch-action:none;}
+#keyboard{width:100%;height:100%;position:relative;display:flex;}
+.white-key{flex:1;background:#f5f5f5;border:1px solid #ccc;border-top:none;border-radius:0 0 6px 6px;cursor:pointer;}
+.white-key.pressed{background:#d96f3d;}
+.black-key{position:absolute;background:#1a1a1a;border-radius:0 0 4px 4px;border:1px solid #000;z-index:2;cursor:pointer;top:0;}
+.black-key.pressed{background:#e8c547;}
+.key-dot{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:8px;height:8px;border-radius:50%;background:#c73e3e;opacity:0;pointer-events:none;}
+.key-dot.show{opacity:1;}
+</style>
+</head>
+<body>
+<div id="landscape-warn">
+  <div style="font-size:48px">📱</div>
+  <div>縦にしてね</div>
+</div>
+<div id="app">
+  <div id="wood-left"></div>
+  <div id="main">
+    <div id="header">
+      <h1>TR-808 KIDS</h1>
+      <div id="mode-btns">
+        <button class="mode-btn active" id="btn-play">▶</button>
+        <button class="mode-btn" id="btn-game">🎮</button>
+      </div>
+    </div>
+    <div id="timbre-row">
+      <button class="timbre-btn active" id="t0" data-timbre="0"><span class="icon">🟦</span><span>ピコピコ</span></button>
+      <button class="timbre-btn" id="t1" data-timbre="1"><span class="icon">🟪</span><span>ふわふわ</span></button>
+      <button class="timbre-btn" id="t2" data-timbre="2"><span class="icon">🟨</span><span>キラキラ</span></button>
+      <button class="timbre-btn" id="t3" data-timbre="3"><span class="icon">🟩</span><span>ブイーン</span></button>
+    </div>
+    <div id="knobs-row">
+      <div class="knob-wrap"><canvas class="knob" id="knob-arp" width="60" height="60" data-knob="arp"></canvas><div class="knob-label">ARP</div></div>
+      <div class="knob-wrap"><canvas class="knob" id="knob-dly" width="60" height="60" data-knob="dly"></canvas><div class="knob-label">DLY</div></div>
+      <div class="knob-wrap"><canvas class="knob" id="knob-rev" width="60" height="60" data-knob="rev"></canvas><div class="knob-label">REV</div></div>
+      <div class="knob-wrap"><canvas class="knob" id="knob-cho" width="60" height="60" data-knob="cho"></canvas><div class="knob-label">CHO</div></div>
+    </div>
+    <div id="visualizer"><canvas id="vis-canvas"></canvas></div>
+    <div id="notes-area">
+      <canvas id="notes-canvas"></canvas>
+      <div id="song-select">
+        <button class="song-btn" data-song="twinkle">⭐<br>きらきら星</button>
+        <button class="song-btn" data-song="frog">🐸<br>カエルの合唱</button>
+        <button class="song-btn" data-song="tulip">🌷<br>チューリップ</button>
+      </div>
+      <div id="judgment"></div>
+      <div id="score-overlay">
+        <div id="score-stars"></div>
+        <div id="score-text"></div>
+        <div id="score-counts"></div>
+        <button id="score-retry">もういちど</button>
+      </div>
+    </div>
+    <div id="keyboard-wrap"><div id="keyboard"></div></div>
+  </div>
+  <div id="wood-right"></div>
+</div>
+
+<script>
+'use strict';
+
+// ── Polyfill roundRect ──────────────────────────────────────────
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h,r) {
+    r = Math.min(r, w/2, h/2);
+    this.moveTo(x+r,y);
+    this.lineTo(x+w-r,y);
+    this.arcTo(x+w,y,x+w,y+r,r);
+    this.lineTo(x+w,y+h-r);
+    this.arcTo(x+w,y+h,x+w-r,y+h,r);
+    this.lineTo(x+r,y+h);
+    this.arcTo(x,y+h,x,y+h-r,r);
+    this.lineTo(x,y+r);
+    this.arcTo(x,y,x+r,y,r);
+    this.closePath();
+    return this;
+  };
+}
+
+// ── Audio ───────────────────────────────────────────────────────
+let audioCtx = null;
+// Effect buses
+let masterGain, compressorNode, analyserNode;
+let reverbConv, reverbWetGain, reverbDryGain;
+let delayNode, delayFBGain, delayWetGain, delayDryGain;
+let chorusDelayNode, chorusLFO, chorusWetGain, chorusDryGain;
+// Voice output bus (all voices connect here)
+let voiceBusGain;
+
+function buildIR(ctx, dur) {
+  const len = Math.floor(ctx.sampleRate * dur);
+  const buf = ctx.createBuffer(2, len, ctx.sampleRate);
+  for (let c = 0; c < 2; c++) {
+    const d = buf.getChannelData(c);
+    for (let i = 0; i < len; i++) d[i] = (Math.random()*2-1) * Math.pow(1-i/len, 3);
+  }
+  return buf;
+}
+
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  // Master
+  masterGain = audioCtx.createGain(); masterGain.gain.value = 0.8;
+  compressorNode = audioCtx.createDynamicsCompressor();
+  compressorNode.threshold.value = -12; compressorNode.ratio.value = 8;
+  compressorNode.attack.value = 0.003; compressorNode.release.value = 0.25;
+  analyserNode = audioCtx.createAnalyser(); analyserNode.fftSize = 256;
+  masterGain.connect(compressorNode);
+  compressorNode.connect(analyserNode);
+  analyserNode.connect(audioCtx.destination);
+
+  // Reverb section: input → reverbConv → reverbWetGain → master
+  //                 input → reverbDryGain → master
+  reverbConv = audioCtx.createConvolver(); reverbConv.buffer = buildIR(audioCtx, 2.0);
+  reverbWetGain = audioCtx.createGain(); reverbWetGain.gain.value = 0;
+  reverbDryGain = audioCtx.createGain(); reverbDryGain.gain.value = 1;
+  reverbConv.connect(reverbWetGain); reverbWetGain.connect(masterGain);
+  reverbDryGain.connect(masterGain);
+
+  // Delay section: input → delayNode → delayWetGain → reverb
+  //                input → delayDryGain → reverb
+  //                delayNode → delayFBGain → delayNode (feedback)
+  delayNode = audioCtx.createDelay(2.0); delayNode.delayTime.value = 0.375;
+  delayFBGain = audioCtx.createGain(); delayFBGain.gain.value = 0;
+  delayWetGain = audioCtx.createGain(); delayWetGain.gain.value = 0;
+  delayDryGain = audioCtx.createGain(); delayDryGain.gain.value = 1;
+  delayNode.connect(delayFBGain); delayFBGain.connect(delayNode);
+  delayNode.connect(delayWetGain);
+  delayWetGain.connect(reverbDryGain); delayWetGain.connect(reverbConv);
+  delayDryGain.connect(reverbDryGain); delayDryGain.connect(reverbConv);
+
+  // Chorus section: input → chorusDelayNode → chorusWetGain → delay
+  //                 input → chorusDryGain → delay
+  chorusDelayNode = audioCtx.createDelay(0.1); chorusDelayNode.delayTime.value = 0.030;
+  chorusLFO = audioCtx.createOscillator(); chorusLFO.type = 'sine'; chorusLFO.frequency.value = 0.5;
+  const chorusDepth = audioCtx.createGain(); chorusDepth.gain.value = 0.005;
+  chorusLFO.connect(chorusDepth); chorusDepth.connect(chorusDelayNode.delayTime); chorusLFO.start();
+  chorusWetGain = audioCtx.createGain(); chorusWetGain.gain.value = 0;
+  chorusDryGain = audioCtx.createGain(); chorusDryGain.gain.value = 1;
+  chorusDelayNode.connect(chorusWetGain);
+  chorusWetGain.connect(delayDryGain); chorusWetGain.connect(delayNode);
+  chorusDryGain.connect(delayDryGain); chorusDryGain.connect(delayNode);
+
+  // Voice bus: all voice gains connect here
+  voiceBusGain = audioCtx.createGain(); voiceBusGain.gain.value = 1;
+  voiceBusGain.connect(chorusDryGain);
+  voiceBusGain.connect(chorusDelayNode);
+}
+
+const startAudio = () => {
+  initAudio();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+};
+document.addEventListener('touchstart', startAudio, {once:true});
+document.addEventListener('click', startAudio, {once:true});
+
+// ── Knobs ───────────────────────────────────────────────────────
+const knobVals = {arp:0, dly:0, rev:0, cho:0};
+
+function applyEffect(name, val) {
+  if (!audioCtx) return;
+  const v = val / 100;
+  if (name === 'dly') {
+    delayFBGain.gain.setTargetAtTime(Math.min(0.98, v*0.98), audioCtx.currentTime, 0.02);
+    delayWetGain.gain.setTargetAtTime(v*0.7, audioCtx.currentTime, 0.02);
+  } else if (name === 'rev') {
+    reverbWetGain.gain.setTargetAtTime(v*0.85, audioCtx.currentTime, 0.02);
+  } else if (name === 'cho') {
+    chorusWetGain.gain.setTargetAtTime(v*0.7, audioCtx.currentTime, 0.02);
+  }
+}
+
+function drawKnob(canvas, val) {
+  const ctx = canvas.getContext('2d'), w=canvas.width, h=canvas.height, cx=w/2, cy=h/2, r=w/2-4;
+  ctx.clearRect(0,0,w,h);
+  const g = ctx.createRadialGradient(cx*.7,cy*.7,2,cx,cy,r);
+  g.addColorStop(0,'#d8d8d8'); g.addColorStop(1,'#6a6a6a');
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
+  ctx.strokeStyle='#444'; ctx.lineWidth=1.5; ctx.stroke();
+  const sa=(225*Math.PI/180), span=(270*Math.PI/180);
+  ctx.beginPath(); ctx.arc(cx,cy,r-5,sa,sa+span); ctx.strokeStyle='#555'; ctx.lineWidth=3; ctx.stroke();
+  if (val>0) {
+    ctx.beginPath(); ctx.arc(cx,cy,r-5,sa,sa+(val/100)*span); ctx.strokeStyle='#e8c547'; ctx.lineWidth=3; ctx.stroke();
+  }
+  const ang = (225+(val/100)*270)*Math.PI/180;
+  ctx.beginPath();
+  ctx.moveTo(cx+Math.cos(ang)*(r-12), cy+Math.sin(ang)*(r-12));
+  ctx.lineTo(cx+Math.cos(ang)*(r-4), cy+Math.sin(ang)*(r-4));
+  ctx.strokeStyle='#fff'; ctx.lineWidth=2.5; ctx.lineCap='round'; ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,0.7)'; ctx.font='8px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  const lbl=(val===100 && canvas.dataset.knob==='dly')? '∞' : Math.round(val)+'%';
+  ctx.fillText(lbl, cx, cy+1);
+}
+
+document.querySelectorAll('.knob').forEach(canvas => {
+  drawKnob(canvas, 0);
+  let sy=0, sv=0, drag=false;
+  canvas.addEventListener('pointerdown', e => {
+    e.preventDefault(); canvas.setPointerCapture(e.pointerId);
+    drag=true; sy=e.clientY; sv=knobVals[canvas.dataset.knob]||0;
+  });
+  canvas.addEventListener('pointermove', e => {
+    if (!drag) return; e.preventDefault();
+    const nv = Math.max(0, Math.min(100, sv+(sy-e.clientY)*0.8));
+    knobVals[canvas.dataset.knob]=nv; drawKnob(canvas,nv); applyEffect(canvas.dataset.knob,nv);
+  });
+  canvas.addEventListener('pointerup', ()=>drag=false);
+  canvas.addEventListener('pointercancel', ()=>drag=false);
+});
+
+// ── Timbre ──────────────────────────────────────────────────────
+let currentTimbre = 0;
+document.querySelectorAll('.timbre-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.timbre-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active'); currentTimbre=parseInt(btn.dataset.timbre);
+  });
+});
+
+// ── Keyboard ────────────────────────────────────────────────────
+const WHITE_NOTES = [60,62,64,65,67,69,71,72,74,76];
+const BLACK_POSITIONS = [{idx:0,note:61},{idx:1,note:63},{idx:3,note:66},{idx:4,note:68},{idx:5,note:70},{idx:7,note:73},{idx:8,note:75}];
+const keyEls = {};
+
+function buildKeyboard() {
+  const kbEl = document.getElementById('keyboard');
+  kbEl.innerHTML = '';
+  const wrap = document.getElementById('keyboard-wrap');
+  const ww = wrap.clientWidth, wh = wrap.clientHeight;
+  const whiteW = ww / 10;
+  const blackW = whiteW * 0.6, blackH = wh * 0.6;
+
+  WHITE_NOTES.forEach(note => {
+    const el = document.createElement('div');
+    el.className = 'white-key'; el.dataset.note = note;
+    const dot = document.createElement('div'); dot.className='key-dot'; el.appendChild(dot);
+    kbEl.appendChild(el); keyEls[note] = el;
+  });
+  BLACK_POSITIONS.forEach(({idx, note}) => {
+    const el = document.createElement('div');
+    el.className = 'black-key'; el.dataset.note = note;
+    el.style.cssText = `width:${blackW}px;height:${blackH}px;left:${idx*whiteW+whiteW-blackW/2}px`;
+    const dot = document.createElement('div'); dot.className='key-dot'; el.appendChild(dot);
+    kbEl.appendChild(el); keyEls[note] = el;
+  });
+}
+buildKeyboard();
+window.addEventListener('resize', buildKeyboard);
+
+// ── Voice synthesis ─────────────────────────────────────────────
+function midiFreq(m) { return 440*Math.pow(2,(m-69)/12); }
+
+const activeVoices = {};
+
+function createVoice(note, timbre) {
+  if (!audioCtx) return null;
+  const freq = midiFreq(note), now = audioCtx.currentTime;
+  const vg = audioCtx.createGain();
+  vg.gain.setValueAtTime(0.001, now);
+  vg.gain.linearRampToValueAtTime(0.65, now+0.01);
+  vg.gain.setTargetAtTime(0.65*0.7, now+0.16, 0.05);
+  vg.connect(voiceBusGain);
+
+  let o1,o2,filt;
+  switch(timbre) {
+    case 0:
+      o1=audioCtx.createOscillator(); o1.type='square'; o1.frequency.value=freq;
+      o1.connect(vg); o1.start(); break;
+    case 1:
+      o1=audioCtx.createOscillator(); o1.type='sine'; o1.frequency.value=freq;
+      filt=audioCtx.createBiquadFilter(); filt.type='lowpass'; filt.frequency.value=2000;
+      o1.connect(filt); filt.connect(vg); o1.start(); break;
+    case 2:
+      o1=audioCtx.createOscillator(); o1.type='triangle'; o1.frequency.value=freq;
+      o2=audioCtx.createOscillator(); o2.type='sine'; o2.frequency.value=freq*2;
+      const hg=audioCtx.createGain(); hg.gain.value=0.25;
+      o1.connect(vg); o2.connect(hg); hg.connect(vg);
+      o1.start(); o2.start(); break;
+    case 3:
+      o1=audioCtx.createOscillator(); o1.type='sawtooth'; o1.frequency.value=freq;
+      filt=audioCtx.createBiquadFilter(); filt.type='lowpass'; filt.frequency.value=1500; filt.Q.value=4;
+      o1.connect(filt); filt.connect(vg); o1.start(); break;
+  }
+  return {o1,o2,filt,gain:vg};
+}
+
+function releaseVoice(v) {
+  if (!v||!v.gain) return;
+  const now = audioCtx.currentTime;
+  v.gain.gain.cancelScheduledValues(now);
+  v.gain.gain.setValueAtTime(v.gain.gain.value, now);
+  v.gain.gain.exponentialRampToValueAtTime(0.0001, now+0.3);
+  setTimeout(()=>{
+    try{v.o1&&v.o1.stop();}catch(e){}
+    try{v.o2&&v.o2.stop();}catch(e){}
+    try{v.gain.disconnect();}catch(e){}
+  }, 400);
+}
+
+function noteOn(note, timbre) {
+  if (!audioCtx) initAudio();
+  noteOff(note);
+  const arpVal = knobVals.arp;
+  if (arpVal > 0) {
+    const semis=[0,4,7,12];
+    let idx=0;
+    let div=4;
+    if (arpVal>=75) div=32; else if (arpVal>=50) div=16; else if (arpVal>=25) div=8;
+    const ms=(60/120)*(4/div)*1000;
+    const state={arpInterval:null, arpVoice:null};
+    const tick=()=>{
+      if (!activeVoices[note]) return;
+      const an=note+semis[idx%4];
+      if (state.arpVoice) releaseVoice(state.arpVoice);
+      state.arpVoice=createVoice(an,timbre);
+      idx++;
+    };
+    state.arpInterval=setInterval(tick, ms);
+    activeVoices[note]=state; tick();
+  } else {
+    const v=createVoice(note,timbre);
+    if (v) activeVoices[note]=v;
+  }
+}
+
+function noteOff(note) {
+  const v=activeVoices[note]; if (!v) return;
+  if (v.arpInterval) { clearInterval(v.arpInterval); if (v.arpVoice) releaseVoice(v.arpVoice); }
+  else releaseVoice(v);
+  delete activeVoices[note];
+}
+
+// ── Keyboard interaction ─────────────────────────────────────────
+const ptrNotes={};
+
+function getNoteAt(x,y) {
+  const els=document.elementsFromPoint(x,y);
+  for (const el of els) if (el.dataset&&el.dataset.note) return parseInt(el.dataset.note);
+  return null;
+}
+
+function pressKey(note) {
+  if (!note||isNaN(note)) return;
+  const el=keyEls[note]; if (el) { el.classList.add('pressed'); el.querySelector('.key-dot')?.classList.add('show'); }
+  noteOn(note, currentTimbre);
+  if (gState.active) checkHit(note);
+}
+function releaseKey(note) {
+  if (!note||isNaN(note)) return;
+  const el=keyEls[note]; if (el) { el.classList.remove('pressed'); el.querySelector('.key-dot')?.classList.remove('show'); }
+  noteOff(note);
+}
+
+const kbWrap=document.getElementById('keyboard-wrap');
+kbWrap.style.touchAction='none';
+kbWrap.addEventListener('pointerdown',e=>{
+  e.preventDefault(); startAudio();
+  const n=getNoteAt(e.clientX,e.clientY);
+  if (n) { ptrNotes[e.pointerId]=n; pressKey(n); }
+},{passive:false});
+kbWrap.addEventListener('pointermove',e=>{
+  e.preventDefault();
+  const prev=ptrNotes[e.pointerId], n=getNoteAt(e.clientX,e.clientY);
+  if (n!==prev) { if(prev) releaseKey(prev); if(n){ptrNotes[e.pointerId]=n; pressKey(n);} else delete ptrNotes[e.pointerId]; }
+},{passive:false});
+kbWrap.addEventListener('pointerup',e=>{ const n=ptrNotes[e.pointerId]; if(n){releaseKey(n); delete ptrNotes[e.pointerId];} });
+kbWrap.addEventListener('pointercancel',e=>{ const n=ptrNotes[e.pointerId]; if(n){releaseKey(n); delete ptrNotes[e.pointerId];} });
+
+// ── Visualizer ──────────────────────────────────────────────────
+const visC=document.getElementById('vis-canvas'), visX=visC.getContext('2d');
+function resizeVis(){ const el=document.getElementById('visualizer'); visC.width=el.clientWidth; visC.height=el.clientHeight; }
+resizeVis(); window.addEventListener('resize',resizeVis);
+
+(function visLoop(){
+  requestAnimationFrame(visLoop);
+  const w=visC.width,h=visC.height;
+  visX.fillStyle='#1a1a1a'; visX.fillRect(0,0,w,h);
+  if (!analyserNode) return;
+  const data=new Uint8Array(analyserNode.frequencyBinCount);
+  analyserNode.getByteFrequencyData(data);
+  const bars=32, bw=w/bars;
+  for(let i=0;i<bars;i++){
+    const v=data[Math.floor(i*data.length/bars)]/255;
+    visX.fillStyle=`hsl(${25+i*3},80%,55%)`;
+    visX.fillRect(i*bw+1,h-v*h,bw-2,v*h);
+  }
+})();
+
+// ── Mode switch ─────────────────────────────────────────────────
+let currentMode='play';
+const notesArea=document.getElementById('notes-area');
+
+document.getElementById('btn-play').addEventListener('click',()=>{
+  currentMode='play';
+  document.getElementById('btn-play').classList.add('active');
+  document.getElementById('btn-game').classList.remove('active');
+  notesArea.classList.remove('game-active');
+  stopGame();
+});
+document.getElementById('btn-game').addEventListener('click',()=>{
+  currentMode='game';
+  document.getElementById('btn-game').classList.add('active');
+  document.getElementById('btn-play').classList.remove('active');
+  notesArea.classList.add('game-active');
+  showSongSelect();
+  setTimeout(resizeNotesCanvas,350);
+});
+
+// ── Song data ────────────────────────────────────────────────────
+const SONGS = {
+  twinkle:{
+    name:'きらきら星', emoji:'⭐', bpm:100,
+    notes:[
+      {t:0,n:60},{t:1,n:60},{t:2,n:67},{t:3,n:67},{t:4,n:69},{t:5,n:69},{t:6,n:67},
+      {t:8,n:65},{t:9,n:65},{t:10,n:64},{t:11,n:64},{t:12,n:62},{t:13,n:62},{t:14,n:60},
+      {t:16,n:67},{t:17,n:67},{t:18,n:65},{t:19,n:65},{t:20,n:64},{t:21,n:64},{t:22,n:62},
+      {t:24,n:67},{t:25,n:67},{t:26,n:65},{t:27,n:65},{t:28,n:64},{t:29,n:64},{t:30,n:62},
+      {t:32,n:60},{t:33,n:60},{t:34,n:67},{t:35,n:67},{t:36,n:69},{t:37,n:69},{t:38,n:67},
+      {t:40,n:65},{t:41,n:65},{t:42,n:64},{t:43,n:64},{t:44,n:62},{t:45,n:62},{t:46,n:60}
+    ]
+  },
+  frog:{
+    name:'カエルの合唱', emoji:'🐸', bpm:110,
+    notes:[
+      {t:0,n:60},{t:1,n:62},{t:2,n:64},{t:3,n:65},{t:4,n:64},{t:5,n:62},{t:6,n:60},
+      {t:8,n:64},{t:9,n:65},{t:10,n:67},{t:11,n:69},{t:12,n:67},{t:13,n:65},{t:14,n:64},
+      {t:16,n:60},{t:16.5,n:60},{t:17,n:60},{t:18,n:64},{t:18.5,n:64},{t:19,n:64},
+      {t:20,n:60},{t:20.5,n:60},{t:21,n:60},{t:22,n:60},
+      {t:24,n:60},{t:24.5,n:62},{t:25,n:64},{t:25.5,n:65},
+      {t:26,n:64},{t:26.5,n:62},{t:27,n:60},{t:27.5,n:62},
+      {t:28,n:64},{t:28.5,n:65},{t:29,n:67},{t:30,n:60}
+    ]
+  },
+  tulip:{
+    name:'チューリップ', emoji:'🌷', bpm:120,
+    notes:[
+      {t:0,n:60},{t:1,n:62},{t:2,n:64},{t:4,n:65},{t:5,n:64},{t:6,n:62},
+      {t:8,n:64},{t:9,n:62},{t:10,n:60},{t:12,n:60},{t:12.5,n:60},{t:13,n:60},
+      {t:16,n:60},{t:17,n:62},{t:18,n:64},{t:20,n:65},{t:21,n:64},{t:22,n:62},
+      {t:24,n:64},{t:25,n:62},{t:26,n:60},{t:28,n:60},{t:28.5,n:60},{t:29,n:60}
+    ]
+  }
+};
+
+// ── Game ─────────────────────────────────────────────────────────
+const gState={active:false,song:null,notes:[],startTime:0,beatDur:0,perfects:0,goods:0,misses:0};
+const notesC=document.getElementById('notes-canvas'), notesX=notesC.getContext('2d');
+let notesRaf=null;
+
+function resizeNotesCanvas(){
+  notesC.width=notesArea.clientWidth||document.getElementById('main').clientWidth;
+  notesC.height=notesArea.clientHeight||160;
+}
+
+function showSongSelect(){
+  document.getElementById('song-select').style.display='flex';
+  document.getElementById('score-overlay').classList.remove('show');
+  gState.active=false;
+}
+
+document.querySelectorAll('.song-btn').forEach(btn=>btn.addEventListener('click',()=>startGame(btn.dataset.song)));
+document.getElementById('score-retry').addEventListener('click',showSongSelect);
+
+function startGame(songKey){
+  startAudio();
+  const song=SONGS[songKey]; if (!song) return;
+  document.getElementById('song-select').style.display='none';
+  resizeNotesCanvas();
+
+  const bd=60/song.bpm;
+  const t0=(audioCtx ? audioCtx.currentTime : performance.now()/1000) + 0.8;
+  gState.active=true; gState.song=song; gState.beatDur=bd; gState.startTime=t0;
+  gState.perfects=0; gState.goods=0; gState.misses=0;
+
+  gState.notes = song.notes.filter(n=>!n.skip).map(n=>({
+    ts: t0 + n.t * bd, note: n.n, hit:false, missed:false
+  }));
+
+  // Schedule playback
+  song.notes.forEach(n=>{
+    if (n.skip) return;
+    const ts=t0+n.t*bd;
+    const o=audioCtx.createOscillator(); o.type='square'; o.frequency.value=midiFreq(n.n);
+    const g=audioCtx.createGain();
+    g.gain.setValueAtTime(0.001,ts);
+    g.gain.linearRampToValueAtTime(0.12,ts+0.02);
+    g.gain.setTargetAtTime(0.0001,ts+bd*0.7,0.04);
+    o.connect(g); g.connect(masterGain);
+    o.start(ts); o.stop(ts+bd*1.5);
+  });
+
+  if (notesRaf) cancelAnimationFrame(notesRaf);
+  gameLoop();
+}
+
+function stopGame(){
+  gState.active=false;
+  if (notesRaf){cancelAnimationFrame(notesRaf); notesRaf=null;}
+  notesX.clearRect(0,0,notesC.width,notesC.height);
+}
+
+const ALL_NOTES=[60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76];
+
+function noteToX(note, w) {
+  const wi = WHITE_NOTES.indexOf(note);
+  if (wi>=0) return (wi+0.5)*(w/10);
+  const bp = BLACK_POSITIONS.find(b=>b.note===note);
+  if (bp) return bp.idx*(w/10)+(w/10);
+  return w/2;
+}
+
+function gameLoop(){
+  notesRaf=requestAnimationFrame(gameLoop);
+  if (!gState.active) return;
+
+  const now=audioCtx ? audioCtx.currentTime : performance.now()/1000;
+  const w=notesC.width, h=notesC.height;
+  notesX.clearRect(0,0,w,h);
+
+  // Hit line
+  const hitY=h-20;
+  notesX.strokeStyle='rgba(232,197,71,0.35)'; notesX.lineWidth=2;
+  notesX.beginPath(); notesX.moveTo(0,hitY); notesX.lineTo(w,hitY); notesX.stroke();
+
+  const fallDur=1.8;
+  let pending=0;
+
+  gState.notes.forEach(n=>{
+    if (n.hit) return;
+    if (!n.missed) pending++;
+    const dt=n.ts-now;
+    if (!n.missed && dt < -0.15) { n.missed=true; gState.misses++; showJudge('miss'); return; }
+    if (n.hit||n.missed) return;
+    const y=hitY*(1-dt/fallDur);
+    if (y<-20||y>h+20) return;
+    const x=noteToX(n.note,w);
+    const isBlack=BLACK_POSITIONS.some(b=>b.note===n.note);
+    const nw=isBlack?18:26, nh=16;
+    notesX.beginPath(); notesX.roundRect(x-nw/2,y-nh/2,nw,nh,5);
+    notesX.fillStyle=isBlack?'#e8c547':'#c73e3e'; notesX.fill();
+    notesX.strokeStyle='rgba(255,255,255,0.6)'; notesX.lineWidth=1; notesX.stroke();
+    notesX.fillStyle='#fff'; notesX.font='10px system-ui'; notesX.textAlign='center'; notesX.textBaseline='middle';
+    notesX.fillText('♪',x,y);
+  });
+
+  const last=gState.notes[gState.notes.length-1];
+  if (last && now > last.ts+2.5) endGame();
+}
+
+function checkHit(pressedNote){
+  if (!gState.active) return;
+  const now=audioCtx ? audioCtx.currentTime : performance.now()/1000;
+  let best=null, bestDt=Infinity;
+  gState.notes.forEach(n=>{
+    if (n.hit||n.missed||n.note!==pressedNote) return;
+    const dt=Math.abs(n.ts-now);
+    if (dt<bestDt){bestDt=dt; best=n;}
+  });
+  if (!best) return;
+  if (bestDt<=0.08){best.hit=true; gState.perfects++; showJudge('perfect');}
+  else if (bestDt<=0.15){best.hit=true; gState.goods++; showJudge('good');}
+}
+
+let judgeTimer=null;
+function showJudge(type){
+  const el=document.getElementById('judgment');
+  el.textContent=type==='perfect'?'⭐':type==='good'?'◯':'✕';
+  el.style.color=type==='perfect'?'#e8c547':type==='good'?'#4db848':'#c73e3e';
+  el.style.opacity='1';
+  if(judgeTimer)clearTimeout(judgeTimer);
+  judgeTimer=setTimeout(()=>el.style.opacity='0',600);
+}
+
+function endGame(){
+  gState.active=false;
+  if(notesRaf){cancelAnimationFrame(notesRaf); notesRaf=null;}
+  const total=gState.perfects+gState.goods+gState.misses;
+  const sc=total>0?(gState.perfects+gState.goods*0.5)/total:0;
+  let stars=sc>=0.9?'⭐⭐⭐':sc>=0.7?'⭐⭐☆':sc>=0.4?'⭐☆☆':'☆☆☆';
+  document.getElementById('score-stars').textContent=stars;
+  document.getElementById('score-text').textContent=gState.song.emoji+' '+gState.song.name;
+  document.getElementById('score-counts').textContent=`⭐${gState.perfects}  ◯${gState.goods}  ✕${gState.misses}`;
+  document.getElementById('score-overlay').classList.add('show');
+}
+</script>
+</body>
+</html>
