@@ -114,14 +114,11 @@
     text-transform: uppercase;
     transition: color 200ms ease;
   }
-  .meta .back-link:hover {
-    color: var(--terracotta);
-  }
+  .meta .back-link:hover { color: var(--terracotta); }
 
   /* ── Header ─────────────────────────────────── */
-  header {
-    margin-bottom: 72px;
-  }
+  header { margin-bottom: 72px; }
+
   .brand-jp {
     font-family: var(--jp);
     font-weight: 700;
@@ -190,7 +187,7 @@
   .news-list {
     list-style: none;
     padding: 0;
-    margin: 0 0 80px;
+    margin: 0 0 16px;
   }
   .news-item {
     border-bottom: 1px solid rgba(58, 52, 44, 0.35);
@@ -238,9 +235,7 @@
     letter-spacing: 0.18em;
     color: var(--ink-soft);
   }
-  .news-item .source-label.hackaday {
-    color: var(--terracotta);
-  }
+  .news-item .source-label.hackaday { color: var(--terracotta); }
   .news-item .pub-date {
     font-family: var(--mono);
     font-size: 10.5px;
@@ -268,9 +263,7 @@
     align-self: center;
     transition: transform 220ms ease;
   }
-  .news-item a:hover .arrow {
-    transform: translateX(6px);
-  }
+  .news-item a:hover .arrow { transform: translateX(6px); }
   .news-item .caption {
     grid-column: 2 / 4;
     grid-row: 3;
@@ -283,7 +276,7 @@
     max-width: 46ch;
   }
 
-  /* ── Status messages ────────────────────────── */
+  /* ── Status / warnings ──────────────────────── */
   .status-msg {
     font-family: var(--mono);
     font-size: 13px;
@@ -291,10 +284,11 @@
     text-align: center;
     padding: 48px 0;
     letter-spacing: 0.08em;
+    list-style: none;
   }
   .fetch-warnings {
-    margin-top: -64px;
-    margin-bottom: 32px;
+    min-height: 0;
+    margin-bottom: 40px;
   }
   .fetch-warning {
     font-family: var(--mono);
@@ -302,7 +296,7 @@
     color: var(--muted);
     letter-spacing: 0.08em;
     text-align: center;
-    padding: 4px 0;
+    margin: 6px 0 0;
   }
 
   /* ── Colophon / footer ──────────────────────── */
@@ -347,9 +341,7 @@
     color: var(--muted);
     letter-spacing: 0.05em;
   }
-  .note-link:hover .note-handle {
-    color: var(--terracotta);
-  }
+  .note-link:hover .note-handle { color: var(--terracotta); }
   .read-more {
     font-family: var(--serif);
     font-style: italic;
@@ -370,9 +362,7 @@
     padding-top: 18px;
     border-top: 1px solid rgba(58, 52, 44, 0.4);
   }
-  .footer-meta .imprint {
-    color: var(--ink);
-  }
+  .footer-meta .imprint { color: var(--ink); }
   .footer-meta .imprint .slash {
     color: var(--terracotta);
     margin: 0 6px;
@@ -463,185 +453,208 @@
     (function () {
       'use strict';
 
-      var PROXY = 'https://api.allorigins.win/get?url=';
-      var TIMEOUT_MS = 10000;
-      var MAX_ITEMS = 10;
+      var PROXY    = 'https://api.allorigins.win/get?url=';
+      var TIMEOUT  = 10000;
+      var MAX_EACH = 10;
 
       var SOURCES = [
-        {
-          id: 'hackaday',
-          url: 'https://hackaday.com/blog/feed/',
-          label: 'HACKADAY / EN',
-          accentClass: 'hackaday',
-        },
-        {
-          id: 'qiita',
+        { id: 'hackaday', url: 'https://hackaday.com/blog/feed/',
+          label: 'HACKADAY / EN', cls: 'hackaday' },
+        { id: 'qiita',
           url: 'https://qiita.com/tags/%E9%9B%BB%E5%AD%90%E5%B7%A5%E4%BD%9C/feed',
-          label: 'QIITA / JA',
-          accentClass: '',
-        },
+          label: 'QIITA / JA',   cls: '' },
       ];
 
-      function escHtml(str) {
-        return String(str)
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;');
+      /* ── helpers ──────────────────────────── */
+      function esc(s) {
+        return String(s)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       }
 
-      function stripHtml(html) {
+      function stripTags(html) {
+        try { return new DOMParser().parseFromString(html, 'text/html').body.textContent || ''; }
+        catch (_) { return html.replace(/<[^>]*>/g, ''); }
+      }
+
+      function fmtDate(s) {
         try {
-          return new DOMParser().parseFromString(html, 'text/html').body.textContent || '';
-        } catch (_) {
-          return html.replace(/<[^>]*>/g, '');
-        }
+          var d = new Date(s);
+          if (isNaN(d)) return '';
+          return d.getFullYear() + '.' +
+            String(d.getMonth() + 1).padStart(2, '0') + '.' +
+            String(d.getDate()).padStart(2, '0');
+        } catch (_) { return ''; }
       }
 
-      function formatDate(dateStr) {
-        try {
-          var d = new Date(dateStr);
-          if (isNaN(d.getTime())) return '';
-          var y = d.getFullYear();
-          var m = String(d.getMonth() + 1).padStart(2, '0');
-          var day = String(d.getDate()).padStart(2, '0');
-          return y + '.' + m + '.' + day;
-        } catch (_) {
-          return '';
+      function txt(el) { return el ? (el.textContent || '').trim() : ''; }
+
+      /* ── XML parsing (RSS 2.0 + Atom) ────── */
+      function parseDoc(xmlStr, source) {
+        var doc = new DOMParser().parseFromString(xmlStr, 'application/xml');
+
+        /* parseerror detection works across browsers */
+        if (doc.documentElement.nodeName === 'parsererror' ||
+            doc.getElementsByTagName('parsererror').length) {
+          throw new Error('XML parse error');
         }
+
+        /*
+         * getElementsByTagName ignores XML namespaces and matches by local
+         * name — required for Qiita's Atom feed (xmlns="…/Atom") where
+         * querySelector('entry') can silently return 0 results in some
+         * browser/parser combinations.
+         */
+        var entryEls = doc.getElementsByTagName('entry');   /* Atom  */
+        var itemEls  = doc.getElementsByTagName('item');    /* RSS 2 */
+        var isAtom   = entryEls.length > 0;
+        var rows     = Array.from(isAtom ? entryEls : itemEls).slice(0, MAX_EACH);
+
+        return rows.map(function (el) {
+          /* title */
+          var title = txt(el.getElementsByTagName('title')[0]) || '(no title)';
+
+          /* link */
+          var link = '';
+          if (isAtom) {
+            /* Atom: <link href="..." rel="alternate"/> */
+            var links = Array.from(el.getElementsByTagName('link'));
+            var alt   = links.filter(function (l) {
+              var rel = l.getAttribute('rel');
+              return !rel || rel === 'alternate';
+            })[0] || links[0];
+            if (alt) link = (alt.getAttribute('href') || txt(alt)).trim();
+          } else {
+            /* RSS 2: <link>URL</link>  — textContent holds the URL */
+            link = txt(el.getElementsByTagName('link')[0]);
+          }
+          if (!link) link = '#';
+
+          /* date */
+          var dateRaw = '';
+          if (isAtom) {
+            var pub = el.getElementsByTagName('published')[0] ||
+                      el.getElementsByTagName('updated')[0];
+            dateRaw = txt(pub);
+          } else {
+            dateRaw = txt(el.getElementsByTagName('pubDate')[0]);
+          }
+          var pubDate = dateRaw ? new Date(dateRaw) : new Date(0);
+
+          /* description */
+          var descEl = isAtom
+            ? (el.getElementsByTagName('summary')[0] ||
+               el.getElementsByTagName('content')[0])
+            : el.getElementsByTagName('description')[0];
+          var raw  = txt(descEl);
+          var body = stripTags(raw).replace(/\s+/g, ' ').trim();
+          var desc = body.length > 100 ? body.slice(0, 100) + '…' : body;
+
+          return { source: source, title: title, link: link,
+                   pubDate: pubDate, pubDateStr: fmtDate(dateRaw), desc: desc };
+        });
       }
 
+      /* ── fetch via CORS proxy ─────────────── */
       function fetchFeed(source) {
-        var controller = new AbortController();
-        var timer = setTimeout(function () { controller.abort(); }, TIMEOUT_MS);
-        var proxyUrl = PROXY + encodeURIComponent(source.url);
+        var ctrl  = new AbortController();
+        var timer = setTimeout(function () { ctrl.abort(); }, TIMEOUT);
+        var url   = PROXY + encodeURIComponent(source.url);
 
-        return fetch(proxyUrl, { signal: controller.signal })
-          .then(function (res) {
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            return res.json();
+        return fetch(url, { signal: ctrl.signal })
+          .then(function (r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
           })
-          .then(function (json) {
-            if (!json || !json.contents) throw new Error('Empty response');
-
-            var doc = new DOMParser().parseFromString(json.contents, 'application/xml');
-            if (doc.querySelector('parsererror')) throw new Error('XML parse error');
-
-            var items = Array.from(doc.querySelectorAll('item')).slice(0, MAX_ITEMS);
-            return items.map(function (item) {
-              var title = (item.querySelector('title') || {}).textContent || '';
-              title = title.trim() || '(no title)';
-
-              var linkEl = item.querySelector('link');
-              var link = linkEl ? (linkEl.textContent || '').trim() : '';
-              if (!link) {
-                var linkAttr = item.getElementsByTagName('link')[0];
-                link = linkAttr ? (linkAttr.textContent || linkAttr.getAttribute('href') || '').trim() : '';
-              }
-              if (!link) link = '#';
-
-              var pubDateStr = ((item.querySelector('pubDate') || {}).textContent || '').trim();
-              var pubDate = pubDateStr ? new Date(pubDateStr) : new Date(0);
-
-              var descRaw = ((item.querySelector('description') || {}).textContent || '').trim();
-              var descText = stripHtml(descRaw).trim();
-              var desc = descText.length > 100 ? descText.slice(0, 100) + '…' : descText;
-
-              return {
-                source: source,
-                title: title,
-                link: link,
-                pubDate: pubDate,
-                pubDateStr: formatDate(pubDateStr),
-                desc: desc,
-              };
-            });
+          .then(function (j) {
+            if (!j || !j.contents) throw new Error('empty proxy response');
+            return parseDoc(j.contents, source);
           })
-          .finally(function () {
-            clearTimeout(timer);
-          });
+          .finally(function () { clearTimeout(timer); });
       }
 
-      function renderArticles(articles) {
+      /* ── render ───────────────────────────── */
+      function setMsg(msg) {
+        document.getElementById('news-list').innerHTML =
+          '<li class="status-msg">' + esc(msg) + '</li>';
+      }
+
+      function render(articles) {
         var list = document.getElementById('news-list');
         list.innerHTML = '';
+        if (!articles.length) { setMsg('該当する記事がありません'); return; }
 
-        if (articles.length === 0) {
-          var li = document.createElement('li');
-          li.className = 'status-msg';
-          li.textContent = '該当する記事がありません';
-          list.appendChild(li);
-          return;
-        }
-
-        articles.forEach(function (art, i) {
-          var num = String(i + 1).padStart(2, '0');
-          var ariaLabel = art.title + ' (' + art.source.label + ')';
+        articles.forEach(function (a, i) {
+          var num   = String(i + 1).padStart(2, '0');
+          var label = esc(a.title) + ' (' + esc(a.source.label) + ')';
+          var cap   = a.desc
+            ? '<span class="caption">' + esc(a.desc) + '</span>'
+            : '';
 
           var li = document.createElement('li');
           li.className = 'news-item';
-
-          var captionHtml = art.desc
-            ? '<span class="caption">' + escHtml(art.desc) + '</span>'
-            : '';
-
           li.innerHTML =
-            '<a href="' + escHtml(art.link) + '" target="_blank" rel="noopener noreferrer" aria-label="' + escHtml(ariaLabel) + '">' +
-              '<span class="num">' + escHtml(num) + '</span>' +
+            '<a href="' + esc(a.link) + '"' +
+                ' target="_blank" rel="noopener noreferrer"' +
+                ' aria-label="' + label + '">' +
+              '<span class="num">' + esc(num) + '</span>' +
               '<span class="article-meta">' +
-                '<span class="source-label ' + art.source.accentClass + '">' + escHtml(art.source.label) + '</span>' +
-                '<span class="pub-date">' + escHtml(art.pubDateStr) + '</span>' +
+                '<span class="source-label ' + a.source.cls + '">' +
+                  esc(a.source.label) +
+                '</span>' +
+                '<span class="pub-date">' + esc(a.pubDateStr) + '</span>' +
               '</span>' +
-              '<span class="title">' + escHtml(art.title) + '</span>' +
+              '<span class="title">' + esc(a.title) + '</span>' +
               '<span class="arrow" aria-hidden="true">→</span>' +
-              captionHtml +
+              cap +
             '</a>';
-
           list.appendChild(li);
         });
       }
 
+      /* ── init ─────────────────────────────── */
       function init() {
-        var settled = SOURCES.map(function (source) {
-          return fetchFeed(source).then(
-            function (articles) { return { status: 'fulfilled', value: articles, source: source }; },
-            function (err) { return { status: 'rejected', reason: err, source: source }; }
+        /* Wrap each promise so one failure never aborts the other */
+        var wrapped = SOURCES.map(function (src) {
+          return fetchFeed(src).then(
+            function (arts) { return { ok: true,  val: arts, src: src }; },
+            function (err)  { return { ok: false, err: err,  src: src }; }
           );
         });
 
-        Promise.all(settled).then(function (results) {
-          var allArticles = [];
-          var failedLabels = [];
+        Promise.all(wrapped)
+          .then(function (results) {
+            var all    = [];
+            var failed = [];
 
-          results.forEach(function (result) {
-            if (result.status === 'fulfilled') {
-              allArticles = allArticles.concat(result.value);
-            } else {
-              console.warn('Failed to fetch ' + result.source.label + ':', result.reason);
-              failedLabels.push(result.source.label);
+            results.forEach(function (r) {
+              if (r.ok) { all = all.concat(r.val); }
+              else       { console.warn(r.src.label, r.err); failed.push(r.src.label); }
+            });
+
+            if (!all.length) {
+              setMsg('記事を取得できませんでした。時間を置いて再読込してください。');
+              return;
             }
+
+            all.sort(function (a, b) { return b.pubDate - a.pubDate; });
+            render(all);
+
+            if (failed.length) {
+              var el = document.getElementById('fetch-warnings');
+              el.innerHTML = failed.map(function (l) {
+                return '<p class="fetch-warning">※ ' + esc(l) + ' の取得に失敗しました</p>';
+              }).join('');
+            }
+          })
+          .catch(function (e) {
+            console.error(e);
+            setMsg('記事を取得できませんでした。時間を置いて再読込してください。');
           });
-
-          if (allArticles.length === 0) {
-            var list = document.getElementById('news-list');
-            list.innerHTML = '<li class="status-msg">記事を取得できませんでした。時間を置いて再読込してください。</li>';
-            return;
-          }
-
-          allArticles.sort(function (a, b) { return b.pubDate - a.pubDate; });
-          renderArticles(allArticles);
-
-          if (failedLabels.length > 0) {
-            var warningsEl = document.getElementById('fetch-warnings');
-            warningsEl.innerHTML = failedLabels.map(function (label) {
-              return '<p class="fetch-warning">※ ' + escHtml(label) + ' の取得に失敗しました</p>';
-            }).join('');
-          }
-        });
       }
 
       document.addEventListener('DOMContentLoaded', init);
-    })();
+    }());
   </script>
 </body>
 </html>
