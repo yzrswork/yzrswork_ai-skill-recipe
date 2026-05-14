@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>電子工作通信 — や印工務店</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #f0ebe3;
+    --paper-2: #e8e1d4;
+    --ink: #1c1a16;
+    --ink-soft: #2b2823;
+    --muted: #6f675b;
+    --rule: #3a342c;
+    --terracotta: #b5451b;
+    --terracotta-deep: #8e3514;
+    --serif: "EB Garamond", "Times New Roman", serif;
+    --mono: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    --jp: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: var(--jp);
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(rgba(70, 50, 30, 0.06) 1px, transparent 1px),
+      radial-gradient(rgba(70, 50, 30, 0.04) 1px, transparent 1px);
+    background-size: 3px 3px, 7px 7px;
+    background-position: 0 0, 1px 2px;
+    z-index: 1;
+    mix-blend-mode: multiply;
+    opacity: 0.9;
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 20% 10%, rgba(181, 69, 27, 0.05), transparent 50%),
+      radial-gradient(ellipse at 90% 90%, rgba(60, 40, 20, 0.08), transparent 55%);
+    z-index: 1;
+  }
+
+  .page {
+    position: relative;
+    z-index: 2;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 56px 28px 48px;
+  }
+
+  /* ── Watermark ──────────────────────────────── */
+  .mark {
+    position: absolute;
+    top: 42px;
+    right: 24px;
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 110px;
+    line-height: 1;
+    color: var(--terracotta);
+    opacity: 0.16;
+    user-select: none;
+    pointer-events: none;
+    letter-spacing: -0.03em;
+    z-index: 2;
+  }
+
+  /* ── Top meta strip ─────────────────────────── */
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 56px;
+  }
+  .meta .vol { color: var(--ink); }
+  .meta .dot { color: var(--terracotta); }
+  .meta .back-link {
+    color: var(--muted);
+    text-decoration: none;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: color 200ms ease;
+  }
+  .meta .back-link:hover {
+    color: var(--terracotta);
+  }
+
+  /* ── Header ─────────────────────────────────── */
+  header {
+    margin-bottom: 72px;
+  }
+  .brand-jp {
+    font-family: var(--jp);
+    font-weight: 700;
+    font-size: clamp(40px, 9vw, 64px);
+    letter-spacing: 0.02em;
+    line-height: 1;
+    margin: 0 0 18px;
+    color: var(--ink);
+  }
+  .brand-en {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 17px;
+    letter-spacing: 0.12em;
+    color: var(--terracotta);
+    margin-bottom: 28px;
+  }
+  .brand-en .em {
+    display: inline-block;
+    width: 28px;
+    height: 1px;
+    background: var(--terracotta);
+  }
+  .tagline {
+    font-family: var(--jp);
+    font-weight: 400;
+    font-size: 15px;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+    line-height: 1.9;
+    max-width: 32ch;
+  }
+
+  /* ── Section header ─────────────────────────── */
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-top: 8px;
+    margin-bottom: 6px;
+  }
+  .section-head .label-jp {
+    font-family: var(--jp);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.3em;
+    color: var(--ink);
+  }
+  .section-head .label-en {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .section-rule {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 0 0 8px;
+  }
+
+  /* ── News list ──────────────────────────────── */
+  .news-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 80px;
+  }
+  .news-item {
+    border-bottom: 1px solid rgba(58, 52, 44, 0.35);
+  }
+  .news-item a {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: auto auto auto;
+    column-gap: 18px;
+    row-gap: 5px;
+    padding: 22px 4px 20px;
+    text-decoration: none;
+    color: var(--ink);
+    transition: padding-left 220ms ease, background-color 220ms ease;
+  }
+  .news-item a:hover,
+  .news-item a:focus-visible {
+    padding-left: 14px;
+    background-color: rgba(181, 69, 27, 0.04);
+    outline: none;
+  }
+  .news-item .num {
+    grid-column: 1;
+    grid-row: 1;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--terracotta);
+    letter-spacing: 0.05em;
+    align-self: baseline;
+    min-width: 28px;
+    padding-top: 1px;
+  }
+  .news-item .article-meta {
+    grid-column: 2 / 4;
+    grid-row: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .news-item .source-label {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-soft);
+  }
+  .news-item .source-label.hackaday {
+    color: var(--terracotta);
+  }
+  .news-item .pub-date {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .news-item .title {
+    grid-column: 2;
+    grid-row: 2;
+    font-family: var(--jp);
+    font-weight: 700;
+    font-size: clamp(17px, 3.8vw, 22px);
+    line-height: 1.3;
+    letter-spacing: 0.01em;
+    color: var(--ink);
+    align-self: baseline;
+  }
+  .news-item .arrow {
+    grid-column: 3;
+    grid-row: 2;
+    font-family: var(--mono);
+    font-size: 16px;
+    color: var(--terracotta);
+    align-self: center;
+    transition: transform 220ms ease;
+  }
+  .news-item a:hover .arrow {
+    transform: translateX(6px);
+  }
+  .news-item .caption {
+    grid-column: 2 / 4;
+    grid-row: 3;
+    font-family: var(--jp);
+    font-size: 13.5px;
+    font-weight: 400;
+    color: var(--muted);
+    line-height: 1.7;
+    letter-spacing: 0.03em;
+    max-width: 46ch;
+  }
+
+  /* ── Status messages ────────────────────────── */
+  .status-msg {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+    padding: 48px 0;
+    letter-spacing: 0.08em;
+  }
+  .fetch-warnings {
+    margin-top: -64px;
+    margin-bottom: 32px;
+  }
+  .fetch-warning {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-align: center;
+    padding: 4px 0;
+  }
+
+  /* ── Colophon / footer ──────────────────────── */
+  .colophon {
+    margin-top: 56px;
+    padding-top: 28px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+  }
+  .colophon-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+  .note-link {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 12px;
+    text-decoration: none;
+    color: var(--ink);
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 4px;
+    transition: color 200ms ease, border-color 200ms ease;
+  }
+  .note-link:hover {
+    color: var(--terracotta);
+    border-color: var(--terracotta);
+  }
+  .note-link .note-jp {
+    font-family: var(--jp);
+    font-weight: 500;
+    font-size: 15px;
+    letter-spacing: 0.04em;
+  }
+  .note-link .note-handle {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+  .note-link:hover .note-handle {
+    color: var(--terracotta);
+  }
+  .read-more {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .footer-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding-top: 18px;
+    border-top: 1px solid rgba(58, 52, 44, 0.4);
+  }
+  .footer-meta .imprint {
+    color: var(--ink);
+  }
+  .footer-meta .imprint .slash {
+    color: var(--terracotta);
+    margin: 0 6px;
+  }
+  .data-note {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-align: center;
+    margin-top: -20px;
+    opacity: 0.8;
+  }
+
+  @media (max-width: 540px) {
+    .page { padding: 36px 22px 36px; }
+    header { margin-bottom: 56px; }
+    .mark { font-size: 78px; top: 30px; right: 16px; }
+    .news-item a { column-gap: 14px; padding: 18px 2px 16px; }
+    .news-item .num { font-size: 12px; min-width: 22px; }
+    .news-item .article-meta { flex-wrap: wrap; gap: 4px 8px; }
+    .colophon-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+  }
+</style>
+</head>
+<body>
+  <div class="mark">y.</div>
+  <main class="page">
+
+    <div class="meta">
+      <a class="back-link" href="index.html">← Index</a>
+      <span class="vol">Vol. 02</span>
+      <span><span class="dot">●</span> News</span>
+      <span>2026 / Spring</span>
+    </div>
+
+    <header>
+      <h1 class="brand-jp">や印工務店</h1>
+      <div class="brand-en">
+        <span class="em"></span>
+        <span>電子工作通信</span>
+      </div>
+      <p class="tagline">海外と国内の工作ネタを、週刊誌のように。</p>
+    </header>
+
+    <section>
+      <div class="section-head">
+        <span class="label-jp">最 新 記 事</span>
+        <span class="label-en">— Latest Articles</span>
+      </div>
+      <hr class="section-rule" />
+
+      <ol class="news-list" id="news-list">
+        <li class="status-msg">読み込み中…</li>
+      </ol>
+
+      <div class="fetch-warnings" id="fetch-warnings"></div>
+    </section>
+
+    <section class="colophon">
+
+      <div class="section-head">
+        <span class="label-jp">読 み も の</span>
+        <span class="label-en">— Notes &amp; Essays</span>
+      </div>
+      <hr class="section-rule" style="margin-top:-22px;" />
+
+      <div class="colophon-row">
+        <a class="note-link" href="https://note.com/yzrswork" target="_blank" rel="noopener noreferrer">
+          <span class="note-jp">note で書いています</span>
+          <span class="note-handle">@yzrswork ↗</span>
+        </a>
+        <span class="read-more">制作の覚書、設計のはなし、など。</span>
+      </div>
+
+      <div class="footer-meta">
+        <span class="imprint">© や印工務店 <span class="slash">/</span> yzrswork</span>
+        <span>Updated on reload — MMXXVI</span>
+      </div>
+
+      <p class="data-note">データは Hackaday / Qiita の RSS より自動取得。更新はページをリロード。</p>
+
+    </section>
+
+  </main>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var PROXY = 'https://api.allorigins.win/get?url=';
+      var TIMEOUT_MS = 10000;
+      var MAX_ITEMS = 10;
+
+      var SOURCES = [
+        {
+          id: 'hackaday',
+          url: 'https://hackaday.com/blog/feed/',
+          label: 'HACKADAY / EN',
+          accentClass: 'hackaday',
+        },
+        {
+          id: 'qiita',
+          url: 'https://qiita.com/tags/%E9%9B%BB%E5%AD%90%E5%B7%A5%E4%BD%9C/feed',
+          label: 'QIITA / JA',
+          accentClass: '',
+        },
+      ];
+
+      function escHtml(str) {
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function stripHtml(html) {
+        try {
+          return new DOMParser().parseFromString(html, 'text/html').body.textContent || '';
+        } catch (_) {
+          return html.replace(/<[^>]*>/g, '');
+        }
+      }
+
+      function formatDate(dateStr) {
+        try {
+          var d = new Date(dateStr);
+          if (isNaN(d.getTime())) return '';
+          var y = d.getFullYear();
+          var m = String(d.getMonth() + 1).padStart(2, '0');
+          var day = String(d.getDate()).padStart(2, '0');
+          return y + '.' + m + '.' + day;
+        } catch (_) {
+          return '';
+        }
+      }
+
+      function fetchFeed(source) {
+        var controller = new AbortController();
+        var timer = setTimeout(function () { controller.abort(); }, TIMEOUT_MS);
+        var proxyUrl = PROXY + encodeURIComponent(source.url);
+
+        return fetch(proxyUrl, { signal: controller.signal })
+          .then(function (res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+          })
+          .then(function (json) {
+            if (!json || !json.contents) throw new Error('Empty response');
+
+            var doc = new DOMParser().parseFromString(json.contents, 'application/xml');
+            if (doc.querySelector('parsererror')) throw new Error('XML parse error');
+
+            var items = Array.from(doc.querySelectorAll('item')).slice(0, MAX_ITEMS);
+            return items.map(function (item) {
+              var title = (item.querySelector('title') || {}).textContent || '';
+              title = title.trim() || '(no title)';
+
+              var linkEl = item.querySelector('link');
+              var link = linkEl ? (linkEl.textContent || '').trim() : '';
+              if (!link) {
+                var linkAttr = item.getElementsByTagName('link')[0];
+                link = linkAttr ? (linkAttr.textContent || linkAttr.getAttribute('href') || '').trim() : '';
+              }
+              if (!link) link = '#';
+
+              var pubDateStr = ((item.querySelector('pubDate') || {}).textContent || '').trim();
+              var pubDate = pubDateStr ? new Date(pubDateStr) : new Date(0);
+
+              var descRaw = ((item.querySelector('description') || {}).textContent || '').trim();
+              var descText = stripHtml(descRaw).trim();
+              var desc = descText.length > 100 ? descText.slice(0, 100) + '…' : descText;
+
+              return {
+                source: source,
+                title: title,
+                link: link,
+                pubDate: pubDate,
+                pubDateStr: formatDate(pubDateStr),
+                desc: desc,
+              };
+            });
+          })
+          .finally(function () {
+            clearTimeout(timer);
+          });
+      }
+
+      function renderArticles(articles) {
+        var list = document.getElementById('news-list');
+        list.innerHTML = '';
+
+        if (articles.length === 0) {
+          var li = document.createElement('li');
+          li.className = 'status-msg';
+          li.textContent = '該当する記事がありません';
+          list.appendChild(li);
+          return;
+        }
+
+        articles.forEach(function (art, i) {
+          var num = String(i + 1).padStart(2, '0');
+          var ariaLabel = art.title + ' (' + art.source.label + ')';
+
+          var li = document.createElement('li');
+          li.className = 'news-item';
+
+          var captionHtml = art.desc
+            ? '<span class="caption">' + escHtml(art.desc) + '</span>'
+            : '';
+
+          li.innerHTML =
+            '<a href="' + escHtml(art.link) + '" target="_blank" rel="noopener noreferrer" aria-label="' + escHtml(ariaLabel) + '">' +
+              '<span class="num">' + escHtml(num) + '</span>' +
+              '<span class="article-meta">' +
+                '<span class="source-label ' + art.source.accentClass + '">' + escHtml(art.source.label) + '</span>' +
+                '<span class="pub-date">' + escHtml(art.pubDateStr) + '</span>' +
+              '</span>' +
+              '<span class="title">' + escHtml(art.title) + '</span>' +
+              '<span class="arrow" aria-hidden="true">→</span>' +
+              captionHtml +
+            '</a>';
+
+          list.appendChild(li);
+        });
+      }
+
+      function init() {
+        var settled = SOURCES.map(function (source) {
+          return fetchFeed(source).then(
+            function (articles) { return { status: 'fulfilled', value: articles, source: source }; },
+            function (err) { return { status: 'rejected', reason: err, source: source }; }
+          );
+        });
+
+        Promise.all(settled).then(function (results) {
+          var allArticles = [];
+          var failedLabels = [];
+
+          results.forEach(function (result) {
+            if (result.status === 'fulfilled') {
+              allArticles = allArticles.concat(result.value);
+            } else {
+              console.warn('Failed to fetch ' + result.source.label + ':', result.reason);
+              failedLabels.push(result.source.label);
+            }
+          });
+
+          if (allArticles.length === 0) {
+            var list = document.getElementById('news-list');
+            list.innerHTML = '<li class="status-msg">記事を取得できませんでした。時間を置いて再読込してください。</li>';
+            return;
+          }
+
+          allArticles.sort(function (a, b) { return b.pubDate - a.pubDate; });
+          renderArticles(allArticles);
+
+          if (failedLabels.length > 0) {
+            var warningsEl = document.getElementById('fetch-warnings');
+            warningsEl.innerHTML = failedLabels.map(function (label) {
+              return '<p class="fetch-warning">※ ' + escHtml(label) + ' の取得に失敗しました</p>';
+            }).join('');
+          }
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded', init);
+    })();
+  </script>
+</body>
+</html>
