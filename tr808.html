@@ -7,6 +7,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>TR-808 KIDS</title>
 <style>
+.back-btn{position:fixed;top:16px;left:16px;z-index:999;color:rgba(255,255,255,0.35);text-decoration:none;font-family:'DM Mono',ui-monospace,monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;}
+.back-btn:hover{color:rgba(255,255,255,0.75);}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 html,body{width:100%;height:100%;overflow:hidden;background:#1a1a1a;font-family:-apple-system,"SF Pro",system-ui,sans-serif;user-select:none;-webkit-user-select:none;overscroll-behavior:none;}
 body{display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
@@ -57,6 +59,7 @@ body{display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(saf
 </style>
 </head>
 <body>
+<a class="back-btn" href="index.html">← index</a>
 <div id="landscape-warn">
   <div style="font-size:48px">📱</div>
   <div>縦にしてね</div>
