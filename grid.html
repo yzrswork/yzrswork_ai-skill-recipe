@@ -10,9 +10,23 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; overflow: hidden; background: #fff; }
     canvas { display: block; touch-action: none; }
+    .back-btn {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 999;
+      color: rgba(0,0,0,0.3);
+      text-decoration: none;
+      font-family: 'DM Mono', ui-monospace, monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .back-btn:hover { color: rgba(0,0,0,0.7); }
   </style>
 </head>
 <body>
+<a class="back-btn" href="index.html">← index</a>
 <canvas id="c"></canvas>
 <script>
 // ─── Tuning constants — edit these to retune the instrument ───────────────────
