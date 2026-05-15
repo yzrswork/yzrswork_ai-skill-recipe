@@ -152,6 +152,8 @@ const Router = (() => {
 
   function show(id){
     $$('.screen').forEach(s => s.classList.toggle('active', s.id === id));
+    const backLink = document.getElementById('back-to-index');
+    if(backLink) backLink.style.display = id === 'screen-game' ? 'none' : '';
   }
 
   function home(){
