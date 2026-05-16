@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Connection OS</title>
+  <style>
+    :root {
+      --bg: #FAF7F2;
+      --text: #2C2C2C;
+      --accent: #C8673A;
+      --accent-hover: #B05828;
+      --navy: #1D3557;
+      --navy-hover: #15263F;
+      --card: #F0EBE3;
+      --subtext: #8C7B6E;
+      --border: #E0D8CC;
+      --success: #6B8E5A;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 16px;
+      line-height: 1.8;
+      color: var(--text);
+      background: var(--bg);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+    }
+
+    .tab-btn {
+      flex: 1;
+      border: none;
+      border-bottom: 2px solid transparent;
+      background: transparent;
+      padding: 16px 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      letter-spacing: 0.05em;
+      color: var(--subtext);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .tab-btn.active {
+      color: var(--text);
+      border-bottom-color: var(--accent);
+    }
+
+    main {
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+      padding-bottom: 48px;
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* 記録タブ */
+    .date-display {
+      text-align: center;
+      font-size: 1.1rem;
+      color: var(--subtext);
+      margin: 24px 0;
+    }
+
+    .question {
+      font-size: 1.3rem;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+
+    .state-btn {
+      display: block;
+      width: 100%;
+      min-height: 56px;
+      background: var(--card);
+      border: 1px solid transparent;
+      border-radius: 12px;
+      padding: 12px 12px 12px 20px;
+      margin: 8px 0;
+      font-family: inherit;
+      font-size: 1rem;
+      color: var(--text);
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .state-btn:hover {
+      border-color: var(--accent);
+    }
+
+    .state-btn.selected {
+      background: var(--accent);
+      color: #FFF;
+      border-color: var(--accent);
+    }
+
+    .subtext-area {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      color: var(--subtext);
+      font-style: italic;
+      font-size: 0.9rem;
+      margin: 12px 0;
+      min-height: 1.6em;
+    }
+
+    .subtext-area.visible {
+      opacity: 1;
+    }
+
+    .memo-section {
+      margin-top: 16px;
+    }
+
+    .memo-label {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 12px;
+      font-family: inherit;
+      font-size: 16px;
+      line-height: 1.8;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      resize: vertical;
+      min-height: calc(1.8em * 3 + 24px);
+      color: var(--text);
+      transition: border-color 0.2s ease;
+      -webkit-appearance: none;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .packet-section {
+      margin-top: 24px;
+    }
+
+    .packet-label {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+
+    .packet-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .packet-btn {
+      flex: 1;
+      height: 48px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 1rem;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .packet-btn.selected {
+      background: var(--navy);
+      color: #FFF;
+      border-color: var(--navy);
+    }
+
+    .save-btn {
+      width: 100%;
+      height: 56px;
+      margin-top: 32px;
+      background: var(--accent);
+      color: #FFF;
+      border: none;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .save-btn:hover:not(:disabled) {
+      background: var(--accent-hover);
+    }
+
+    .save-btn:active:not(:disabled) {
+      background: var(--accent-hover);
+    }
+
+    .save-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* ログタブ */
+    .log-header {
+      margin-bottom: 16px;
+    }
+
+    .log-title {
+      font-size: 1.3rem;
+      margin-bottom: 4px;
+    }
+
+    .log-count {
+      font-size: 0.85rem;
+      color: var(--subtext);
+    }
+
+    .log-empty {
+      text-align: center;
+      color: var(--subtext);
+      font-style: italic;
+      margin: 40px 0;
+    }
+
+    .log-card {
+      position: relative;
+      background: var(--card);
+      padding: 20px 20px 44px 20px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+
+    .log-datetime {
+      font-size: 0.85rem;
+      color: var(--subtext);
+      margin-bottom: 4px;
+    }
+
+    .log-state {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .log-subtext {
+      font-style: italic;
+      font-size: 0.9rem;
+      color: var(--subtext);
+      margin-bottom: 6px;
+    }
+
+    .log-memo {
+      font-size: 1rem;
+      color: var(--text);
+      margin: 8px 0 6px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .log-packet {
+      font-size: 0.85rem;
+      color: var(--subtext);
+      margin-top: 4px;
+    }
+
+    .delete-btn {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      font-size: 0.8rem;
+      color: var(--subtext);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 6px 8px;
+      min-height: 32px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .delete-btn:hover {
+      color: var(--accent);
+    }
+
+    /* 出力タブ */
+    .export-title {
+      font-size: 1.3rem;
+      margin-bottom: 16px;
+    }
+
+    .range-buttons {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .range-btn {
+      flex: 1;
+      height: 44px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .range-btn.selected {
+      background: var(--navy);
+      color: #FFF;
+      border-color: var(--navy);
+    }
+
+    .preview-area {
+      width: 100%;
+      min-height: 300px;
+      max-height: 400px;
+      overflow-y: auto;
+      background: var(--card);
+      padding: 20px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: var(--text);
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .copy-btn {
+      width: 100%;
+      height: 56px;
+      margin-top: 24px;
+      background: var(--navy);
+      color: #FFF;
+      border: none;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .copy-btn:hover {
+      background: var(--navy-hover);
+    }
+
+    /* トースト */
+    .toast {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(45, 45, 45, 0.9);
+      color: #FFF;
+      padding: 16px 32px;
+      border-radius: 8px;
+      z-index: 9999;
+      font-size: 1rem;
+      font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+      pointer-events: none;
+      animation: toast-fadein 0.2s ease;
+    }
+
+    @keyframes toast-fadein {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes toast-fadeout {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+
+    /* フォーカス */
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <button class="tab-btn active" id="tab-btn-record" onclick="switchTab('record')">記録</button>
+  <button class="tab-btn" id="tab-btn-log" onclick="switchTab('log')">ログ</button>
+  <button class="tab-btn" id="tab-btn-export" onclick="switchTab('export')">出力</button>
+</header>
+
+<main>
+  <!-- 記録タブ -->
+  <div id="tab-record" class="tab-panel active">
+    <div class="date-display" id="date-display"></div>
+    <div class="question">今の状態は？</div>
+    <div id="state-buttons"></div>
+    <div class="subtext-area" id="subtext-area"></div>
+    <div class="memo-section">
+      <label class="memo-label" for="memo-input">何かあれば</label>
+      <textarea id="memo-input" rows="3" placeholder="一言だけでも"></textarea>
+    </div>
+    <div class="packet-section">
+      <span class="packet-label">接続パケット送った？</span>
+      <div class="packet-buttons">
+        <button class="packet-btn" id="packet-yes" onclick="selectPacket(true)">送った</button>
+        <button class="packet-btn" id="packet-no" onclick="selectPacket(false)">今日はなし</button>
+      </div>
+    </div>
+    <button class="save-btn" id="save-btn" onclick="saveEntry()" disabled>残す</button>
+  </div>
+
+  <!-- ログタブ -->
+  <div id="tab-log" class="tab-panel">
+    <div class="log-header">
+      <div class="log-title">これまでの記録</div>
+      <div class="log-count" id="log-count"></div>
+    </div>
+    <div id="log-list"></div>
+  </div>
+
+  <!-- 出力タブ -->
+  <div id="tab-export" class="tab-panel">
+    <div class="export-title">Markdownで出力</div>
+    <div class="range-buttons">
+      <button class="range-btn selected" id="range-week" onclick="selectRange('week')">今週</button>
+      <button class="range-btn" id="range-month" onclick="selectRange('month')">今月</button>
+      <button class="range-btn" id="range-all" onclick="selectRange('all')">全件</button>
+    </div>
+    <div class="preview-area" id="preview-area"></div>
+    <button class="copy-btn" onclick="copyToClipboard()">コピーする</button>
+  </div>
+</main>
+
+<script>
+  const STATES = [
+    { key: 'connected',           label: '繋がっていた',           sub: 'よかった' },
+    { key: 'shared_presence',     label: '一緒にいられた',         sub: 'それだけでいい' },
+    { key: 'slight_disconnect',   label: '少しずれていた',         sub: 'まあそういう日もある' },
+    { key: 'silent_optimization', label: '一人で動いていた',       sub: '気づいたら全部終わってた' },
+    { key: 'defensive_explain',   label: '説明しすぎた',           sub: '正確さより温度が大事だった' },
+    { key: 'emotional_flood',     label: '消耗した',               sub: '今日はよく頑張った' },
+    { key: 'repair_attempt',      label: '戻ろうとした',           sub: 'それだけで十分' },
+    { key: 'warm_reconnect',      label: '戻れた',                 sub: 'ちゃんと戻れる' },
+    { key: 'self_loss_risk',      label: '自分を見失いそうだった', sub: '気づけたのが大事' },
+    { key: 'parallel_survival',   label: 'それぞれで乗り切った',   sub: '今日はそれでいい' }
+  ];
+
+  const STORAGE_KEY = 'connection-os-entries';
+  const TABS = ['record', 'log', 'export'];
+
+  let selectedState = null;
+  let selectedPacket = null;
+  let currentRange = 'week';
+
+  function loadEntries() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      const data = JSON.parse(raw);
+      return Array.isArray(data.entries) ? data.entries : [];
+    } catch (e) {
+      console.error('読み込み失敗', e);
+      return [];
+    }
+  }
+
+  function saveEntries(entries) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ entries }));
+      return true;
+    } catch (e) {
+      console.error('保存失敗', e);
+      alert('保存に失敗しました');
+      return false;
+    }
+  }
+
+  function init() {
+    document.getElementById('date-display').textContent = formatDate(new Date().toISOString());
+
+    const container = document.getElementById('state-buttons');
+    STATES.forEach(state => {
+      const btn = document.createElement('button');
+      btn.className = 'state-btn';
+      btn.textContent = state.label;
+      btn.dataset.key = state.key;
+      btn.addEventListener('click', () => selectState(state.key));
+      container.appendChild(btn);
+    });
+  }
+
+  function switchTab(tabName) {
+    TABS.forEach(name => {
+      document.getElementById('tab-' + name).classList.toggle('active', name === tabName);
+      document.getElementById('tab-btn-' + name).classList.toggle('active', name === tabName);
+    });
+    if (tabName === 'log') renderLog();
+    if (tabName === 'export') renderExport(currentRange);
+  }
+
+  function selectState(stateKey) {
+    selectedState = stateKey;
+
+    document.querySelectorAll('.state-btn').forEach(btn => {
+      btn.classList.toggle('selected', btn.dataset.key === stateKey);
+    });
+
+    const state = STATES.find(s => s.key === stateKey);
+    const subEl = document.getElementById('subtext-area');
+    subEl.textContent = state ? state.sub : '';
+    subEl.classList.add('visible');
+
+    document.getElementById('save-btn').disabled = false;
+  }
+
+  function selectPacket(value) {
+    selectedPacket = value;
+    document.getElementById('packet-yes').classList.toggle('selected', value === true);
+    document.getElementById('packet-no').classList.toggle('selected', value === false);
+  }
+
+  function saveEntry() {
+    if (!selectedState) return;
+
+    const memo = document.getElementById('memo-input').value.trim();
+    const entry = {
+      id: crypto.randomUUID(),
+      timestamp: new Date().toISOString(),
+      state_key: selectedState,
+      memo: memo,
+      connection_packet: selectedPacket
+    };
+
+    const entries = loadEntries();
+    entries.unshift(entry);
+
+    if (saveEntries(entries)) {
+      showToast('残しました');
+      resetForm();
+    }
+  }
+
+  function resetForm() {
+    selectedState = null;
+    selectedPacket = null;
+
+    document.querySelectorAll('.state-btn').forEach(btn => btn.classList.remove('selected'));
+    document.getElementById('memo-input').value = '';
+    document.getElementById('packet-yes').classList.remove('selected');
+    document.getElementById('packet-no').classList.remove('selected');
+
+    const subEl = document.getElementById('subtext-area');
+    subEl.textContent = '';
+    subEl.classList.remove('visible');
+
+    document.getElementById('save-btn').disabled = true;
+  }
+
+  function renderLog() {
+    const entries = loadEntries();
+    const listEl = document.getElementById('log-list');
+    const countEl = document.getElementById('log-count');
+
+    countEl.textContent = '全 ' + entries.length + ' 件';
+
+    if (entries.length === 0) {
+      listEl.innerHTML = '<div class="log-empty">まだ記録がありません</div>';
+      return;
+    }
+
+    listEl.innerHTML = '';
+    const sorted = [...entries].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    sorted.forEach(entry => {
+      const state = STATES.find(s => s.key === entry.state_key);
+      const card = document.createElement('div');
+      card.className = 'log-card';
+
+      const datetime = document.createElement('div');
+      datetime.className = 'log-datetime';
+      datetime.textContent = formatMonthDay(entry.timestamp) + ' ' + formatTime(entry.timestamp);
+
+      const stateEl = document.createElement('div');
+      stateEl.className = 'log-state';
+      stateEl.textContent = state ? state.label : entry.state_key;
+
+      const subEl = document.createElement('div');
+      subEl.className = 'log-subtext';
+      subEl.textContent = state ? state.sub : '';
+
+      card.appendChild(datetime);
+      card.appendChild(stateEl);
+      card.appendChild(subEl);
+
+      if (entry.memo) {
+        const memoEl = document.createElement('div');
+        memoEl.className = 'log-memo';
+        memoEl.textContent = entry.memo;
+        card.appendChild(memoEl);
+      }
+
+      const packetEl = document.createElement('div');
+      packetEl.className = 'log-packet';
+      if (entry.connection_packet === true) {
+        packetEl.textContent = '接続パケット: 送った';
+      } else if (entry.connection_packet === false) {
+        packetEl.textContent = '接続パケット: なし';
+      } else {
+        packetEl.textContent = '接続パケット: —';
+      }
+      card.appendChild(packetEl);
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'delete-btn';
+      deleteBtn.textContent = '削除';
+      deleteBtn.addEventListener('click', () => deleteEntry(entry.id));
+      card.appendChild(deleteBtn);
+
+      listEl.appendChild(card);
+    });
+  }
+
+  function deleteEntry(id) {
+    if (!confirm('この記録を消しますか？')) return;
+    const entries = loadEntries().filter(e => e.id !== id);
+    if (saveEntries(entries)) {
+      renderLog();
+    }
+  }
+
+  function selectRange(range) {
+    currentRange = range;
+    ['week', 'month', 'all'].forEach(r => {
+      document.getElementById('range-' + r).classList.toggle('selected', r === range);
+    });
+    renderExport(range);
+  }
+
+  function renderExport(range) {
+    currentRange = range;
+    const { start, end } = getDateRange(range);
+    const entries = loadEntries();
+
+    const filtered = entries.filter(e => {
+      const d = new Date(e.timestamp);
+      return d >= start && d <= end;
+    });
+
+    document.getElementById('preview-area').textContent = generateMarkdown(filtered, start, end, range);
+  }
+
+  function generateMarkdown(entries, start, end, range) {
+    if (entries.length === 0) return '（この期間の記録はありません）';
+
+    const sorted = [...entries].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    const groups = {};
+    sorted.forEach(e => {
+      const d = new Date(e.timestamp);
+      const key = d.getFullYear() + '-'
+        + String(d.getMonth() + 1).padStart(2, '0') + '-'
+        + String(d.getDate()).padStart(2, '0');
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(e);
+    });
+
+    const startStr = range === 'all' ? '全期間' : formatDateSimple(start.toISOString());
+    const endStr = formatDateSimple(end.toISOString());
+    const periodStr = range === 'all' ? '全期間' : (startStr + ' 〜 ' + endStr);
+
+    let md = '# Connection Log\n期間: ' + periodStr + '\n';
+
+    Object.keys(groups).sort().reverse().forEach(dateKey => {
+      const dayEntries = groups[dateKey];
+      md += '\n---\n\n## ' + formatDate(dayEntries[0].timestamp) + '\n';
+
+      dayEntries.forEach(entry => {
+        const state = STATES.find(s => s.key === entry.state_key);
+        const time = formatTime(entry.timestamp);
+        const label = state ? state.label : entry.state_key;
+        const sub = state ? state.sub : '';
+
+        md += '\n### ' + time + ' — ' + label + '\n';
+        if (sub) md += '> ' + sub + '\n';
+        if (entry.memo) md += '\nメモ: ' + entry.memo + '\n';
+
+        if (entry.connection_packet === true) {
+          md += '接続パケット: 送った\n';
+        } else if (entry.connection_packet === false) {
+          md += '接続パケット: なし\n';
+        }
+      });
+    });
+
+    md += '\n---\n';
+    return md;
+  }
+
+  async function copyToClipboard() {
+    const text = document.getElementById('preview-area').textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast('コピーしました');
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('コピーしました');
+    }
+  }
+
+  function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.style.animation = 'toast-fadeout 0.3s ease forwards';
+      setTimeout(() => {
+        if (toast.parentNode) toast.parentNode.removeChild(toast);
+      }, 300);
+    }, 1700);
+  }
+
+  function formatDate(iso) {
+    const d = new Date(iso);
+    const weekdays = ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'];
+    return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + weekdays[d.getDay()];
+  }
+
+  function formatDateSimple(iso) {
+    const d = new Date(iso);
+    return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日';
+  }
+
+  function formatMonthDay(iso) {
+    const d = new Date(iso);
+    return (d.getMonth() + 1) + '月' + d.getDate() + '日';
+  }
+
+  function formatTime(iso) {
+    const d = new Date(iso);
+    return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
+
+  function getDateRange(range) {
+    const now = new Date();
+    const end = new Date(now);
+    end.setHours(23, 59, 59, 999);
+
+    let start;
+    if (range === 'week') {
+      start = new Date(now);
+      start.setDate(start.getDate() - start.getDay());
+      start.setHours(0, 0, 0, 0);
+    } else if (range === 'month') {
+      start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+    } else {
+      start = new Date(0);
+    }
+
+    return { start, end };
+  }
+
+  init();
+</script>
+</body>
+</html>
