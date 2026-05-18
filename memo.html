@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Memo</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    :root {
+      --bg: #FAF7F2;
+      --text: #2C2C2C;
+      --accent: #C8673A;
+      --accent-hover: #B05828;
+      --navy: #1D3557;
+      --navy-hover: #15263F;
+      --card: #F0EBE3;
+      --subtext: #8C7B6E;
+      --border: #E0D8CC;
+      --success: #6B8E5A;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 16px;
+      line-height: 1.8;
+      color: var(--text);
+      background: var(--bg);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+    }
+
+    .tab-btn {
+      flex: 1;
+      border: none;
+      border-bottom: 2px solid transparent;
+      background: transparent;
+      padding: 16px 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      letter-spacing: 0.05em;
+      color: var(--subtext);
+      cursor: pointer;
+      min-height: 44px;
+      transition: all 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .tab-btn.active {
+      color: var(--text);
+      border-bottom-color: var(--accent);
+    }
+
+    main {
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+      padding-bottom: 48px;
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* 記録タブ */
+    .date-display {
+      text-align: center;
+      font-size: 1.1rem;
+      color: var(--subtext);
+      margin: 24px 0;
+    }
+
+    .memo-section {
+      margin-top: 16px;
+    }
+
+    .memo-label {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 12px;
+      font-family: inherit;
+      font-size: 16px;
+      line-height: 1.8;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      resize: vertical;
+      min-height: calc(1.8em * 5 + 24px);
+      color: var(--text);
+      transition: border-color 0.2s ease;
+      -webkit-appearance: none;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .packet-section {
+      margin-top: 24px;
+    }
+
+    .packet-label {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+
+    .packet-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .packet-btn {
+      flex: 1;
+      height: 48px;
+      min-height: 44px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 1rem;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .packet-btn.selected {
+      background: var(--navy);
+      color: #FFF;
+      border-color: var(--navy);
+    }
+
+    .save-btn {
+      width: 100%;
+      height: 56px;
+      margin-top: 32px;
+      background: var(--accent);
+      color: #FFF;
+      border: none;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .save-btn:hover:not(:disabled) {
+      background: var(--accent-hover);
+    }
+
+    .save-btn:active:not(:disabled) {
+      background: var(--accent-hover);
+    }
+
+    .save-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* ログタブ */
+    .log-header {
+      margin-bottom: 16px;
+    }
+
+    .log-title {
+      font-size: 1.3rem;
+      margin-bottom: 4px;
+    }
+
+    .log-count {
+      font-size: 0.85rem;
+      color: var(--subtext);
+    }
+
+    .search-section {
+      margin-bottom: 16px;
+    }
+
+    .search-box {
+      width: 100%;
+      height: 44px;
+      padding: 10px 12px;
+      font-family: inherit;
+      font-size: 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      -webkit-appearance: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .search-box:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .filter-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .filter-btn {
+      flex: 1;
+      height: 44px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .filter-btn.selected {
+      background: var(--navy);
+      color: #FFF;
+      border-color: var(--navy);
+    }
+
+    .search-count {
+      font-size: 0.85rem;
+      color: var(--subtext);
+      margin-top: 8px;
+    }
+
+    .log-empty {
+      text-align: center;
+      color: var(--subtext);
+      font-style: italic;
+      margin: 40px 0;
+    }
+
+    .log-card {
+      position: relative;
+      background: var(--card);
+      padding: 20px 52px 44px 20px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+
+    .log-datetime {
+      font-size: 0.85rem;
+      color: var(--subtext);
+      margin-bottom: 4px;
+    }
+
+    .log-tags {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    .log-memo {
+      font-size: 1rem;
+      color: var(--text);
+      margin: 8px 0 6px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    mark {
+      background: var(--accent);
+      color: #FFF;
+      padding: 0 2px;
+      border-radius: 2px;
+    }
+
+    .pin-divider {
+      font-size: 0.85rem;
+      color: var(--subtext);
+      margin: 16px 0 8px;
+      padding-left: 4px;
+    }
+
+    .pin-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: none;
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+      padding: 4px 8px;
+      min-height: 32px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .pin-btn.pinned { color: var(--accent); }
+    .pin-btn:not(.pinned) { color: var(--subtext); }
+
+    .delete-btn {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      font-size: 0.8rem;
+      color: var(--subtext);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 6px 8px;
+      min-height: 32px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .delete-btn:hover {
+      color: var(--accent);
+    }
+
+    /* 出力タブ */
+    .export-title {
+      font-size: 1.3rem;
+      margin-bottom: 16px;
+    }
+
+    .range-buttons {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .range-btn {
+      flex: 1;
+      height: 44px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .range-btn.selected {
+      background: var(--navy);
+      color: #FFF;
+      border-color: var(--navy);
+    }
+
+    .preview-area {
+      width: 100%;
+      min-height: 300px;
+      max-height: 400px;
+      overflow-y: auto;
+      background: var(--card);
+      padding: 20px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: var(--text);
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .copy-btn {
+      width: 100%;
+      height: 56px;
+      margin-top: 24px;
+      background: var(--navy);
+      color: #FFF;
+      border: none;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .copy-btn:hover {
+      background: var(--navy-hover);
+    }
+
+    .zip-btn {
+      width: 100%;
+      height: 56px;
+      margin-top: 12px;
+      background: var(--accent);
+      color: #FFF;
+      border: none;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .zip-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    /* トースト */
+    .toast {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(45, 45, 45, 0.9);
+      color: #FFF;
+      padding: 16px 32px;
+      border-radius: 8px;
+      z-index: 9999;
+      font-size: 1rem;
+      font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+      pointer-events: none;
+      animation: toast-fadein 0.2s ease;
+    }
+
+    @keyframes toast-fadein {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes toast-fadeout {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+
+    /* フォーカス */
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <button class="tab-btn active" id="tab-btn-record" onclick="switchTab('record')">記録</button>
+  <button class="tab-btn" id="tab-btn-log" onclick="switchTab('log')">ログ</button>
+  <button class="tab-btn" id="tab-btn-export" onclick="switchTab('export')">出力</button>
+</header>
+
+<main>
+  <!-- 記録タブ -->
+  <div id="tab-record" class="tab-panel active">
+    <div class="date-display" id="date-display"></div>
+    <div class="packet-section">
+      <span class="packet-label">タグ</span>
+      <div class="packet-buttons">
+        <button class="packet-btn" id="tag-work" onclick="toggleTag('work')">#work</button>
+        <button class="packet-btn" id="tag-private" onclick="toggleTag('private')">#private</button>
+      </div>
+    </div>
+    <div class="memo-section">
+      <label class="memo-label" for="memo-input">メモ</label>
+      <textarea id="memo-input" rows="5" placeholder="思いついたことを" oninput="updateSaveButton()"></textarea>
+    </div>
+    <button class="save-btn" id="save-btn" onclick="saveEntry()" disabled>残す</button>
+  </div>
+
+  <!-- ログタブ -->
+  <div id="tab-log" class="tab-panel">
+    <div class="log-header">
+      <div class="log-title">これまでの記録</div>
+      <div class="log-count" id="log-count"></div>
+    </div>
+    <div class="search-section">
+      <input type="search" class="search-box" id="search-box" placeholder="メモを検索" oninput="onSearchInput()">
+      <div class="filter-buttons">
+        <button class="filter-btn selected" id="filter-all" onclick="selectTagFilter('all')">すべて</button>
+        <button class="filter-btn" id="filter-work" onclick="selectTagFilter('work')">#work</button>
+        <button class="filter-btn" id="filter-private" onclick="selectTagFilter('private')">#private</button>
+      </div>
+      <div class="search-count" id="search-count"></div>
+    </div>
+    <div id="log-list"></div>
+  </div>
+
+  <!-- 出力タブ -->
+  <div id="tab-export" class="tab-panel">
+    <div class="export-title">Markdownで出力</div>
+    <div class="range-buttons">
+      <button class="range-btn selected" id="range-week" onclick="selectRange('week')">今週</button>
+      <button class="range-btn" id="range-month" onclick="selectRange('month')">今月</button>
+      <button class="range-btn" id="range-all" onclick="selectRange('all')">全件</button>
+    </div>
+    <div class="range-buttons">
+      <button class="range-btn selected" id="format-standard" onclick="selectFormat('standard')">標準Markdown</button>
+      <button class="range-btn" id="format-obsidian" onclick="selectFormat('obsidian')">Obsidian形式</button>
+    </div>
+    <div class="preview-area" id="preview-area"></div>
+    <button class="copy-btn" onclick="copyToClipboard()">コピーする</button>
+    <button class="zip-btn" id="zip-btn" style="display:none;" onclick="downloadObsidianZip()">📦 Obsidian zipダウンロード</button>
+  </div>
+</main>
+
+<script>
+  const STORAGE_KEY = 'memo-app-entries';
+  const TABS = ['record', 'log', 'export'];
+  const WEEKDAYS = ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'];
+  const MAX_PINS = 3;
+
+  let selectedTags = [];
+  let currentRange = 'week';
+  let currentFormat = 'standard';
+  let searchQuery = '';
+  let currentTagFilter = 'all';
+
+  /* ===== ストレージ ===== */
+  function loadEntries() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      const data = JSON.parse(raw);
+      return Array.isArray(data.entries) ? data.entries : [];
+    } catch (e) {
+      console.error('読み込み失敗', e);
+      return [];
+    }
+  }
+
+  function saveEntries(entries) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ entries }));
+      return true;
+    } catch (e) {
+      console.error('保存失敗', e);
+      alert('保存に失敗しました');
+      return false;
+    }
+  }
+
+  /* ===== 初期化・タブ ===== */
+  function init() {
+    document.getElementById('date-display').textContent = formatDate(new Date().toISOString());
+  }
+
+  function switchTab(tabName) {
+    TABS.forEach(name => {
+      document.getElementById('tab-' + name).classList.toggle('active', name === tabName);
+      document.getElementById('tab-btn-' + name).classList.toggle('active', name === tabName);
+    });
+    if (tabName === 'log') renderLog();
+    if (tabName === 'export') renderExport();
+  }
+
+  /* ===== 記録タブ ===== */
+  function toggleTag(tag) {
+    const i = selectedTags.indexOf(tag);
+    if (i === -1) selectedTags.push(tag);
+    else selectedTags.splice(i, 1);
+    document.getElementById('tag-' + tag).classList.toggle('selected', selectedTags.includes(tag));
+  }
+
+  function updateSaveButton() {
+    const memo = document.getElementById('memo-input').value.trim();
+    document.getElementById('save-btn').disabled = memo === '';
+  }
+
+  function saveEntry() {
+    const memo = document.getElementById('memo-input').value.trim();
+    if (memo === '') return;
+
+    const entry = {
+      id: crypto.randomUUID(),
+      timestamp: new Date().toISOString(),
+      memo: memo,
+      tags: [...selectedTags],
+      pinned: false
+    };
+
+    const entries = loadEntries();
+    entries.unshift(entry);
+
+    if (saveEntries(entries)) {
+      showToast('残しました');
+      resetForm();
+    }
+  }
+
+  function resetForm() {
+    selectedTags = [];
+    document.getElementById('tag-work').classList.remove('selected');
+    document.getElementById('tag-private').classList.remove('selected');
+    document.getElementById('memo-input').value = '';
+    document.getElementById('save-btn').disabled = true;
+  }
+
+  /* ===== ログタブ ===== */
+  function onSearchInput() {
+    searchQuery = document.getElementById('search-box').value;
+    renderLog();
+  }
+
+  function selectTagFilter(filter) {
+    currentTagFilter = filter;
+    ['all', 'work', 'private'].forEach(f => {
+      document.getElementById('filter-' + f).classList.toggle('selected', f === filter);
+    });
+    renderLog();
+  }
+
+  function applyFilters(entries) {
+    const q = searchQuery.trim().toLowerCase();
+    return entries.filter(e => {
+      const matchSearch = q === '' || e.memo.toLowerCase().includes(q);
+      const matchTag = currentTagFilter === 'all' || (e.tags || []).includes(currentTagFilter);
+      return matchSearch && matchTag;
+    });
+  }
+
+  function renderLog() {
+    const entries = loadEntries();
+    const listEl = document.getElementById('log-list');
+    const countEl = document.getElementById('log-count');
+    const searchCountEl = document.getElementById('search-count');
+
+    countEl.textContent = '全 ' + entries.length + ' 件';
+
+    const filtered = applyFilters(entries);
+    searchCountEl.textContent = filtered.length + '件 / 全' + entries.length + '件';
+
+    listEl.innerHTML = '';
+
+    if (entries.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'log-empty';
+      empty.textContent = 'まだ記録がありません';
+      listEl.appendChild(empty);
+      return;
+    }
+
+    if (filtered.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'log-empty';
+      empty.textContent = '該当する記録がありません';
+      listEl.appendChild(empty);
+      return;
+    }
+
+    const isFiltering = searchQuery.trim() !== '' || currentTagFilter !== 'all';
+    const byTime = (a, b) => new Date(b.timestamp) - new Date(a.timestamp);
+    const highlight = searchQuery.trim();
+
+    if (isFiltering) {
+      filtered.sort(byTime).forEach(entry => listEl.appendChild(buildLogCard(entry, highlight)));
+      return;
+    }
+
+    const pinned = filtered.filter(e => e.pinned).sort(byTime);
+    const normal = filtered.filter(e => !e.pinned).sort(byTime);
+
+    if (pinned.length > 0) {
+      listEl.appendChild(buildDivider('ピン留め'));
+      pinned.forEach(entry => listEl.appendChild(buildLogCard(entry, highlight)));
+      listEl.appendChild(buildDivider('すべての記録'));
+    }
+    normal.forEach(entry => listEl.appendChild(buildLogCard(entry, highlight)));
+  }
+
+  function buildDivider(text) {
+    const div = document.createElement('div');
+    div.className = 'pin-divider';
+    div.textContent = text;
+    return div;
+  }
+
+  function buildLogCard(entry, highlight) {
+    const card = document.createElement('div');
+    card.className = 'log-card';
+
+    const datetime = document.createElement('div');
+    datetime.className = 'log-datetime';
+    datetime.textContent = formatMonthDay(entry.timestamp) + ' ' + formatTime(entry.timestamp);
+    card.appendChild(datetime);
+
+    if (entry.tags && entry.tags.length > 0) {
+      const tagsEl = document.createElement('div');
+      tagsEl.className = 'log-tags';
+      tagsEl.textContent = entry.tags.map(t => '#' + t).join(' ');
+      card.appendChild(tagsEl);
+    }
+
+    const memoEl = document.createElement('div');
+    memoEl.className = 'log-memo';
+    appendHighlighted(memoEl, entry.memo, highlight);
+    card.appendChild(memoEl);
+
+    const pinBtn = document.createElement('button');
+    pinBtn.className = 'pin-btn' + (entry.pinned ? ' pinned' : '');
+    pinBtn.textContent = entry.pinned ? '★' : '☆';
+    pinBtn.addEventListener('click', () => togglePin(entry.id));
+    card.appendChild(pinBtn);
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'delete-btn';
+    deleteBtn.textContent = '削除';
+    deleteBtn.addEventListener('click', () => deleteEntry(entry.id));
+    card.appendChild(deleteBtn);
+
+    return card;
+  }
+
+  function appendHighlighted(parent, text, query) {
+    if (!query) {
+      parent.textContent = text;
+      return;
+    }
+    const lower = text.toLowerCase();
+    const q = query.toLowerCase();
+    let from = 0;
+    let idx;
+    while ((idx = lower.indexOf(q, from)) !== -1) {
+      if (idx > from) parent.appendChild(document.createTextNode(text.slice(from, idx)));
+      const mark = document.createElement('mark');
+      mark.textContent = text.slice(idx, idx + q.length);
+      parent.appendChild(mark);
+      from = idx + q.length;
+    }
+    if (from < text.length) parent.appendChild(document.createTextNode(text.slice(from)));
+  }
+
+  function togglePin(id) {
+    const entries = loadEntries();
+    const entry = entries.find(e => e.id === id);
+    if (!entry) return;
+
+    if (!entry.pinned) {
+      const pinnedCount = entries.filter(e => e.pinned).length;
+      if (pinnedCount >= MAX_PINS) {
+        alert('ピン留めは3件までです');
+        return;
+      }
+    }
+    entry.pinned = !entry.pinned;
+    if (saveEntries(entries)) renderLog();
+  }
+
+  function deleteEntry(id) {
+    if (!confirm('この記録を消しますか？')) return;
+    const entries = loadEntries().filter(e => e.id !== id);
+    if (saveEntries(entries)) renderLog();
+  }
+
+  /* ===== 出力タブ ===== */
+  function selectRange(range) {
+    currentRange = range;
+    ['week', 'month', 'all'].forEach(r => {
+      document.getElementById('range-' + r).classList.toggle('selected', r === range);
+    });
+    renderExport();
+  }
+
+  function selectFormat(format) {
+    currentFormat = format;
+    ['standard', 'obsidian'].forEach(f => {
+      document.getElementById('format-' + f).classList.toggle('selected', f === format);
+    });
+    document.getElementById('zip-btn').style.display = format === 'obsidian' ? 'block' : 'none';
+    renderExport();
+  }
+
+  function getFilteredEntries() {
+    const { start, end } = getDateRange(currentRange);
+    return loadEntries().filter(e => {
+      const d = new Date(e.timestamp);
+      return d >= start && d <= end;
+    });
+  }
+
+  function renderExport() {
+    const { start, end } = getDateRange(currentRange);
+    const filtered = getFilteredEntries();
+    const md = currentFormat === 'obsidian'
+      ? generateObsidianMarkdown(filtered, start, end, currentRange)
+      : generateStandardMarkdown(filtered, start, end, currentRange);
+    document.getElementById('preview-area').textContent = md;
+  }
+
+  function groupByDate(sortedEntries) {
+    const groups = {};
+    sortedEntries.forEach(e => {
+      const d = new Date(e.timestamp);
+      const key = d.getFullYear() + '-'
+        + String(d.getMonth() + 1).padStart(2, '0') + '-'
+        + String(d.getDate()).padStart(2, '0');
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(e);
+    });
+    return groups;
+  }
+
+  function generateStandardMarkdown(entries, start, end, range) {
+    if (entries.length === 0) return '（この期間の記録はありません）';
+
+    const sorted = [...entries].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    const groups = groupByDate(sorted);
+    const periodStr = range === 'all'
+      ? '全期間'
+      : formatDateSimple(start.toISOString()) + ' 〜 ' + formatDateSimple(end.toISOString());
+
+    let md = '# Memo Log\n期間: ' + periodStr + '\n';
+
+    Object.keys(groups).sort().reverse().forEach(dateKey => {
+      const dayEntries = groups[dateKey];
+      md += '\n---\n\n## ' + formatDate(dayEntries[0].timestamp) + '\n';
+      dayEntries.forEach(entry => {
+        let header = '### ' + formatTime(entry.timestamp);
+        if (entry.tags && entry.tags.length > 0) {
+          header += ' — ' + entry.tags.map(t => '#' + t).join(' ');
+        }
+        md += '\n' + header + '\n' + entry.memo + '\n';
+      });
+    });
+
+    md += '\n---\n';
+    return md;
+  }
+
+  function generateObsidianMarkdown(entries, start, end, range) {
+    if (entries.length === 0) return '（この期間の記録はありません）';
+
+    const sorted = [...entries].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    const groups = groupByDate(sorted);
+    const periodStr = range === 'all'
+      ? '全期間'
+      : formatDateSimple(start.toISOString()) + ' 〜 ' + formatDateSimple(end.toISOString());
+    const periodYaml = range === 'all' ? 'all' : ymd(start) + ' to ' + ymd(end);
+
+    const frontMatter = '---\ncreated: ' + ymd(new Date())
+      + '\ntype: memo-log\nperiod: ' + periodYaml + '\n---\n';
+
+    const blocks = [];
+    Object.keys(groups).sort().reverse().forEach(dateKey => {
+      const dayEntries = groups[dateKey];
+      dayEntries.forEach((entry, i) => {
+        const d = new Date(entry.timestamp);
+        let block = '';
+        if (i === 0) {
+          block += '## ' + ymd(d) + ' ' + WEEKDAYS[d.getDay()] + '\n\n';
+        }
+        block += '### ' + formatTime(entry.timestamp) + '\n';
+        if (entry.tags && entry.tags.length > 0) {
+          block += 'タグ: ' + entry.tags.map(t => '[[' + t + ']]').join(' ') + '\n';
+        }
+        block += '\n' + entry.memo;
+        blocks.push(block);
+      });
+    });
+
+    return frontMatter + '\n# Memo Log\n期間: ' + periodStr + '\n\n---\n\n'
+      + blocks.join('\n\n---\n\n') + '\n';
+  }
+
+  function buildObsidianFile(entry) {
+    const d = new Date(entry.timestamp);
+    const tags = entry.tags || [];
+    let content = '---\n'
+      + 'created: ' + toLocalISO(entry.timestamp) + '\n'
+      + 'tags: [' + tags.join(', ') + ']\n'
+      + 'type: memo\n'
+      + '---\n\n'
+      + '# ' + ymd(d) + ' ' + formatTime(entry.timestamp) + '\n\n'
+      + entry.memo + '\n';
+    if (tags.length > 0) {
+      content += '\n' + tags.map(t => '[[' + t + ']]').join(' ') + '\n';
+    }
+    return content;
+  }
+
+  async function downloadObsidianZip() {
+    if (typeof JSZip === 'undefined') {
+      alert('zipライブラリの読み込みに失敗しました');
+      return;
+    }
+    const entries = getFilteredEntries()
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    if (entries.length === 0) {
+      alert('この期間の記録はありません');
+      return;
+    }
+
+    const zip = new JSZip();
+    const usedNames = {};
+    entries.forEach(entry => {
+      const d = new Date(entry.timestamp);
+      const base = 'memo_' + ymd(d) + '_'
+        + String(d.getHours()).padStart(2, '0')
+        + String(d.getMinutes()).padStart(2, '0');
+      let name = base + '.md';
+      let n = 2;
+      while (usedNames[name]) {
+        name = base + '_' + n + '.md';
+        n++;
+      }
+      usedNames[name] = true;
+      zip.file(name, buildObsidianFile(entry));
+    });
+
+    try {
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'memo-obsidian_' + ymd(new Date()) + '.zip';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('ダウンロードしました');
+    } catch (e) {
+      console.error('zip生成失敗', e);
+      alert('zipの生成に失敗しました');
+    }
+  }
+
+  async function copyToClipboard() {
+    const text = document.getElementById('preview-area').textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast('コピーしました');
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('コピーしました');
+    }
+  }
+
+  /* ===== トースト ===== */
+  function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.style.animation = 'toast-fadeout 0.3s ease forwards';
+      setTimeout(() => {
+        if (toast.parentNode) toast.parentNode.removeChild(toast);
+      }, 300);
+    }, 1700);
+  }
+
+  /* ===== 日付フォーマット ===== */
+  function formatDate(iso) {
+    const d = new Date(iso);
+    return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + WEEKDAYS[d.getDay()];
+  }
+
+  function formatDateSimple(iso) {
+    const d = new Date(iso);
+    return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日';
+  }
+
+  function formatMonthDay(iso) {
+    const d = new Date(iso);
+    return (d.getMonth() + 1) + '月' + d.getDate() + '日';
+  }
+
+  function formatTime(iso) {
+    const d = new Date(iso);
+    return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
+
+  function ymd(d) {
+    return d.getFullYear() + '-'
+      + String(d.getMonth() + 1).padStart(2, '0') + '-'
+      + String(d.getDate()).padStart(2, '0');
+  }
+
+  function toLocalISO(iso) {
+    const d = new Date(iso);
+    const pad = n => String(n).padStart(2, '0');
+    const tz = -d.getTimezoneOffset();
+    const sign = tz >= 0 ? '+' : '-';
+    const tzH = pad(Math.floor(Math.abs(tz) / 60));
+    const tzM = pad(Math.abs(tz) % 60);
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())
+      + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds())
+      + sign + tzH + ':' + tzM;
+  }
+
+  function getDateRange(range) {
+    const now = new Date();
+    const end = new Date(now);
+    end.setHours(23, 59, 59, 999);
+
+    let start;
+    if (range === 'week') {
+      start = new Date(now);
+      start.setDate(start.getDate() - start.getDay());
+      start.setHours(0, 0, 0, 0);
+    } else if (range === 'month') {
+      start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+    } else {
+      start = new Date(0);
+    }
+
+    return { start, end };
+  }
+
+  init();
+</script>
+</body>
+</html>
