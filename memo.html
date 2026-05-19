@@ -261,6 +261,21 @@
       margin: 40px 0;
     }
 
+    .date-separator {
+      font-size: 0.9rem;
+      color: var(--subtext);
+      margin: 24px 0 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .date-separator .count {
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+
     .log-card {
       position: relative;
       background: var(--card);
@@ -347,8 +362,27 @@
 
     .range-buttons {
       display: flex;
+      flex-wrap: wrap;
       gap: 8px;
       margin-bottom: 16px;
+    }
+
+    .range-btn {
+      min-width: 56px;
+    }
+
+    .date-picker {
+      width: 100%;
+      height: 44px;
+      padding: 8px 12px;
+      margin-bottom: 16px;
+      font-family: inherit;
+      font-size: 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      -webkit-appearance: none;
     }
 
     .range-btn {
@@ -511,17 +545,23 @@
   <div id="tab-export" class="tab-panel">
     <div class="export-title">Markdownで出力</div>
     <div class="range-buttons">
-      <button class="range-btn selected" id="range-week" onclick="selectRange('week')">今週</button>
+      <button class="range-btn selected" id="range-today" onclick="selectRange('today')">今日</button>
+      <button class="range-btn" id="range-date" onclick="selectRange('date')">日付指定</button>
+      <button class="range-btn" id="range-week" onclick="selectRange('week')">今週</button>
       <button class="range-btn" id="range-month" onclick="selectRange('month')">今月</button>
       <button class="range-btn" id="range-all" onclick="selectRange('all')">全件</button>
     </div>
+    <input type="date" id="date-picker" class="date-picker" style="display:none;" onchange="renderExport()">
     <div class="range-buttons">
       <button class="range-btn selected" id="format-standard" onclick="selectFormat('standard')">標準Markdown</button>
       <button class="range-btn" id="format-obsidian" onclick="selectFormat('obsidian')">Obsidian形式</button>
     </div>
     <div class="preview-area" id="preview-area"></div>
     <button class="copy-btn" onclick="copyToClipboard()">コピーする</button>
-    <button class="zip-btn" id="zip-btn" style="display:none;" onclick="downloadObsidianZip()">📦 Obsidian zipダウンロード</button>
+    <div id="export-actions" style="display:none;">
+      <button class="zip-btn" id="md-btn" style="display:none;" onclick="downloadMd()">📄 .mdダウンロード</button>
+      <button class="zip-btn" id="zip-btn" onclick="downloadObsidianZip()">📦 zipダウンロード</button>
+    </div>
   </div>
 </main>
 
@@ -532,7 +572,7 @@
   const MAX_PINS = 3;
 
   let selectedTags = [];
-  let currentRange = 'week';
+  let currentRange = 'today';
   let currentFormat = 'standard';
   let searchQuery = '';
   let currentTagFilter = 'all';
@@ -654,39 +694,40 @@
     listEl.innerHTML = '';
 
     if (entries.length === 0) {
-      const empty = document.createElement('div');
-      empty.className = 'log-empty';
-      empty.textContent = 'まだ記録がありません';
-      listEl.appendChild(empty);
+      listEl.appendChild(buildEmpty('まだ記録がありません'));
       return;
     }
 
     if (filtered.length === 0) {
-      const empty = document.createElement('div');
-      empty.className = 'log-empty';
-      empty.textContent = '該当する記録がありません';
-      listEl.appendChild(empty);
+      listEl.appendChild(buildEmpty('該当する記録がありません'));
       return;
     }
 
-    const isFiltering = searchQuery.trim() !== '' || currentTagFilter !== 'all';
-    const byTime = (a, b) => new Date(b.timestamp) - new Date(a.timestamp);
+    const byTimeDesc = (a, b) => new Date(b.timestamp) - new Date(a.timestamp);
     const highlight = searchQuery.trim();
 
-    if (isFiltering) {
-      filtered.sort(byTime).forEach(entry => listEl.appendChild(buildLogCard(entry, highlight)));
-      return;
-    }
-
-    const pinned = filtered.filter(e => e.pinned).sort(byTime);
-    const normal = filtered.filter(e => !e.pinned).sort(byTime);
+    const pinned = filtered.filter(e => e.pinned).sort(byTimeDesc);
+    const normal = filtered.filter(e => !e.pinned);
 
     if (pinned.length > 0) {
       listEl.appendChild(buildDivider('ピン留め'));
-      pinned.forEach(entry => listEl.appendChild(buildLogCard(entry, highlight)));
+      pinned.forEach(entry => listEl.appendChild(buildLogCard(entry, highlight, true)));
       listEl.appendChild(buildDivider('すべての記録'));
     }
-    normal.forEach(entry => listEl.appendChild(buildLogCard(entry, highlight)));
+
+    const groups = groupByDate(normal);
+    Object.keys(groups).sort().reverse().forEach(dateKey => {
+      const dayEntries = [...groups[dateKey]].sort(byTimeDesc);
+      listEl.appendChild(buildDateSeparator(dayEntries[0].timestamp, dayEntries.length));
+      dayEntries.forEach(entry => listEl.appendChild(buildLogCard(entry, highlight, false)));
+    });
+  }
+
+  function buildEmpty(text) {
+    const div = document.createElement('div');
+    div.className = 'log-empty';
+    div.textContent = text;
+    return div;
   }
 
   function buildDivider(text) {
@@ -696,13 +737,28 @@
     return div;
   }
 
-  function buildLogCard(entry, highlight) {
+  function buildDateSeparator(iso, count) {
+    const sep = document.createElement('div');
+    sep.className = 'date-separator';
+    const dateSpan = document.createElement('span');
+    dateSpan.textContent = dateHeading(iso);
+    const countSpan = document.createElement('span');
+    countSpan.className = 'count';
+    countSpan.textContent = count + '件';
+    sep.appendChild(dateSpan);
+    sep.appendChild(countSpan);
+    return sep;
+  }
+
+  function buildLogCard(entry, highlight, showDate) {
     const card = document.createElement('div');
     card.className = 'log-card';
 
     const datetime = document.createElement('div');
     datetime.className = 'log-datetime';
-    datetime.textContent = formatMonthDay(entry.timestamp) + ' ' + formatTime(entry.timestamp);
+    datetime.textContent = showDate
+      ? formatMonthDay(entry.timestamp) + ' ' + formatTime(entry.timestamp)
+      : formatTime(entry.timestamp);
     card.appendChild(datetime);
 
     if (entry.tags && entry.tags.length > 0) {
@@ -774,11 +830,23 @@
   }
 
   /* ===== 出力タブ ===== */
+  function isSingleDayRange() {
+    return currentRange === 'today' || currentRange === 'date';
+  }
+
   function selectRange(range) {
     currentRange = range;
-    ['week', 'month', 'all'].forEach(r => {
+    ['today', 'date', 'week', 'month', 'all'].forEach(r => {
       document.getElementById('range-' + r).classList.toggle('selected', r === range);
     });
+    const picker = document.getElementById('date-picker');
+    if (range === 'date') {
+      if (!picker.value) picker.value = ymd(new Date());
+      picker.style.display = 'block';
+    } else {
+      picker.style.display = 'none';
+    }
+    updateExportButtons();
     renderExport();
   }
 
@@ -787,8 +855,14 @@
     ['standard', 'obsidian'].forEach(f => {
       document.getElementById('format-' + f).classList.toggle('selected', f === format);
     });
-    document.getElementById('zip-btn').style.display = format === 'obsidian' ? 'block' : 'none';
+    document.getElementById('export-actions').style.display = format === 'obsidian' ? 'block' : 'none';
+    updateExportButtons();
     renderExport();
+  }
+
+  function updateExportButtons() {
+    const showMd = currentFormat === 'obsidian' && isSingleDayRange();
+    document.getElementById('md-btn').style.display = showMd ? 'block' : 'none';
   }
 
   function getFilteredEntries() {
@@ -804,13 +878,13 @@
     const filtered = getFilteredEntries();
     const md = currentFormat === 'obsidian'
       ? generateObsidianMarkdown(filtered, start, end, currentRange)
-      : generateStandardMarkdown(filtered, start, end, currentRange);
+      : generateStandardMarkdown(filtered);
     document.getElementById('preview-area').textContent = md;
   }
 
-  function groupByDate(sortedEntries) {
+  function groupByDate(entries) {
     const groups = {};
-    sortedEntries.forEach(e => {
+    entries.forEach(e => {
       const d = new Date(e.timestamp);
       const key = d.getFullYear() + '-'
         + String(d.getMonth() + 1).padStart(2, '0') + '-'
@@ -821,56 +895,45 @@
     return groups;
   }
 
-  function generateStandardMarkdown(entries, start, end, range) {
+  // 日付ごとにグループ化し、日付降順・各日内は時刻昇順で返す
+  function buildDayGroups(entries) {
+    const groups = groupByDate(entries);
+    return Object.keys(groups).sort().reverse().map(key => ({
+      key,
+      entries: [...groups[key]].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+    }));
+  }
+
+  function dateHeading(iso) {
+    const d = new Date(iso);
+    return ymd(d) + ' ' + WEEKDAYS[d.getDay()];
+  }
+
+  function generateStandardMarkdown(entries) {
     if (entries.length === 0) return '（この期間の記録はありません）';
 
-    const sorted = [...entries].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    const groups = groupByDate(sorted);
-    const periodStr = range === 'all'
-      ? '全期間'
-      : formatDateSimple(start.toISOString()) + ' 〜 ' + formatDateSimple(end.toISOString());
-
-    let md = '# Memo Log\n期間: ' + periodStr + '\n';
-
-    Object.keys(groups).sort().reverse().forEach(dateKey => {
-      const dayEntries = groups[dateKey];
-      md += '\n---\n\n## ' + formatDate(dayEntries[0].timestamp) + '\n';
-      dayEntries.forEach(entry => {
-        let header = '### ' + formatTime(entry.timestamp);
+    const blocks = buildDayGroups(entries).map(group => {
+      let block = '# ' + dateHeading(group.entries[0].timestamp) + '\n';
+      group.entries.forEach(entry => {
+        let header = '## ' + formatTime(entry.timestamp);
         if (entry.tags && entry.tags.length > 0) {
           header += ' — ' + entry.tags.map(t => '#' + t).join(' ');
         }
-        md += '\n' + header + '\n' + entry.memo + '\n';
+        block += '\n' + header + '\n' + entry.memo + '\n';
       });
+      return block;
     });
 
-    md += '\n---\n';
-    return md;
+    return blocks.join('\n---\n\n');
   }
 
-  function generateObsidianMarkdown(entries, start, end, range) {
-    if (entries.length === 0) return '（この期間の記録はありません）';
-
-    const sorted = [...entries].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    const groups = groupByDate(sorted);
-    const periodStr = range === 'all'
-      ? '全期間'
-      : formatDateSimple(start.toISOString()) + ' 〜 ' + formatDateSimple(end.toISOString());
-    const periodYaml = range === 'all' ? 'all' : ymd(start) + ' to ' + ymd(end);
-
-    const frontMatter = '---\ncreated: ' + ymd(new Date())
-      + '\ntype: memo-log\nperiod: ' + periodYaml + '\n---\n';
-
+  function buildObsidianBody(dayGroups) {
     const blocks = [];
-    Object.keys(groups).sort().reverse().forEach(dateKey => {
-      const dayEntries = groups[dateKey];
-      dayEntries.forEach((entry, i) => {
-        const d = new Date(entry.timestamp);
+    dayGroups.forEach(group => {
+      group.entries.forEach((entry, i) => {
         let block = '';
-        if (i === 0) {
-          block += '## ' + ymd(d) + ' ' + WEEKDAYS[d.getDay()] + '\n\n';
-        }
-        block += '### ' + formatTime(entry.timestamp) + '\n';
+        if (i === 0) block += '# ' + dateHeading(entry.timestamp) + '\n\n';
+        block += '## ' + formatTime(entry.timestamp) + '\n';
         if (entry.tags && entry.tags.length > 0) {
           block += 'タグ: ' + entry.tags.map(t => '[[' + t + ']]').join(' ') + '\n';
         }
@@ -878,25 +941,63 @@
         blocks.push(block);
       });
     });
-
-    return frontMatter + '\n# Memo Log\n期間: ' + periodStr + '\n\n---\n\n'
-      + blocks.join('\n\n---\n\n') + '\n';
+    return blocks.join('\n\n---\n\n');
   }
 
-  function buildObsidianFile(entry) {
-    const d = new Date(entry.timestamp);
-    const tags = entry.tags || [];
-    let content = '---\n'
-      + 'created: ' + toLocalISO(entry.timestamp) + '\n'
-      + 'tags: [' + tags.join(', ') + ']\n'
-      + 'type: memo\n'
-      + '---\n\n'
-      + '# ' + ymd(d) + ' ' + formatTime(entry.timestamp) + '\n\n'
-      + entry.memo + '\n';
-    if (tags.length > 0) {
-      content += '\n' + tags.map(t => '[[' + t + ']]').join(' ') + '\n';
+  function generateObsidianMarkdown(entries, start, end, range) {
+    if (entries.length === 0) return '（この期間の記録はありません）';
+
+    const dayGroups = buildDayGroups(entries);
+    let frontMatter;
+    if (range === 'today' || range === 'date') {
+      const dateStr = ymd(start);
+      frontMatter = '---\ncreated: ' + dateStr
+        + '\ntype: daily-memo\ndate: ' + dateStr + '\n---\n';
+    } else {
+      const periodYaml = range === 'all' ? 'all' : ymd(start) + ' to ' + ymd(end);
+      frontMatter = '---\ncreated: ' + ymd(new Date())
+        + '\ntype: daily-memo-collection\nperiod: ' + periodYaml + '\n---\n';
     }
-    return content;
+
+    return frontMatter + '\n' + buildObsidianBody(dayGroups) + '\n';
+  }
+
+  // 1日分のObsidianファイル（zip / .md 単体ダウンロード用）
+  function buildObsidianDayFile(group) {
+    const uniqueTags = [];
+    group.entries.forEach(e => (e.tags || []).forEach(t => {
+      if (!uniqueTags.includes(t)) uniqueTags.push(t);
+    }));
+    const frontMatter = '---\ncreated: ' + group.key
+      + '\ntype: daily-memo\ndate: ' + group.key
+      + '\ntags: [' + uniqueTags.join(', ') + ']\n---\n';
+    return frontMatter + '\n' + buildObsidianBody([group]) + '\n';
+  }
+
+  function getZipFileName() {
+    const { start, end } = getDateRange(currentRange);
+    if (currentRange === 'today' || currentRange === 'date') {
+      return 'memo_' + ymd(start) + '.zip';
+    }
+    if (currentRange === 'week') {
+      return 'memo_week_' + ymd(end) + '.zip';
+    }
+    if (currentRange === 'month') {
+      return 'memo_' + start.getFullYear() + '-'
+        + String(start.getMonth() + 1).padStart(2, '0') + '.zip';
+    }
+    return 'memo_all_' + ymd(new Date()) + '.zip';
+  }
+
+  function triggerDownload(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   async function downloadObsidianZip() {
@@ -904,45 +1005,37 @@
       alert('zipライブラリの読み込みに失敗しました');
       return;
     }
-    const entries = getFilteredEntries()
-      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    const entries = getFilteredEntries();
     if (entries.length === 0) {
       alert('この期間の記録はありません');
       return;
     }
 
     const zip = new JSZip();
-    const usedNames = {};
-    entries.forEach(entry => {
-      const d = new Date(entry.timestamp);
-      const base = 'memo_' + ymd(d) + '_'
-        + String(d.getHours()).padStart(2, '0')
-        + String(d.getMinutes()).padStart(2, '0');
-      let name = base + '.md';
-      let n = 2;
-      while (usedNames[name]) {
-        name = base + '_' + n + '.md';
-        n++;
-      }
-      usedNames[name] = true;
-      zip.file(name, buildObsidianFile(entry));
+    buildDayGroups(entries).forEach(group => {
+      zip.file(group.key + '.md', buildObsidianDayFile(group));
     });
 
     try {
       const blob = await zip.generateAsync({ type: 'blob' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'memo-obsidian_' + ymd(new Date()) + '.zip';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      triggerDownload(blob, getZipFileName());
       showToast('ダウンロードしました');
     } catch (e) {
       console.error('zip生成失敗', e);
       alert('zipの生成に失敗しました');
     }
+  }
+
+  function downloadMd() {
+    const entries = getFilteredEntries();
+    if (entries.length === 0) {
+      alert('この期間の記録はありません');
+      return;
+    }
+    const group = buildDayGroups(entries)[0];
+    const blob = new Blob([buildObsidianDayFile(group)], { type: 'text/markdown' });
+    triggerDownload(blob, group.key + '.md');
+    showToast('ダウンロードしました');
   }
 
   async function copyToClipboard() {
@@ -983,11 +1076,6 @@
     return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + WEEKDAYS[d.getDay()];
   }
 
-  function formatDateSimple(iso) {
-    const d = new Date(iso);
-    return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日';
-  }
-
   function formatMonthDay(iso) {
     const d = new Date(iso);
     return (d.getMonth() + 1) + '月' + d.getDate() + '日';
@@ -1004,20 +1092,22 @@
       + String(d.getDate()).padStart(2, '0');
   }
 
-  function toLocalISO(iso) {
-    const d = new Date(iso);
-    const pad = n => String(n).padStart(2, '0');
-    const tz = -d.getTimezoneOffset();
-    const sign = tz >= 0 ? '+' : '-';
-    const tzH = pad(Math.floor(Math.abs(tz) / 60));
-    const tzM = pad(Math.abs(tz) % 60);
-    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())
-      + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds())
-      + sign + tzH + ':' + tzM;
-  }
-
   function getDateRange(range) {
     const now = new Date();
+
+    if (range === 'today' || range === 'date') {
+      let base = now;
+      if (range === 'date') {
+        const val = document.getElementById('date-picker').value;
+        if (val) base = new Date(val + 'T00:00:00');
+      }
+      const start = new Date(base);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(base);
+      end.setHours(23, 59, 59, 999);
+      return { start, end };
+    }
+
     const end = new Date(now);
     end.setHours(23, 59, 59, 999);
 
