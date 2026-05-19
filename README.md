@@ -23,3 +23,26 @@ python3 -m http.server 8000
 ブラウザで `http://localhost:8000` を開く。
 
 iPhone から試す場合は Mac と同じ Wi-Fi に接続し、`ipconfig getifaddr en0` で調べたIPアドレスを使う。
+
+## memo.html の PWA 動作確認
+
+`memo.html` は PWA 対応済み（`manifest.json` / `sw.js` / `icons/`）。
+
+```bash
+# プロジェクトルートで簡易サーバ起動
+python -m http.server 8000
+
+# Chromeで http://localhost:8000/memo.html を開く
+# DevTools > Application > Service Workers でアクティブ確認
+# DevTools > Application > Manifest でアイコン・設定確認
+# DevTools > Network > Offline にチェック → リロードで動作確認
+```
+
+アイコンは `generate_icons.py` で再生成できる:
+
+```bash
+pip install Pillow
+python generate_icons.py
+```
+
+`memo.html` や `manifest.json` を更新したら `sw.js` の `CACHE_NAME` を bump すること（`memo-v1` → `memo-v2` …）。
