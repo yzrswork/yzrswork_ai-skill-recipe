@@ -630,9 +630,12 @@ seqToggleBtn.addEventListener('click', () => {
 });
 
 // ── Looper (hold-to-overdub, separate output bus) ───────────────
-const LOOP_SECONDS = 3;
+// Loop length is set when a fresh loop is recorded: 2 bars at the current
+// BPM knob (overdubs always reuse the existing loop's length).
+let loopSeconds = 4;
 let looperState = 'idle';   // 'idle' | 'recording' | 'waiting' | 'playing'
 let loopBuffer = null, loopSource = null, loopStartTime = 0;
+let undoBuffer = null;      // the loop as it was before the last take
 let loopRate = 1.0;         // playbackRate (speed & pitch linked)
 let recHadLoop = false;     // true → this take is an overdub
 let recStartTime = 0, recTotal = 0;
@@ -711,6 +714,7 @@ function bakeLoop(L, R) {
     L[i] = Math.tanh(L[i]);
     R[i] = Math.tanh(R[i]);
   }
+  undoBuffer = loopBuffer;   // one level of take undo
   loopBuffer = audioCtx.createBuffer(2, L.length, audioCtx.sampleRate);
   loopBuffer.copyToChannel(L, 0);
   loopBuffer.copyToChannel(R, 1);
@@ -766,7 +770,9 @@ function startRecording() {
   startAudio();
   if (!audioCtx) return;
   if (looperState === 'recording' || looperState === 'waiting') return;
-  recTotal = Math.floor(audioCtx.sampleRate * LOOP_SECONDS);
+  recTotal = loopBuffer ? loopBuffer.length
+           : Math.floor(audioCtx.sampleRate * (60/bpm) * 8);   // 2 bars
+  loopSeconds = recTotal / audioCtx.sampleRate;
   recHadLoop = !!loopBuffer;
   recStartTime = audioCtx.currentTime;
   usingWorklet = workletReady;
@@ -820,9 +826,28 @@ function finishRecording() {
 }
 
 function clearLoop() {
+  // If a take is still rolling, stop the recorder; its data message is
+  // ignored because the state is no longer 'waiting'.
+  if (looperState === 'recording') {
+    if (usingWorklet && looperNode) looperNode.port.postMessage({cmd:'stop'});
+    else if (recConnected) {
+      try { compressorNode.disconnect(recProcessor); } catch(e) {}
+      try { recProcessor.disconnect(recSink); } catch(e) {}
+      recConnected = false;
+    }
+  }
   stopLoopSource();
   loopBuffer = null;
+  undoBuffer = null;
   looperState = 'idle';
+  updateLooperUI();
+}
+
+function undoTake() {
+  if (!undoBuffer) { clearLoop(); return; }
+  loopBuffer = undoBuffer;
+  undoBuffer = null;
+  startLoopPlayback();
   updateLooperUI();
 }
 
@@ -830,6 +855,7 @@ function updateLooperUI() {
   recBtn.classList.toggle('recording', looperState === 'recording');
   recBtn.classList.toggle('playing', looperState === 'playing');
   clrBtn.disabled = (looperState === 'idle');
+  clrBtn.textContent = undoBuffer ? 'UNDO' : 'CLR';
   trackEl.classList.toggle('recording', looperState === 'recording');
   if (looperState === 'idle') {
     recBtn.textContent = '● REC';
@@ -847,16 +873,29 @@ function updateLooperUI() {
 recBtn.addEventListener('pointerdown', e => { e.preventDefault(); recBtn.setPointerCapture(e.pointerId); startRecording(); });
 recBtn.addEventListener('pointerup', e => { e.preventDefault(); finishRecording(); });
 recBtn.addEventListener('pointercancel', () => finishRecording());
-clrBtn.addEventListener('click', clearLoop);
+
+// CLR: tap = undo the last take (label reads UNDO when available),
+// hold 0.5s = wipe the whole loop. One button, two jobs.
+let clrHoldTimer = null, clrHeld = false;
+clrBtn.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  clrHeld = false;
+  clrHoldTimer = setTimeout(() => { clrHeld = true; clearLoop(); }, 500);
+});
+clrBtn.addEventListener('pointerup', () => {
+  clearTimeout(clrHoldTimer);
+  if (!clrHeld) undoTake();
+});
+clrBtn.addEventListener('pointercancel', () => clearTimeout(clrHoldTimer));
 
 (function looperRAF() {
   requestAnimationFrame(looperRAF);
   if (!audioCtx) return;
   if (looperState === 'recording') {
-    barEl.style.width = (((audioCtx.currentTime - recStartTime) % LOOP_SECONDS) / LOOP_SECONDS * 100) + '%';
+    barEl.style.width = (((audioCtx.currentTime - recStartTime) % loopSeconds) / loopSeconds * 100) + '%';
     statusEl.textContent = recHadLoop ? '● OVERDUB' : '● REC';
   } else if (looperState === 'playing' && loopSource) {
-    const dur = LOOP_SECONDS / (loopRate || 1);   // faster rate → shorter loop
+    const dur = loopSeconds / (loopRate || 1);   // faster rate → shorter loop
     barEl.style.width = (((audioCtx.currentTime - loopStartTime) % dur) / dur * 100) + '%';
   }
   // Sequencer playhead follows the audio clock
