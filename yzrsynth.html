@@ -95,20 +95,18 @@ body{display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(saf
 .step.on::before{background:var(--led);box-shadow:0 0 7px var(--led);}
 .step.playhead{box-shadow:inset 0 0 0 2px var(--accent),0 1px 0 rgba(0,0,0,0.2);}
 #seq-row.collapsed #seq-steps{display:none;}
-/* Black mid strip, like the 909's lower fascia */
-#visualizer{height:44px;background:var(--chassis);flex-shrink:0;}
-#vis-canvas{width:100%;height:100%;}
 #keyboard-wrap{flex:1;position:relative;min-height:0;touch-action:none;background:var(--chassis);padding:8px 8px calc(8px + env(safe-area-inset-bottom)/2);}
 #keyboard{width:100%;height:100%;position:relative;display:flex;gap:3px;}
+#keyboard.pad-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:6px;}
 .white-key{flex:1;background:#f4f2ec;border-radius:7px;cursor:pointer;transition:background 0.05s;}
 .white-key.pressed{background:var(--accent);}
 .black-key{position:absolute;background:#1c1c21;border:1px solid rgba(255,255,255,0.16);border-radius:0 0 7px 7px;z-index:2;cursor:pointer;top:0;transition:background 0.05s;}
 .black-key.pressed{background:var(--accent);border-color:var(--accent);}
-.pad-key{flex:1;background:#f4f2ec;border-radius:7px;cursor:pointer;transition:background 0.05s;position:relative;display:flex;align-items:flex-end;justify-content:center;padding-bottom:10px;}
+.pad-key{background:#f4f2ec;border:1px solid rgba(0,0,0,0.35);border-radius:14px;cursor:pointer;transition:background 0.05s;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 0 rgba(0,0,0,0.3);}
 .pad-key:nth-child(even){background:#e2dfd8;}
-.pad-key .pl{font-family:var(--mono);font-size:9px;color:#9a968c;pointer-events:none;}
+.pad-key .pl{font-family:var(--mono);font-size:18px;font-weight:700;color:#9a968c;pointer-events:none;}
 .pad-key.pressed{background:var(--accent);}
-.pad-key.pressed .pl{color:rgba(255,255,255,0.85);}
+.pad-key.pressed .pl{color:rgba(255,255,255,0.9);}
 #knob-bubble{position:fixed;z-index:1000;display:none;transform:translate(-50%,-120%);background:#fffdf8;border:1px solid var(--accent);border-radius:8px;padding:5px 12px;font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text);pointer-events:none;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.25);}
 </style>
 </head>
@@ -180,7 +178,6 @@ body{display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(saf
       </div>
       <div id="seq-steps"></div>
     </div>
-    <div id="visualizer"><canvas id="vis-canvas"></canvas></div>
     <div id="keyboard-wrap"><div id="keyboard"></div></div>
   </div>
 </div>
@@ -192,7 +189,7 @@ body{display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(saf
 // ── Audio ───────────────────────────────────────────────────────
 let audioCtx = null;
 // Effect buses
-let masterGain, compressorNode, analyserNode;
+let masterGain, compressorNode;
 let reverbConv, reverbWetGain, reverbDryGain;
 let delayNode, delayFBGain, delayWetGain, delayDryGain;
 let chorusDelayNode, chorusLFO, chorusWetGain, chorusDryGain;
@@ -224,10 +221,8 @@ function initAudio() {
   compressorNode = audioCtx.createDynamicsCompressor();
   compressorNode.threshold.value = -12; compressorNode.ratio.value = 8;
   compressorNode.attack.value = 0.003; compressorNode.release.value = 0.25;
-  analyserNode = audioCtx.createAnalyser(); analyserNode.fftSize = 256;
   masterGain.connect(compressorNode);
-  compressorNode.connect(analyserNode);
-  analyserNode.connect(audioCtx.destination);
+  compressorNode.connect(audioCtx.destination);
 
   // Reverb section
   reverbConv = audioCtx.createConvolver(); reverbConv.buffer = buildIR(audioCtx, 2.0);
@@ -916,11 +911,12 @@ clrBtn.addEventListener('pointercancel', () => clearTimeout(clrHoldTimer));
 // ── Keyboard ────────────────────────────────────────────────────
 const WHITE_NOTES = [60,62,64,65,67,69,71,72,74,76];
 const BLACK_POSITIONS = [{idx:0,note:61},{idx:1,note:63},{idx:3,note:66},{idx:4,note:68},{idx:5,note:70},{idx:7,note:73},{idx:8,note:75}];
-// Scale lock (ThumbJam-style): the keyboard becomes 10 equal pads with no
-// wrong notes. PENTA = A minor pentatonic ×2 oct, MAJ = C major.
+// Scale lock (ThumbJam-style): the keyboard becomes a 3×2 grid of 6 big
+// pads with no wrong notes, ascending from the bottom-left.
+// PENTA = A minor pentatonic, MAJ = C major.
 const SCALE_NOTES = {
-  penta: [57,60,62,64,67,69,72,74,76,79],
-  major: [60,62,64,65,67,69,71,72,74,76]
+  penta: [57,60,62,64,67,69],
+  major: [60,62,64,65,67,69]
 };
 let scaleMode = 'free';
 const keyEls = {};
@@ -931,8 +927,13 @@ function buildKeyboard() {
   const kbEl = document.getElementById('keyboard');
   kbEl.innerHTML = '';
   for (const k in keyEls) delete keyEls[k];
+  kbEl.classList.toggle('pad-grid', scaleMode !== 'free');
   if (scaleMode !== 'free') {
-    SCALE_NOTES[scaleMode].forEach(note => {
+    // Grid fills top row first, so place the upper 3 notes there and the
+    // lower 3 below → pitch rises from the bottom-left like a launchpad.
+    const notes = SCALE_NOTES[scaleMode];
+    [3,4,5,0,1,2].forEach(i => {
+      const note = notes[i];
       const el = document.createElement('div');
       el.className = 'pad-key'; el.dataset.note = note;
       const lbl = document.createElement('span');
@@ -1166,29 +1167,6 @@ kbWrap.addEventListener('pointermove',e=>{
 },{passive:false});
 kbWrap.addEventListener('pointerup',e=>{ const n=ptrNotes[e.pointerId]; if(n){releaseKey(n); delete ptrNotes[e.pointerId];} });
 kbWrap.addEventListener('pointercancel',e=>{ const n=ptrNotes[e.pointerId]; if(n){releaseKey(n); delete ptrNotes[e.pointerId];} });
-
-// ── Visualizer ──────────────────────────────────────────────────
-const visC=document.getElementById('vis-canvas'), visX=visC.getContext('2d');
-let visData=null;
-function resizeVis(){ const el=document.getElementById('visualizer'); visC.width=el.clientWidth; visC.height=el.clientHeight; }
-resizeVis(); window.addEventListener('resize',resizeVis);
-
-(function visLoop(){
-  requestAnimationFrame(visLoop);
-  const w=visC.width,h=visC.height;
-  visX.fillStyle='#161614'; visX.fillRect(0,0,w,h);
-  if (!analyserNode) return;
-  if (!visData || visData.length !== analyserNode.frequencyBinCount) {
-    visData = new Uint8Array(analyserNode.frequencyBinCount);
-  }
-  analyserNode.getByteFrequencyData(visData);
-  const bars=32, bw=w/bars;
-  for(let i=0;i<bars;i++){
-    const v=visData[Math.floor(i*visData.length/bars)]/255;
-    visX.fillStyle=`rgba(240,120,24,${0.25+v*0.75})`;
-    visX.fillRect(i*bw+1,h-v*h,bw-2,v*h);
-  }
-})();
 
 // ── Share state via URL hash ────────────────────────────────────
 const HASH_KNOBS = ['arpSpd','dlyFb','dlyTime','rev','cho','trm','wave','loopSpd','bpm','swing'];
