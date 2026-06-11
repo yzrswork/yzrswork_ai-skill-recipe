@@ -5,45 +5,99 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>TR-808 ADULT</title>
+<title>TR-808</title>
 <style>
-.back-btn{position:fixed;top:16px;left:16px;z-index:999;color:rgba(255,255,255,0.35);text-decoration:none;font-family:'DM Mono',ui-monospace,monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;}
-.back-btn:hover{color:rgba(255,255,255,0.75);}
+:root{
+  --terracotta:#b5451b;
+  --terracotta-deep:#8f3413;
+  --terracotta-dark:#5e2410;
+  --casing:#241d18;
+  --cream:#f4e9d8;
+  --ink:#1c1a16;
+  --red:#c73e3e;
+  --orange:#d96f3d;
+  --yellow:#e8c547;
+  --ivory:#f0ebe3;
+  --blue:#2f6fd0;
+  --blue-text:#1d5fc2;
+}
+.back-btn{position:fixed;top:16px;left:16px;z-index:999;color:rgba(244,233,216,0.45);text-decoration:none;font-family:'DM Mono',ui-monospace,monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;}
+.back-btn:hover{color:rgba(244,233,216,0.85);}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
-html,body{width:100%;height:100%;overflow:hidden;background:#1a1a1a;font-family:-apple-system,"SF Pro",system-ui,sans-serif;user-select:none;-webkit-user-select:none;overscroll-behavior:none;}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--casing);font-family:-apple-system,"SF Pro",system-ui,sans-serif;user-select:none;-webkit-user-select:none;overscroll-behavior:none;}
 body{display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
-#landscape-warn{display:none;position:fixed;inset:0;background:#1a1a1a;z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:16px;color:#f5f5f5;font-size:24px;text-align:center;}
+#landscape-warn{display:none;position:fixed;inset:0;background:var(--terracotta);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:16px;color:var(--cream);font-size:24px;text-align:center;}
 @media (orientation:landscape) and (max-height:500px){#landscape-warn{display:flex;}}
 #app{flex:1;display:flex;min-height:0;}
-#wood-left,#wood-right{width:12px;background:linear-gradient(180deg,#5c3a1e,#3d2611);flex-shrink:0;}
-#main{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden;}
-#header{height:48px;background:#2a2a2a;display:flex;align-items:center;justify-content:center;padding:0 12px;border-bottom:1px solid #3a3a3a;flex-shrink:0;}
-#header h1{color:#e8c547;font-size:18px;font-weight:700;letter-spacing:2px;}
-#timbre-row{height:80px;background:#2a2a2a;display:flex;padding:8px;gap:6px;border-bottom:1px solid #3a3a3a;flex-shrink:0;}
-.timbre-btn{flex:1;border-radius:10px;border:2px solid transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:10px;color:#f5f5f5;font-weight:600;}
+#side-left,#side-right{width:12px;background:linear-gradient(180deg,#2e251e,#1a140f);flex-shrink:0;}
+#main{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden;background:linear-gradient(180deg,var(--terracotta) 0%,var(--terracotta-deep) 100%);}
+#header{height:56px;background:var(--casing);display:flex;align-items:center;justify-content:space-between;padding:0 12px;flex-shrink:0;position:relative;}
+#header::after{content:'';position:absolute;left:0;right:0;bottom:0;height:4px;background:linear-gradient(90deg,var(--red) 0 25%,var(--orange) 25% 50%,var(--yellow) 50% 75%,var(--ivory) 75% 100%);}
+#brand{display:flex;flex-direction:column;line-height:1.1;padding-left:64px;}
+#brand h1{color:var(--cream);font-size:20px;font-weight:800;letter-spacing:3px;}
+#brand .sub{color:var(--orange);font-size:8px;font-weight:700;letter-spacing:0.28em;text-transform:uppercase;}
+#mode-btns{display:flex;gap:8px;}
+.mode-btn{background:#352b22;border:2px solid #4a3c2e;border-radius:8px;color:var(--cream);font-size:20px;width:42px;height:38px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.mode-btn.active{border-color:var(--yellow);background:#41331f;}
+#timbre-row{height:74px;background:transparent;display:flex;padding:10px 8px 6px;gap:6px;flex-shrink:0;}
+.timbre-btn{flex:1;border-radius:9px;border:2px solid rgba(0,0,0,0.35);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:10px;font-weight:800;letter-spacing:0.08em;box-shadow:0 2px 0 rgba(0,0,0,0.3);}
 .timbre-btn:active{transform:scale(0.95);}
-.timbre-btn.active{border-color:#e8c547;}
-.timbre-btn .icon{font-size:24px;}
-#t0{background:#1e3a5f;}#t1{background:#5f4a1e;}#t2{background:#3a1e5f;}
-#knobs-row{height:170px;background:#2a2a2a;display:flex;padding:8px;gap:4px;border-bottom:1px solid #3a3a3a;flex-shrink:0;align-items:center;justify-content:space-around;}
+.timbre-btn .led{width:7px;height:7px;border-radius:50%;background:rgba(0,0,0,0.3);}
+.timbre-btn.active{border-color:var(--cream);box-shadow:0 0 0 2px rgba(244,233,216,0.35),0 2px 0 rgba(0,0,0,0.3);}
+.timbre-btn.active .led{background:#ff5a36;box-shadow:0 0 6px #ff5a36;}
+#tb-chip{background:var(--red);color:var(--cream);}
+#tb-bell{background:var(--yellow);color:var(--ink);}
+#tb-piano{background:var(--ivory);color:var(--ink);}
+#tb-pad{background:var(--orange);color:var(--cream);}
+#tb-acid{background:var(--blue);color:var(--cream);}
+#knobs-row{height:170px;display:flex;padding:8px;gap:4px;border-top:1px solid var(--terracotta-dark);border-bottom:1px solid var(--terracotta-dark);flex-shrink:0;align-items:center;justify-content:space-around;}
 .knob-col{display:flex;flex-direction:column;align-items:center;gap:4px;width:72px;}
 .knob-col .knob-label{font-size:9px;}
 .knob-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;width:72px;}
 .knob{width:60px;height:60px;cursor:pointer;touch-action:none;}
-.knob-label{color:#aaa;font-size:10px;font-weight:600;letter-spacing:1px;}
+.knob-label{color:var(--cream);font-size:10px;font-weight:700;letter-spacing:1px;}
 .arp-notes-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;width:72px;height:80px;justify-content:center;}
 .arp-notes-btns{display:flex;gap:3px;width:100%;height:28px;}
-.arp-note-btn{flex:1;background:#3a3a3a;border:1.5px solid #4a4a4a;border-radius:6px;color:#f5f5f5;font-size:13px;font-weight:700;cursor:pointer;}
-.arp-note-btn.active{border-color:#e8c547;background:#3d3a1e;color:#e8c547;}
-#visualizer{height:50px;background:#1a1a1a;border-bottom:1px solid #3a3a3a;flex-shrink:0;}
+.arp-note-btn{flex:1;background:var(--terracotta-dark);border:1.5px solid rgba(0,0,0,0.35);border-radius:6px;color:var(--cream);font-size:13px;font-weight:700;cursor:pointer;}
+.arp-note-btn.active{border-color:var(--cream);background:var(--ink);color:var(--yellow);}
+/* ── Looper ── */
+#looper-row{height:74px;background:var(--terracotta-deep);display:flex;align-items:center;gap:8px;padding:9px 10px;border-bottom:1px solid var(--terracotta-dark);flex-shrink:0;}
+.loop-knob-wrap{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;width:52px;}
+.loop-knob-wrap .knob{width:48px;height:48px;}
+.loop-knob-wrap .knob-label{font-size:9px;}
+.loop-btn{height:44px;min-width:54px;border-radius:8px;border:2px solid rgba(0,0,0,0.4);background:var(--ink);color:var(--cream);font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;flex-shrink:0;}
+.loop-btn:active{transform:scale(0.95);}
+.loop-btn:disabled{opacity:0.35;}
+#looper-rec.recording{background:#5f1e1e;border-color:#e84a4a;color:#ff8a8a;animation:recpulse 0.9s infinite;}
+#looper-rec.playing{border-color:var(--yellow);color:var(--yellow);}
+.loop-btn.clear{background:#332a22;color:#d8cdbd;}
+@keyframes recpulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
+#looper-track{flex:1;height:44px;position:relative;background:#2a1a10;border:1px solid rgba(0,0,0,0.45);border-radius:8px;overflow:hidden;display:flex;align-items:center;}
+#looper-bar{position:absolute;left:0;top:0;height:100%;width:0;background:linear-gradient(90deg,var(--yellow),var(--orange));opacity:0.4;}
+#looper-track.recording #looper-bar{background:#e84a4a;opacity:0.45;}
+#looper-status{position:relative;z-index:1;padding:0 12px;font-size:11px;color:var(--cream);font-weight:600;letter-spacing:1px;white-space:nowrap;}
+#visualizer{height:50px;background:var(--casing);border-bottom:1px solid var(--terracotta-dark);flex-shrink:0;}
 #vis-canvas{width:100%;height:100%;}
-#keyboard-wrap{flex:1;position:relative;min-height:0;touch-action:none;}
+#notes-area{height:0;background:#1a120c;overflow:hidden;position:relative;border-bottom:1px solid var(--terracotta-dark);flex-shrink:0;transition:height 0.3s;}
+#notes-area.game-active{height:160px;}
+#notes-canvas{position:absolute;inset:0;width:100%;height:100%;}
+#song-select{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:12px;padding:8px;}
+.song-btn{flex:1;background:var(--ivory);border:2px solid var(--red);border-radius:10px;color:var(--ink);font-size:12px;font-weight:700;padding:8px 4px;cursor:pointer;text-align:center;}
+.song-btn:active{background:#e3d8c4;}
+#score-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.88);display:none;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--cream);}
+#score-overlay.show{display:flex;}
+#score-stars{font-size:36px;letter-spacing:4px;}
+#score-text{font-size:14px;color:var(--yellow);}
+#score-counts{font-size:12px;color:#c9bda9;}
+#score-retry{background:var(--red);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;padding:10px 24px;cursor:pointer;margin-top:4px;}
+#judgment{position:absolute;top:4px;left:50%;transform:translateX(-50%);font-size:30px;pointer-events:none;opacity:0;transition:opacity 0.4s;}
+#keyboard-wrap{flex:1;position:relative;min-height:0;touch-action:none;background:var(--casing);}
 #keyboard{width:100%;height:100%;position:relative;display:flex;}
-.white-key{flex:1;background:#f5f5f5;border:1px solid #ccc;border-top:none;border-radius:0 0 6px 6px;cursor:pointer;}
-.white-key.pressed{background:#d96f3d;}
-.black-key{position:absolute;background:#1a1a1a;border-radius:0 0 4px 4px;border:1px solid #000;z-index:2;cursor:pointer;top:0;}
-.black-key.pressed{background:#e8c547;}
-.key-dot{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:8px;height:8px;border-radius:50%;background:#c73e3e;opacity:0;pointer-events:none;}
+.white-key{flex:1;background:#f7f3ea;border:1px solid #c9bfb0;border-top:none;border-radius:0 0 6px 6px;cursor:pointer;}
+.white-key.pressed{background:var(--orange);}
+.black-key{position:absolute;background:var(--casing);border-radius:0 0 4px 4px;border:1px solid #000;z-index:2;cursor:pointer;top:0;}
+.black-key.pressed{background:var(--yellow);}
+.key-dot{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:8px;height:8px;border-radius:50%;background:var(--red);opacity:0;pointer-events:none;}
 .key-dot.show{opacity:1;}
 </style>
 </head>
@@ -54,15 +108,24 @@ body{display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(saf
   <div>縦にしてね</div>
 </div>
 <div id="app">
-  <div id="wood-left"></div>
+  <div id="side-left"></div>
   <div id="main">
     <div id="header">
-      <h1>TR-808 ADULT</h1>
+      <div id="brand">
+        <span class="sub">Rhythm Composer</span>
+        <h1>TR-808</h1>
+      </div>
+      <div id="mode-btns">
+        <button class="mode-btn active" id="btn-play">▶</button>
+        <button class="mode-btn" id="btn-game">🎮</button>
+      </div>
     </div>
     <div id="timbre-row">
-      <button class="timbre-btn active" id="t0" data-timbre="0"><span class="icon">🟦</span><span>ピコピコ</span></button>
-      <button class="timbre-btn" id="t1" data-timbre="1"><span class="icon">🟨</span><span>キラキラ</span></button>
-      <button class="timbre-btn" id="t2" data-timbre="2"><span class="icon">🎹</span><span>ピアノ</span></button>
+      <button class="timbre-btn active" id="tb-chip" data-timbre="0"><span class="led"></span><span>CHIP</span></button>
+      <button class="timbre-btn" id="tb-bell" data-timbre="1"><span class="led"></span><span>BELL</span></button>
+      <button class="timbre-btn" id="tb-piano" data-timbre="2"><span class="led"></span><span>PIANO</span></button>
+      <button class="timbre-btn" id="tb-pad" data-timbre="3"><span class="led"></span><span>PAD</span></button>
+      <button class="timbre-btn" id="tb-acid" data-timbre="4"><span class="led"></span><span>ACID</span></button>
     </div>
     <div id="knobs-row">
       <div class="knob-col">
@@ -89,10 +152,31 @@ body{display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(saf
         <div class="knob-wrap"><canvas class="knob" id="knob-wave" width="60" height="60" data-knob="wave"></canvas><div class="knob-label">WAVE</div></div>
       </div>
     </div>
+    <div id="looper-row">
+      <button id="looper-rec" class="loop-btn">● REC</button>
+      <div id="looper-track"><div id="looper-bar"></div><span id="looper-status">長押しで録音</span></div>
+      <div class="loop-knob-wrap"><canvas class="knob" id="knob-loopSpd" width="48" height="48" data-knob="loopSpd"></canvas><div class="knob-label">SPEED</div></div>
+      <button id="looper-clear" class="loop-btn clear" disabled>CLR</button>
+    </div>
     <div id="visualizer"><canvas id="vis-canvas"></canvas></div>
+    <div id="notes-area">
+      <canvas id="notes-canvas"></canvas>
+      <div id="song-select">
+        <button class="song-btn" data-song="twinkle">⭐<br>きらきら星</button>
+        <button class="song-btn" data-song="frog">🐸<br>カエルの合唱</button>
+        <button class="song-btn" data-song="tulip">🌷<br>チューリップ</button>
+      </div>
+      <div id="judgment"></div>
+      <div id="score-overlay">
+        <div id="score-stars"></div>
+        <div id="score-text"></div>
+        <div id="score-counts"></div>
+        <button id="score-retry">もういちど</button>
+      </div>
+    </div>
     <div id="keyboard-wrap"><div id="keyboard"></div></div>
   </div>
-  <div id="wood-right"></div>
+  <div id="side-right"></div>
 </div>
 
 <script>
@@ -127,6 +211,8 @@ let chorusDelayNode, chorusLFO, chorusWetGain, chorusDryGain;
 let voiceBusGain;
 // Tremolo
 let tremoloGain, tremoloLFO, tremoloDepthGain;
+// Looper (separate output bus for recorded audio)
+let recProcessor, loopGain, loopComp;
 
 function buildIR(ctx, dur) {
   const len = Math.floor(ctx.sampleRate * dur);
@@ -198,6 +284,28 @@ function initAudio() {
   voiceBusGain.connect(tremoloGain);
   tremoloGain.connect(chorusDryGain);
   tremoloGain.connect(chorusDelayNode);
+
+  // ── Looper: SEPARATE output bus for the recorded loop ──────────
+  // The recorded loop plays through its own gain → its own compressor →
+  // destination, completely independent from the live (realtime) path.
+  // This way the loop's speed/pitch and overdub layers never disturb the
+  // live keyboard signal, and the two are mixed only at the speakers.
+  loopGain = audioCtx.createGain(); loopGain.gain.value = 1;
+  loopComp = audioCtx.createDynamicsCompressor();
+  loopComp.threshold.value = -14; loopComp.ratio.value = 6;
+  loopComp.attack.value = 0.003; loopComp.release.value = 0.25;
+  loopGain.connect(loopComp);
+  loopComp.connect(audioCtx.destination);
+
+  // The recorder taps ONLY the live mix (post live-compressor). The
+  // existing loop is folded in by seeding the record buffer with it, so
+  // overdub layers without the loop output ever being re-sampled.
+  recProcessor = audioCtx.createScriptProcessor(4096, 2, 2);
+  recProcessor.onaudioprocess = onRecProcess;
+  const recSink = audioCtx.createGain(); recSink.gain.value = 0; // silent driver
+  compressorNode.connect(recProcessor);
+  recProcessor.connect(recSink);
+  recSink.connect(audioCtx.destination);
 }
 
 const startAudio = () => {
@@ -208,7 +316,7 @@ document.addEventListener('touchstart', startAudio, {once:true});
 document.addEventListener('click', startAudio, {once:true});
 
 // ── Knobs ───────────────────────────────────────────────────────
-const knobVals = {arpSpd:0, dlyFb:0, dlyTime:30, rev:0, cho:0, trm:0, wave:0};
+const knobVals = {arpSpd:0, dlyFb:0, dlyTime:30, rev:0, cho:0, trm:0, wave:0, loopSpd:50};
 
 function applyEffect(name, val) {
   if (!audioCtx) return;
@@ -241,33 +349,42 @@ function applyEffect(name, val) {
     case 'wave':
       // value used at createVoice time
       break;
+    case 'loopSpd':
+      // Speed & pitch move together (resampling): 0→0.5x(低速・低音)、
+      // 50→1.0x(等速)、100→2.0x(高速・高音)
+      loopRate = 0.5 * Math.pow(2, val/50);
+      if (loopSource) loopSource.playbackRate.setTargetAtTime(loopRate, audioCtx.currentTime, 0.02);
+      break;
   }
 }
 
 function drawKnob(canvas, val) {
   const ctx = canvas.getContext('2d'), w=canvas.width, h=canvas.height, cx=w/2, cy=h/2, r=w/2-4;
   ctx.clearRect(0,0,w,h);
+  // White knob body
   const g = ctx.createRadialGradient(cx*.7,cy*.7,2,cx,cy,r);
-  g.addColorStop(0,'#d8d8d8'); g.addColorStop(1,'#6a6a6a');
+  g.addColorStop(0,'#ffffff'); g.addColorStop(1,'#cfc8bd');
   ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
-  ctx.strokeStyle='#444'; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.strokeStyle='#7a6a58'; ctx.lineWidth=1.5; ctx.stroke();
   const sa=(225*Math.PI/180), span=(270*Math.PI/180);
-  ctx.beginPath(); ctx.arc(cx,cy,r-5,sa,sa+span); ctx.strokeStyle='#555'; ctx.lineWidth=3; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx,cy,r-5,sa,sa+span); ctx.strokeStyle='rgba(0,0,0,0.18)'; ctx.lineWidth=3; ctx.stroke();
   if (val>0) {
-    ctx.beginPath(); ctx.arc(cx,cy,r-5,sa,sa+(val/100)*span); ctx.strokeStyle='#e8c547'; ctx.lineWidth=3; ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx,cy,r-5,sa,sa+(val/100)*span); ctx.strokeStyle='#2f6fd0'; ctx.lineWidth=3; ctx.stroke();
   }
   const ang = (225+(val/100)*270)*Math.PI/180;
   ctx.beginPath();
   ctx.moveTo(cx+Math.cos(ang)*(r-12), cy+Math.sin(ang)*(r-12));
   ctx.lineTo(cx+Math.cos(ang)*(r-4), cy+Math.sin(ang)*(r-4));
-  ctx.strokeStyle='#fff'; ctx.lineWidth=2.5; ctx.lineCap='round'; ctx.stroke();
-  ctx.fillStyle='rgba(255,255,255,0.7)'; ctx.font='8px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.strokeStyle='#1c1a16'; ctx.lineWidth=2.5; ctx.lineCap='round'; ctx.stroke();
+  ctx.fillStyle='#1d5fc2'; ctx.font='bold 8px ui-monospace,monospace'; ctx.textAlign='center'; ctx.textBaseline='middle';
   let lbl;
   if (canvas.dataset.knob === 'wave') {
     if (val < 25) lbl = 'SIN';
     else if (val < 50) lbl = 'SQR';
     else if (val < 75) lbl = 'TRI';
     else lbl = 'SAW';
+  } else if (canvas.dataset.knob === 'loopSpd') {
+    lbl = (0.5 * Math.pow(2, val/50)).toFixed(2) + 'x';
   } else if (val === 100 && canvas.dataset.knob === 'dlyFb') {
     lbl = '∞';
   } else {
@@ -316,6 +433,134 @@ document.querySelectorAll('.arp-note-btn').forEach(btn => {
     currentArpNotes = parseInt(btn.dataset.notes);
   });
 });
+
+// ── Looper (hold-to-overdub, separate output bus) ───────────────
+const LOOP_SECONDS = 3;
+let looperState = 'idle';   // 'idle' | 'recording' | 'playing'
+let recBufL = null, recBufR = null, recPos = 0, recTotal = 0;
+let loopBuffer = null, loopSource = null, loopStartTime = 0;
+let loopRate = 1.0;         // playbackRate (speed & pitch linked)
+let recHadLoop = false;     // true → this take is an overdub
+
+const recBtn = document.getElementById('looper-rec');
+const clrBtn = document.getElementById('looper-clear');
+const trackEl = document.getElementById('looper-track');
+const barEl = document.getElementById('looper-bar');
+const statusEl = document.getElementById('looper-status');
+
+// While RECording, live input is ADDED onto the record buffer and the
+// position WRAPS at the loop end — so holding REC layers pass after pass
+// (overdub). The existing loop keeps playing audibly the whole time.
+function onRecProcess(e) {
+  if (looperState !== 'recording') return;
+  const inBuf = e.inputBuffer;
+  const inL = inBuf.getChannelData(0);
+  const inR = inBuf.numberOfChannels > 1 ? inBuf.getChannelData(1) : inL;
+  const n = inL.length;
+  for (let i = 0; i < n; i++) {
+    recBufL[recPos] += inL[i];
+    recBufR[recPos] += inR[i];
+    recPos++;
+    if (recPos >= recTotal) recPos = 0;   // wrap → continuous overdub
+  }
+}
+
+function stopLoopSource() {
+  if (loopSource) {
+    try { loopSource.stop(); } catch(e) {}
+    try { loopSource.disconnect(); } catch(e) {}
+    loopSource = null;
+  }
+}
+
+function startLoopPlayback() {
+  if (!loopBuffer || !audioCtx) return;
+  stopLoopSource();
+  loopSource = audioCtx.createBufferSource();
+  loopSource.buffer = loopBuffer;
+  loopSource.loop = true;
+  loopSource.playbackRate.value = loopRate;   // speed/pitch
+  loopSource.connect(loopGain);
+  loopStartTime = audioCtx.currentTime;
+  loopSource.start();
+}
+
+function startRecording() {
+  startAudio();
+  if (!audioCtx) return;
+  if (looperState === 'recording') return;
+  recTotal = Math.floor(audioCtx.sampleRate * LOOP_SECONDS);
+  recBufL = new Float32Array(recTotal);
+  recBufR = new Float32Array(recTotal);
+  recHadLoop = !!loopBuffer;
+  // Overdub: seed the buffer with the existing loop so it is preserved
+  // and layered. The old loop also keeps playing (audible) meanwhile.
+  if (loopBuffer) {
+    recBufL.set(loopBuffer.getChannelData(0).subarray(0, recTotal));
+    recBufR.set(loopBuffer.getChannelData(1).subarray(0, recTotal));
+  }
+  recPos = 0;
+  looperState = 'recording';
+  updateLooperUI();
+}
+
+function finishRecording() {
+  if (looperState !== 'recording') return;
+  // Soft-clip so stacked overdubs stay bounded (still gritty = chaos OK)
+  for (let i = 0; i < recTotal; i++) {
+    recBufL[i] = Math.tanh(recBufL[i]);
+    recBufR[i] = Math.tanh(recBufR[i]);
+  }
+  loopBuffer = audioCtx.createBuffer(2, recTotal, audioCtx.sampleRate);
+  loopBuffer.copyToChannel(recBufL, 0);
+  loopBuffer.copyToChannel(recBufR, 1);
+  recBufL = recBufR = null;
+  looperState = 'playing';
+  startLoopPlayback();          // swap in the freshly baked loop
+  updateLooperUI();
+}
+
+function clearLoop() {
+  stopLoopSource();
+  loopBuffer = null;
+  looperState = 'idle';
+  updateLooperUI();
+}
+
+function updateLooperUI() {
+  recBtn.classList.toggle('recording', looperState === 'recording');
+  recBtn.classList.toggle('playing', looperState === 'playing');
+  clrBtn.disabled = (looperState === 'idle');
+  trackEl.classList.toggle('recording', looperState === 'recording');
+  if (looperState === 'idle') {
+    recBtn.textContent = '● REC';
+    barEl.style.width = '0%';
+    statusEl.textContent = '長押しで録音';
+  } else if (looperState === 'recording') {
+    recBtn.textContent = '■ REC';
+  } else {
+    recBtn.textContent = '● DUB';
+    statusEl.textContent = 'LOOP ▶';
+  }
+}
+
+// Hold to record / overdub; release (or leave) to bake the take.
+recBtn.addEventListener('pointerdown', e => { e.preventDefault(); recBtn.setPointerCapture(e.pointerId); startRecording(); });
+recBtn.addEventListener('pointerup', e => { e.preventDefault(); finishRecording(); });
+recBtn.addEventListener('pointercancel', () => finishRecording());
+clrBtn.addEventListener('click', clearLoop);
+
+(function looperRAF() {
+  requestAnimationFrame(looperRAF);
+  if (!audioCtx) return;
+  if (looperState === 'recording') {
+    barEl.style.width = (recTotal ? recPos / recTotal * 100 : 0) + '%';
+    statusEl.textContent = recHadLoop ? '● OVERDUB' : '● REC';
+  } else if (looperState === 'playing' && loopSource) {
+    const dur = LOOP_SECONDS / (loopRate || 1);   // faster rate → shorter loop
+    barEl.style.width = (((audioCtx.currentTime - loopStartTime) % dur) / dur * 100) + '%';
+  }
+})();
 
 // ── Keyboard ────────────────────────────────────────────────────
 const WHITE_NOTES = [60,62,64,65,67,69,71,72,74,76];
@@ -368,18 +613,18 @@ function createVoice(note, timbre) {
   vg.connect(voiceBusGain);
 
   const waveOverride = getEffectiveWave(timbre);
-  let o1,o2;
+  let o1,o2,filt;
   switch(timbre) {
     case 0:
-      // ピコピコ: square + standard ADSR
+      // CHIP: square + standard ADSR
       vg.gain.setValueAtTime(0.001, now);
       vg.gain.linearRampToValueAtTime(0.65, now+0.01);
       vg.gain.setTargetAtTime(0.65*0.7, now+0.16, 0.05);
       o1=audioCtx.createOscillator(); o1.type = waveOverride || 'square'; o1.frequency.value=freq;
       o1.connect(vg); o1.start();
       break;
-    case 1:
-      // キラキラ: triangle + sine 2nd harmonic
+    case 1: {
+      // BELL: triangle + sine 2nd harmonic
       vg.gain.setValueAtTime(0.001, now);
       vg.gain.linearRampToValueAtTime(0.65, now+0.01);
       vg.gain.setTargetAtTime(0.65*0.7, now+0.16, 0.05);
@@ -389,8 +634,9 @@ function createVoice(note, timbre) {
       o1.connect(vg); o2.connect(hg); hg.connect(vg);
       o1.start(); o2.start();
       break;
+    }
     case 2: {
-      // ピアノ: sine fundamental + triangle 2nd harmonic, exp decay
+      // PIANO: sine fundamental + triangle 2nd harmonic, exp decay
       vg.gain.setValueAtTime(0.001, now);
       vg.gain.linearRampToValueAtTime(0.7, now+0.005);
       vg.gain.exponentialRampToValueAtTime(0.0001, now+1.2);
@@ -401,8 +647,26 @@ function createVoice(note, timbre) {
       o1.start(); o2.start();
       break;
     }
+    case 3:
+      // PAD: sine through a gentle lowpass
+      vg.gain.setValueAtTime(0.001, now);
+      vg.gain.linearRampToValueAtTime(0.65, now+0.01);
+      vg.gain.setTargetAtTime(0.65*0.7, now+0.16, 0.05);
+      o1=audioCtx.createOscillator(); o1.type = waveOverride || 'sine'; o1.frequency.value=freq;
+      filt=audioCtx.createBiquadFilter(); filt.type='lowpass'; filt.frequency.value=2000;
+      o1.connect(filt); filt.connect(vg); o1.start();
+      break;
+    case 4:
+      // ACID: sawtooth through a resonant lowpass
+      vg.gain.setValueAtTime(0.001, now);
+      vg.gain.linearRampToValueAtTime(0.65, now+0.01);
+      vg.gain.setTargetAtTime(0.65*0.7, now+0.16, 0.05);
+      o1=audioCtx.createOscillator(); o1.type = waveOverride || 'sawtooth'; o1.frequency.value=freq;
+      filt=audioCtx.createBiquadFilter(); filt.type='lowpass'; filt.frequency.value=1500; filt.Q.value=4;
+      o1.connect(filt); filt.connect(vg); o1.start();
+      break;
   }
-  return {o1,o2,gain:vg,timbre};
+  return {o1,o2,filt,gain:vg,timbre};
 }
 
 function releaseVoice(v) {
@@ -464,6 +728,7 @@ function pressKey(note) {
   if (!note||isNaN(note)) return;
   const el=keyEls[note]; if (el) { el.classList.add('pressed'); el.querySelector('.key-dot')?.classList.add('show'); }
   noteOn(note, currentTimbre);
+  if (gState.active) checkHit(note);
 }
 function releaseKey(note) {
   if (!note||isNaN(note)) return;
@@ -494,7 +759,7 @@ resizeVis(); window.addEventListener('resize',resizeVis);
 (function visLoop(){
   requestAnimationFrame(visLoop);
   const w=visC.width,h=visC.height;
-  visX.fillStyle='#1a1a1a'; visX.fillRect(0,0,w,h);
+  visX.fillStyle='#241d18'; visX.fillRect(0,0,w,h);
   if (!analyserNode) return;
   const data=new Uint8Array(analyserNode.frequencyBinCount);
   analyserNode.getByteFrequencyData(data);
@@ -505,6 +770,199 @@ resizeVis(); window.addEventListener('resize',resizeVis);
     visX.fillRect(i*bw+1,h-v*h,bw-2,v*h);
   }
 })();
+
+// ── Mode switch ─────────────────────────────────────────────────
+let currentMode='play';
+const notesArea=document.getElementById('notes-area');
+
+document.getElementById('btn-play').addEventListener('click',()=>{
+  currentMode='play';
+  document.getElementById('btn-play').classList.add('active');
+  document.getElementById('btn-game').classList.remove('active');
+  notesArea.classList.remove('game-active');
+  stopGame();
+});
+document.getElementById('btn-game').addEventListener('click',()=>{
+  currentMode='game';
+  document.getElementById('btn-game').classList.add('active');
+  document.getElementById('btn-play').classList.remove('active');
+  notesArea.classList.add('game-active');
+  showSongSelect();
+  setTimeout(resizeNotesCanvas,350);
+});
+
+// ── Song data ────────────────────────────────────────────────────
+const SONGS = {
+  twinkle:{
+    name:'きらきら星', emoji:'⭐', bpm:100,
+    notes:[
+      {t:0,n:60},{t:1,n:60},{t:2,n:67},{t:3,n:67},{t:4,n:69},{t:5,n:69},{t:6,n:67},
+      {t:8,n:65},{t:9,n:65},{t:10,n:64},{t:11,n:64},{t:12,n:62},{t:13,n:62},{t:14,n:60},
+      {t:16,n:67},{t:17,n:67},{t:18,n:65},{t:19,n:65},{t:20,n:64},{t:21,n:64},{t:22,n:62},
+      {t:24,n:67},{t:25,n:67},{t:26,n:65},{t:27,n:65},{t:28,n:64},{t:29,n:64},{t:30,n:62},
+      {t:32,n:60},{t:33,n:60},{t:34,n:67},{t:35,n:67},{t:36,n:69},{t:37,n:69},{t:38,n:67},
+      {t:40,n:65},{t:41,n:65},{t:42,n:64},{t:43,n:64},{t:44,n:62},{t:45,n:62},{t:46,n:60}
+    ]
+  },
+  frog:{
+    name:'カエルの合唱', emoji:'🐸', bpm:110,
+    notes:[
+      {t:0,n:60},{t:1,n:62},{t:2,n:64},{t:3,n:65},{t:4,n:64},{t:5,n:62},{t:6,n:60},
+      {t:8,n:64},{t:9,n:65},{t:10,n:67},{t:11,n:69},{t:12,n:67},{t:13,n:65},{t:14,n:64},
+      {t:16,n:60},{t:16.5,n:60},{t:17,n:60},{t:18,n:64},{t:18.5,n:64},{t:19,n:64},
+      {t:20,n:60},{t:20.5,n:60},{t:21,n:60},{t:22,n:60},
+      {t:24,n:60},{t:24.5,n:62},{t:25,n:64},{t:25.5,n:65},
+      {t:26,n:64},{t:26.5,n:62},{t:27,n:60},{t:27.5,n:62},
+      {t:28,n:64},{t:28.5,n:65},{t:29,n:67},{t:30,n:60}
+    ]
+  },
+  tulip:{
+    name:'チューリップ', emoji:'🌷', bpm:120,
+    notes:[
+      {t:0,n:60},{t:1,n:62},{t:2,n:64},{t:4,n:65},{t:5,n:64},{t:6,n:62},
+      {t:8,n:64},{t:9,n:62},{t:10,n:60},{t:12,n:60},{t:12.5,n:60},{t:13,n:60},
+      {t:16,n:60},{t:17,n:62},{t:18,n:64},{t:20,n:65},{t:21,n:64},{t:22,n:62},
+      {t:24,n:64},{t:25,n:62},{t:26,n:60},{t:28,n:60},{t:28.5,n:60},{t:29,n:60}
+    ]
+  }
+};
+
+// ── Game ─────────────────────────────────────────────────────────
+const gState={active:false,song:null,notes:[],startTime:0,beatDur:0,perfects:0,goods:0,misses:0};
+const notesC=document.getElementById('notes-canvas'), notesX=notesC.getContext('2d');
+let notesRaf=null;
+
+function resizeNotesCanvas(){
+  notesC.width=notesArea.clientWidth||document.getElementById('main').clientWidth;
+  notesC.height=notesArea.clientHeight||160;
+}
+
+function showSongSelect(){
+  document.getElementById('song-select').style.display='flex';
+  document.getElementById('score-overlay').classList.remove('show');
+  gState.active=false;
+}
+
+document.querySelectorAll('.song-btn').forEach(btn=>btn.addEventListener('click',()=>startGame(btn.dataset.song)));
+document.getElementById('score-retry').addEventListener('click',showSongSelect);
+
+function startGame(songKey){
+  startAudio();
+  const song=SONGS[songKey]; if (!song) return;
+  document.getElementById('song-select').style.display='none';
+  resizeNotesCanvas();
+
+  const bd=60/song.bpm;
+  const t0=(audioCtx ? audioCtx.currentTime : performance.now()/1000) + 0.8;
+  gState.active=true; gState.song=song; gState.beatDur=bd; gState.startTime=t0;
+  gState.perfects=0; gState.goods=0; gState.misses=0;
+
+  gState.notes = song.notes.filter(n=>!n.skip).map(n=>({
+    ts: t0 + n.t * bd, note: n.n, hit:false, missed:false
+  }));
+
+  // Schedule playback
+  song.notes.forEach(n=>{
+    if (n.skip) return;
+    const ts=t0+n.t*bd;
+    const o=audioCtx.createOscillator(); o.type='square'; o.frequency.value=midiFreq(n.n);
+    const g=audioCtx.createGain();
+    g.gain.setValueAtTime(0.001,ts);
+    g.gain.linearRampToValueAtTime(0.12,ts+0.02);
+    g.gain.setTargetAtTime(0.0001,ts+bd*0.7,0.04);
+    o.connect(g); g.connect(masterGain);
+    o.start(ts); o.stop(ts+bd*1.5);
+  });
+
+  if (notesRaf) cancelAnimationFrame(notesRaf);
+  gameLoop();
+}
+
+function stopGame(){
+  gState.active=false;
+  if (notesRaf){cancelAnimationFrame(notesRaf); notesRaf=null;}
+  notesX.clearRect(0,0,notesC.width,notesC.height);
+}
+
+function noteToX(note, w) {
+  const wi = WHITE_NOTES.indexOf(note);
+  if (wi>=0) return (wi+0.5)*(w/10);
+  const bp = BLACK_POSITIONS.find(b=>b.note===note);
+  if (bp) return bp.idx*(w/10)+(w/10);
+  return w/2;
+}
+
+function gameLoop(){
+  notesRaf=requestAnimationFrame(gameLoop);
+  if (!gState.active) return;
+
+  const now=audioCtx ? audioCtx.currentTime : performance.now()/1000;
+  const w=notesC.width, h=notesC.height;
+  notesX.clearRect(0,0,w,h);
+
+  // Hit line
+  const hitY=h-20;
+  notesX.strokeStyle='rgba(232,197,71,0.35)'; notesX.lineWidth=2;
+  notesX.beginPath(); notesX.moveTo(0,hitY); notesX.lineTo(w,hitY); notesX.stroke();
+
+  const fallDur=1.8;
+
+  gState.notes.forEach(n=>{
+    if (n.hit) return;
+    const dt=n.ts-now;
+    if (!n.missed && dt < -0.15) { n.missed=true; gState.misses++; showJudge('miss'); return; }
+    if (n.hit||n.missed) return;
+    const y=hitY*(1-dt/fallDur);
+    if (y<-20||y>h+20) return;
+    const x=noteToX(n.note,w);
+    const isBlack=BLACK_POSITIONS.some(b=>b.note===n.note);
+    const nw=isBlack?18:26, nh=16;
+    notesX.beginPath(); notesX.roundRect(x-nw/2,y-nh/2,nw,nh,5);
+    notesX.fillStyle=isBlack?'#e8c547':'#c73e3e'; notesX.fill();
+    notesX.strokeStyle='rgba(255,255,255,0.6)'; notesX.lineWidth=1; notesX.stroke();
+    notesX.fillStyle='#fff'; notesX.font='10px system-ui'; notesX.textAlign='center'; notesX.textBaseline='middle';
+    notesX.fillText('♪',x,y);
+  });
+
+  const last=gState.notes[gState.notes.length-1];
+  if (last && now > last.ts+2.5) endGame();
+}
+
+function checkHit(pressedNote){
+  if (!gState.active) return;
+  const now=audioCtx ? audioCtx.currentTime : performance.now()/1000;
+  let best=null, bestDt=Infinity;
+  gState.notes.forEach(n=>{
+    if (n.hit||n.missed||n.note!==pressedNote) return;
+    const dt=Math.abs(n.ts-now);
+    if (dt<bestDt){bestDt=dt; best=n;}
+  });
+  if (!best) return;
+  if (bestDt<=0.08){best.hit=true; gState.perfects++; showJudge('perfect');}
+  else if (bestDt<=0.15){best.hit=true; gState.goods++; showJudge('good');}
+}
+
+let judgeTimer=null;
+function showJudge(type){
+  const el=document.getElementById('judgment');
+  el.textContent=type==='perfect'?'⭐':type==='good'?'◯':'✕';
+  el.style.color=type==='perfect'?'#e8c547':type==='good'?'#4db848':'#c73e3e';
+  el.style.opacity='1';
+  if(judgeTimer)clearTimeout(judgeTimer);
+  judgeTimer=setTimeout(()=>el.style.opacity='0',600);
+}
+
+function endGame(){
+  gState.active=false;
+  if(notesRaf){cancelAnimationFrame(notesRaf); notesRaf=null;}
+  const total=gState.perfects+gState.goods+gState.misses;
+  const sc=total>0?(gState.perfects+gState.goods*0.5)/total:0;
+  let stars=sc>=0.9?'⭐⭐⭐':sc>=0.7?'⭐⭐☆':sc>=0.4?'⭐☆☆':'☆☆☆';
+  document.getElementById('score-stars').textContent=stars;
+  document.getElementById('score-text').textContent=gState.song.emoji+' '+gState.song.name;
+  document.getElementById('score-counts').textContent=`⭐${gState.perfects}  ◯${gState.goods}  ✕${gState.misses}`;
+  document.getElementById('score-overlay').classList.add('show');
+}
 </script>
 </body>
 </html>
