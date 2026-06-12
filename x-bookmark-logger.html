@@ -118,8 +118,21 @@ iPhone の X アプリで 🔖 ──→ あとでブラウザで x.com/i/bookma
     <li>ユーザースクリプトマネージャーを入れる：
       <a href="https://www.tampermonkey.net/" target="_blank" rel="noopener">Tampermonkey</a> または
       <a href="https://violentmonkey.github.io/" target="_blank" rel="noopener">Violentmonkey</a></li>
+    <li><strong>Chrome の場合のみ：デベロッパーモードを有効化する</strong><br>
+      アドレスバーに <code>chrome://extensions</code> と入力 → 右上の「<strong>デベロッパー モード</strong>」をオンにする。<br>
+      <em>これをしないと Chrome がスクリプトのインストールをブロックします（「このウェブサイトから追加することはできません」エラー）。Firefox や Violentmonkey ではこの手順は不要です。</em></li>
     <li>下のボタンからスクリプトをインストール</li>
   </ol>
+  <div class="box warn">
+    <span class="box-title">⚠️ Chrome で「このウェブサイトから追加することはできません」と出る場合</span>
+    次の順に確認してください：
+    <ol style="margin:6px 0 0">
+      <li><code>chrome://extensions</code> → 右上「デベロッパー モード」をオン</li>
+      <li><strong>Chrome を完全に再起動</strong>（デベロッパーモードはブラウザ再起動後に反映されます）</li>
+      <li>このページを <code>file://</code>（ローカルファイル）で開いている場合：<code>chrome://extensions</code> → Tampermonkey の「詳細」→「<strong>ファイルの URL へのアクセスを許可する</strong>」をオン</li>
+    </ol>
+    それでもダメなら手動インストールが確実です：Tampermonkey アイコン → ダッシュボード → 「ユーティリティ」タブ → 「ファイルからインポート」で <code>x-bookmark-logger.user.js</code> を選択。
+  </div>
   <p>
     <a class="btn" href="x-bookmark-logger.user.js">本体をインストール</a>
     <a class="btn sub" href="x-bookmark-uploader.user.js">アップローダー（iOSのみ必要）</a>
@@ -195,6 +208,8 @@ tags: [x-bookmark]
 
   <h2><span class="num">08</span>うまく動かないとき</h2>
   <ul>
+    <li>🔖 ボタンが出ない → Tampermonkey 本体が有効でも、<strong>スクリプト個別の「ユーザースクリプト」トグルが OFF</strong> になっていることがあります。x.com を開いた状態で Tampermonkey アイコンをクリックし、「X Bookmark Logger」がオンか確認 → オンにしたら x.com をリロード。</li>
+    <li>接続テストが「エラー(404)」 → PAT にリポジトリアクセスが付いていません。プライベートリポジトリは権限のないトークンには 404（存在しない扱い）を返します。<a href="https://github.com/settings/personal-access-tokens" target="_blank" rel="noopener">トークン設定画面</a>で該当トークンを開き、<strong>Repository access に Vault リポジトリが表示されているか</strong>・<strong>Repository permissions に Contents: Read and write が付いているか</strong>を確認してください。作成時にチェックしたつもりでも反映されないまま発行されることがあります（Edit で後から追加可能。トークン文字列は変わらないので貼り直し不要）。</li>
     <li>🔖 ボタンが赤い → パネルを開いてエラーメッセージを確認（PAT 期限切れ・リポジトリ名間違いが大半）</li>
     <li>ブラウザのコンソールで <code>__XBM_DEBUG.state()</code> を実行すると、設定・未送信キュー・記録済み件数を確認できます</li>
     <li>「記録済み索引クリア」を押してもリポジトリ側のファイルは消えません（再取り込みのテスト用）</li>
