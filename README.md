@@ -14,6 +14,7 @@
 | `project/index.html` | あそぼう | インタラクティブな遊び場 |
 | `news.html` | 電子工作通信 | 電子工作の記録・ニュース |
 | `virus-busters.html` | ウィルスバスターズ | iPhone向け縦持ちディフェンスゲーム（全20ステージ・図鑑50種） |
+| `x-bookmark-logger.html` | X Bookmark Logger | Xのブックマークを自動でGitHub上のObsidian VaultにMarkdown保存するユーザースクリプト（導入ガイド + `x-bookmark-logger.user.js` / `x-bookmark-uploader.user.js`） |
 
 ## ローカルで動かす
 
