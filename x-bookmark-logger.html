@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>X Bookmark Logger — 導入ガイド | や印工務店</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #f0ebe3;
+    --ink: #1c1a16;
+    --ink-soft: #2b2823;
+    --muted: #6f675b;
+    --rule: #3a342c;
+    --terracotta: #b5451b;
+    --serif: "EB Garamond", "Times New Roman", serif;
+    --mono: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    --jp: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--jp);
+    line-height: 1.85;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 720px; margin: 0 auto; padding: 48px 26px 64px; }
+  .back {
+    font-family: var(--mono); font-size: 12px; letter-spacing: .08em;
+    color: var(--muted); text-decoration: none;
+  }
+  .back:hover { color: var(--terracotta); }
+  h1 {
+    font-size: clamp(28px, 6vw, 40px); font-weight: 700; letter-spacing: .01em;
+    margin: 18px 0 6px; line-height: 1.3;
+  }
+  .subtitle {
+    font-family: var(--serif); font-style: italic; color: var(--terracotta);
+    font-size: 16px; letter-spacing: .08em; margin-bottom: 36px;
+  }
+  h2 {
+    font-size: 19px; font-weight: 700; margin: 52px 0 14px;
+    padding-bottom: 8px; border-bottom: 1px solid var(--rule);
+  }
+  h2 .num { font-family: var(--mono); color: var(--terracotta); font-size: 14px; margin-right: 10px; }
+  h3 { font-size: 15px; margin: 26px 0 8px; }
+  p, li { font-size: 14.5px; color: var(--ink-soft); }
+  ol, ul { padding-left: 1.4em; }
+  li { margin: 6px 0; }
+  code {
+    font-family: var(--mono); font-size: .92em;
+    background: rgba(58,52,44,.08); border-radius: 4px; padding: 1px 6px;
+  }
+  pre {
+    background: #1c1a16; color: #e8e1d4; border-radius: 10px;
+    padding: 16px 18px; overflow-x: auto;
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.7;
+  }
+  pre code { background: none; padding: 0; color: inherit; }
+  a { color: var(--terracotta); }
+  .box {
+    border: 1px solid var(--rule); border-radius: 10px;
+    padding: 14px 18px; margin: 18px 0; font-size: 13.5px;
+  }
+  .box.warn { border-color: var(--terracotta); background: rgba(181,69,27,.05); }
+  .box .box-title { font-weight: 700; display: block; margin-bottom: 4px; }
+  .btn {
+    display: inline-block; background: var(--terracotta); color: #fff;
+    text-decoration: none; font-weight: 700; font-size: 14px;
+    padding: 10px 22px; border-radius: 999px; margin: 8px 8px 8px 0;
+  }
+  .btn.sub { background: transparent; color: var(--terracotta); border: 1.5px solid var(--terracotta); }
+  .flow {
+    font-family: var(--mono); font-size: 12px; line-height: 2;
+    background: rgba(58,52,44,.06); border-radius: 10px; padding: 14px 18px;
+    overflow-x: auto; white-space: pre;
+  }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; margin: 14px 0; }
+  th, td { border: 1px solid rgba(58,52,44,.3); padding: 7px 10px; text-align: left; vertical-align: top; }
+  th { background: rgba(58,52,44,.06); font-weight: 700; }
+  .footer { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--rule);
+    font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: .1em; }
+</style>
+</head>
+<body>
+<main class="page">
+  <a class="back" href="index.html">← や印工務店 作品一覧</a>
+  <h1>🔖 X Bookmark Logger</h1>
+  <p class="subtitle">— X のブックマークを自動で Obsidian Vault (GitHub) に残す</p>
+
+  <p>
+    X（Twitter）でブックマークしたツイートを、自動的にあなたの GitHub リポジトリ（Obsidian Vault）へ
+    <strong>1件 = 1 Markdown ファイル</strong>として保存するユーザースクリプトです。
+    本文・作者・投稿日時・展開済みURL・画像/動画URL・引用ツイートまで記録します。
+  </p>
+
+  <div class="flow">PC のブラウザで 🔖 を押す ──→ その場で即ログ（リアルタイム）
+iPhone の X アプリで 🔖 ──→ あとでブラウザで x.com/i/bookmarks を
+                            開いてスクロールすると未記録分だけ自動ログ（差分同期）
+                                      │
+                                      ▼
+                   GitHub の Vault リポジトリに Markdown がコミットされる</div>
+
+  <h2><span class="num">01</span>仕組みと特徴</h2>
+  <ul>
+    <li>x.com を開いている間、X 本体が発行する GraphQL 通信を傍受して記録します。<strong>X の API キーは不要・無料</strong>です。</li>
+    <li>ブックマーク追加（<code>CreateBookmark</code>）を検知すると、直前に画面へ流れてきたツイートデータから本文・作者を補完して保存します。</li>
+    <li>ファイル名は <code>投稿日_スクリーンネーム_ツイートID.md</code> で決定的。どの端末から記録しても同名になるため、<strong>二重記録は GitHub 側で自動的に防止</strong>されます（同名ファイルが既にあればスキップ）。</li>
+    <li>オフラインや認証エラー時は未送信キューとしてブラウザ内に保持し、復帰後に自動再送します。</li>
+  </ul>
+
+  <h2><span class="num">02</span>PC への導入（5分）</h2>
+  <ol>
+    <li>ユーザースクリプトマネージャーを入れる：
+      <a href="https://www.tampermonkey.net/" target="_blank" rel="noopener">Tampermonkey</a> または
+      <a href="https://violentmonkey.github.io/" target="_blank" rel="noopener">Violentmonkey</a></li>
+    <li>下のボタンからスクリプトをインストール</li>
+  </ol>
+  <p>
+    <a class="btn" href="x-bookmark-logger.user.js">本体をインストール</a>
+    <a class="btn sub" href="x-bookmark-uploader.user.js">アップローダー（iOSのみ必要）</a>
+  </p>
+
+  <h2><span class="num">03</span>GitHub トークン（PAT）の作成</h2>
+  <p>保存先リポジトリにだけ書き込める、最小権限のトークンを作ります。</p>
+  <ol>
+    <li>GitHub → Settings → Developer settings → <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Fine-grained personal access tokens → Generate new token</a></li>
+    <li><strong>Repository access</strong>: 「Only select repositories」で <strong>Vault リポジトリ1つだけ</strong>を選択</li>
+    <li><strong>Permissions</strong>: Repository permissions → <strong>Contents: Read and write</strong> のみ</li>
+    <li><strong>Expiration</strong>: 90日など短めに設定（期限が切れたら作り直して設定し直す）</li>
+    <li>発行された <code>github_pat_…</code> をコピー</li>
+  </ol>
+
+  <h2><span class="num">04</span>設定</h2>
+  <ol>
+    <li>x.com を開くと左下に 🔖 ボタンが出るのでタップ</li>
+    <li>オーナー名 / リポジトリ名 / ブランチ / 保存先フォルダ / PAT を入力し「記録を有効にする」をオン → 保存</li>
+    <li>「接続テスト」で ✅ が出れば完了</li>
+  </ol>
+  <p>ボタンの色が状態表示です：<strong style="color:#00ba7c">緑</strong>=待機中 /
+     <strong style="color:#cc8a00">橙</strong>=未送信あり（数字バッジ） /
+     <strong style="color:#f4212e">赤</strong>=エラー（パネルで詳細確認）</p>
+
+  <h2><span class="num">05</span>iPhone での使い方</h2>
+  <p>X のネイティブアプリ内の通信は傍受できないため、iPhone では「アプリでブックマーク → あとで Safari で差分同期」という運用になります。</p>
+  <ol>
+    <li>App Store で <a href="https://apps.apple.com/app/userscripts/id1463298887" target="_blank" rel="noopener">Userscripts</a> アプリを入れ、設定 → Safari → 機能拡張 で有効化</li>
+    <li>Safari で本ページを開き、<strong>本体とアップローダーの2本とも</strong>インストール
+      （iOS の Userscripts では傍受とGitHub送信を別スクリプトが分担する必要があるため2本必要です）</li>
+    <li>普段は X アプリで自由にブックマーク</li>
+    <li>ときどき Safari で <code>x.com/i/bookmarks</code> を開いて下までスクロール → 未記録分だけが自動でコミットされます</li>
+  </ol>
+  <div class="box">
+    <span class="box-title">PC を持っている場合はもっと簡単</span>
+    iPhone 分の同期も PC のブラウザで <code>x.com/i/bookmarks</code> を開くだけで OK。その場合 iPhone への導入は不要です。
+  </div>
+
+  <h2><span class="num">06</span>保存される Markdown</h2>
+<pre><code>X Bookmarks/2026-06-10_username_1234567890123456789.md
+
+---
+id: "1234567890123456789"
+url: https://x.com/username/status/1234567890123456789
+author: "@username"
+author_name: "表示名"
+posted_at: 2026-06-10T12:34:56.000Z
+bookmarked_at: 2026-06-12T19:00:00+09:00
+source: realtime          # realtime=その場で記録 / bookmarks-sync=差分同期
+media:
+  - https://pbs.twimg.com/media/xxxx.jpg
+tags: [x-bookmark]
+---
+
+ツイート本文（t.co は展開済み）
+
+&gt; [!quote] 引用元 @other（表示名）
+&gt; 引用ツイートの本文
+
+![](https://pbs.twimg.com/media/xxxx.jpg)</code></pre>
+  <p>Obsidian ではフロントマターがプロパティとして認識され、<code>#x-bookmark</code> タグやDataviewでの集計・検索ができます。</p>
+
+  <h2><span class="num">07</span>注意事項</h2>
+  <table>
+    <tr><th>項目</th><th>内容</th></tr>
+    <tr><td>非公式手法</td><td>X の内部通信を読む非公式な方法です。X 側の仕様変更で動かなくなる可能性があり、規約上もグレーです（自分のデータの読み取りのみなのでリスクは小さい想定ですが、自己責任で利用してください）。</td></tr>
+    <tr><td>PAT の保管</td><td>トークンはブラウザの localStorage（x.com 上）に保存されます。理論上は x.com 上で動く他のスクリプトから読める場所なので、<strong>必ず「Vault リポジトリ1つ・Contents 権限のみ・短期限」</strong>の Fine-grained PAT を使ってください。</td></tr>
+    <tr><td>iPhone Safari</td><td>7日間 x.com を開かないとブラウザ内データ（未送信キュー等）が消えることがあります。記録済みの判定は GitHub 側の同名ファイル検知でも行われるため、重複の心配はありません。</td></tr>
+    <tr><td>削除は非対応</td><td>ブックマーク解除してもログは消しません（ログとして残すことが目的のため）。</td></tr>
+    <tr><td>過去分の取り込み</td><td><code>x.com/i/bookmarks</code> を一番下までスクロールすれば、過去のブックマークも全件取り込めます。</td></tr>
+  </table>
+
+  <h2><span class="num">08</span>うまく動かないとき</h2>
+  <ul>
+    <li>🔖 ボタンが赤い → パネルを開いてエラーメッセージを確認（PAT 期限切れ・リポジトリ名間違いが大半）</li>
+    <li>ブラウザのコンソールで <code>__XBM_DEBUG.state()</code> を実行すると、設定・未送信キュー・記録済み件数を確認できます</li>
+    <li>「記録済み索引クリア」を押してもリポジトリ側のファイルは消えません（再取り込みのテスト用）</li>
+  </ul>
+
+  <div class="footer">© や印工務店 / yzrswork — Printed on the Web</div>
+</main>
+</body>
+</html>
