@@ -2,7 +2,7 @@
 // @name         X Bookmark Logger
 // @name:ja      X ブックマークロガー
 // @namespace    https://yzrswork.github.io/yzrswork_ai-skill-recipe/
-// @version      1.0.0
+// @version      1.0.1
 // @description  Log your X (Twitter) bookmarks to a GitHub repository (Obsidian vault) as Markdown files.
 // @description:ja Xでブックマークしたツイートを自動的にGitHubリポジトリ（Obsidian Vault）へMarkdownとして保存します。
 // @author       yzrswork
@@ -270,7 +270,7 @@
     if (record.media && record.media.length) {
       lines.push('');
       for (const m of record.media) {
-        lines.push(/\.(jpg|jpeg|png|webp)/i.test(m) ? '![](' + m + ')' : m);
+        lines.push(/\.(jpg|jpeg|png|webp)/i.test(m) ? '![](' + m + ')' : '動画: ' + m);
       }
     }
     lines.push('');
