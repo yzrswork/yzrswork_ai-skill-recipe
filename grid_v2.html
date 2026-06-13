@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Sumi — Ink Trace</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #faf8f3; }
+    canvas { display: block; touch-action: none; }
+
+    .back-btn {
+      position: fixed; top: 16px; left: 16px; z-index: 999;
+      color: rgba(0,0,0,0.3); text-decoration: none;
+      font-family: 'DM Mono', ui-monospace, monospace;
+      font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .back-btn:hover { color: rgba(0,0,0,0.7); }
+
+    /* ─── Palette ─────────────────────────────────────────── */
+    .palette {
+      position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%);
+      z-index: 999; display: flex; align-items: center; gap: 16px;
+      padding: 10px 16px; border-radius: 999px;
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+    }
+    .swatch {
+      width: 30px; height: 30px; border-radius: 50%;
+      border: 2px solid rgba(0,0,0,0.12); cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .swatch:hover { transform: scale(1.08); }
+    .swatch.active {
+      border-color: rgba(0,0,0,0.55);
+      box-shadow: 0 0 0 3px rgba(0,0,0,0.06);
+      transform: scale(1.12);
+    }
+    .sep { width: 1px; height: 22px; background: rgba(0,0,0,0.12); }
+    .clear {
+      font-family: 'DM Mono', ui-monospace, monospace;
+      font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: rgba(0,0,0,0.4); background: none; border: none; cursor: pointer;
+      padding: 4px 2px;
+    }
+    .clear:hover { color: rgba(0,0,0,0.75); }
+
+    .hint {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      font: 13px -apple-system, sans-serif; color: #bbb; pointer-events: none;
+      transition: opacity 1s; letter-spacing: .14em; text-transform: uppercase;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+<a class="back-btn" href="index.html">← index</a>
+<canvas id="c"></canvas>
+
+<div class="palette">
+  <div class="swatch active" data-color="black" style="background:#1a181d"></div>
+  <div class="swatch" data-color="blue"  style="background:#1f3a8c"></div>
+  <div class="swatch" data-color="orange" style="background:#e0561a"></div>
+  <div class="sep"></div>
+  <button class="clear" id="clearBtn">clear</button>
+</div>
+
+<div class="hint" id="hint">なぞって描く</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+//  Sumi — Ink Trace (grid_v2)
+//  Drag to paint feathered ink strokes that bleed and slowly fade as
+//  afterimages. Overlapping colors blend naturally via `multiply` compositing.
+//  An experimental / contemporary-art sound engine follows the brush.
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── Ink palette (subtractive, ink-on-paper colours) ──────────────────────────
+const INKS = {
+  black:  { rgb: [ 26,  24,  29], name: '墨' },
+  blue:   { rgb: [ 31,  58, 140], name: '藍' },
+  orange: { rgb: [224,  86,  26], name: '朱' },
+};
+let currentColor = 'black';
+
+// ─── Visual tuning ────────────────────────────────────────────────────────────
+const FADE_ALPHA   = 0.016;  // per-frame fade toward paper white (afterimage decay)
+const R_SLOW       = 28;     // brush radius when moving slowly (ink pools, 溜まり)
+const R_FAST       = 6;      // brush radius when moving fast (dry brush, かすれ)
+const STAMP_SPACE  = 0.34;   // stamp spacing as a fraction of brush radius
+const BLEED_CHANCE = 0.18;   // probability of scattering a faint bleed speck (にじみ)
+
+// ─── Audio tuning ─────────────────────────────────────────────────────────────
+const FREQ_LO   = 80;        // Hz at the bottom of the screen
+const FREQ_HI   = 1200;      // Hz at the top of the screen
+const MAX_VOICES = 3;        // concurrent bowed voices
+// Inharmonic bell partials (Risset) used for the sparse grain "pings"
+const BELL_PARTIALS = [1.0, 2.76, 5.40, 8.93, 13.34];
+
+// Per-colour timbre presets — each ink "sounds" different.
+const TIMBRE = {
+  black:  { wave: 'triangle', detune: 7,  lpBase: 420,  lpVel: 2600, fm: 0.18, fmRatio: 1.41, noiseQ: 0.7,  oct: 0.5 },
+  blue:   { wave: 'sine',     detune: 4,  lpBase: 900,  lpVel: 4200, fm: 0.55, fmRatio: 2.76, noiseQ: 3.0,  oct: 1.0 },
+  orange: { wave: 'sawtooth', detune: 12, lpBase: 700,  lpVel: 5200, fm: 0.40, fmRatio: 3.16, noiseQ: 1.4,  oct: 1.0 },
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  AUDIO ENGINE
+// ═══════════════════════════════════════════════════════════════════════════
+let actx = null, master = null, revGain = null, noiseBuf = null;
+let voiceCount = 0;
+
+function getACtx() {
+  if (!actx) buildAudio();
+  if (actx.state === 'suspended') actx.resume();
+  return actx;
+}
+
+// Synthesize a stereo reverb impulse response: exponentially-decaying noise (~2.6s)
+function makeIR(ac) {
+  const sr = ac.sampleRate, len = Math.floor(sr * 2.6);
+  const buf = ac.createBuffer(2, len, sr);
+  for (let ch = 0; ch < 2; ch++) {
+    const d = buf.getChannelData(ch);
+    for (let i = 0; i < len; i++)
+      d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.4);
+  }
+  return buf;
+}
+
+// Build the persistent master bus once (dry + long convolution reverb → limiter).
+function buildAudio() {
+  actx = new (window.AudioContext || window.webkitAudioContext)();
+
+  const comp = actx.createDynamicsCompressor();
+  comp.threshold.value = -14; comp.knee.value = 24;
+  comp.ratio.value = 4; comp.attack.value = 0.004; comp.release.value = 0.25;
+  comp.connect(actx.destination);
+
+  master = actx.createGain();
+  master.gain.value = 0.9;
+
+  const dry = actx.createGain();
+  dry.gain.value = 0.7;
+  master.connect(dry); dry.connect(comp);
+
+  const rev = actx.createConvolver();
+  rev.buffer = makeIR(actx);
+  revGain = actx.createGain();
+  revGain.gain.value = 0.5;
+  master.connect(rev); rev.connect(revGain); revGain.connect(comp);
+
+  // 2 s looping white-noise buffer shared by all brush-friction voices
+  const sr = actx.sampleRate, nlen = Math.floor(sr * 2);
+  noiseBuf = actx.createBuffer(1, nlen, sr);
+  const nd = noiseBuf.getChannelData(0);
+  for (let i = 0; i < nlen; i++) nd[i] = Math.random() * 2 - 1;
+}
+
+// Map a vertical position to a (continuous, glissando-able) frequency.
+function yToFreq(y, H) {
+  const t = 1 - Math.min(Math.max(y / H, 0), 1);   // 1 at top, 0 at bottom
+  return FREQ_LO * Math.pow(FREQ_HI / FREQ_LO, t);
+}
+
+// ─── A bowed voice: detuned drone cluster + inharmonic FM shimmer + brush noise ─
+// One voice is created per active pointer and released (long tail) on lift.
+function makeVoice(color, x, y, W, H) {
+  const ac = getACtx();
+  const T  = TIMBRE[color];
+  const now = ac.currentTime;
+
+  const out = ac.createGain();           // envelope
+  out.gain.value = 0.0001;
+
+  const pan = ac.createStereoPanner();
+  pan.pan.value = (x / W) * 2 - 1;
+  out.connect(pan); pan.connect(master);
+
+  // Low-pass shaping the whole voice (opened by brush velocity)
+  const lp = ac.createBiquadFilter();
+  lp.type = 'lowpass'; lp.frequency.value = T.lpBase; lp.Q.value = 0.8;
+  lp.connect(out);
+
+  const baseFreq = yToFreq(y, H) * T.oct;
+
+  // Detuned drone pair (a slightly out-of-tune cluster = "living" microtonality)
+  const oscs = [];
+  for (let i = 0; i < 2; i++) {
+    const o = ac.createOscillator();
+    o.type = T.wave;
+    o.frequency.value = baseFreq;
+    o.detune.value = i === 0 ? -T.detune : T.detune;
+    const og = ac.createGain(); og.gain.value = 0.5;
+    o.connect(og); og.connect(lp);
+    o.start(now);
+    oscs.push(o);
+  }
+
+  // Inharmonic FM shimmer (metallic / bowed-glass partial)
+  const car = ac.createOscillator(); car.type = 'sine'; car.frequency.value = baseFreq;
+  const mod = ac.createOscillator(); mod.type = 'sine'; mod.frequency.value = baseFreq * T.fmRatio;
+  const modG = ac.createGain(); modG.gain.value = baseFreq * T.fm;
+  mod.connect(modG); modG.connect(car.frequency);
+  const carG = ac.createGain(); carG.gain.value = 0.22;
+  car.connect(carG); carG.connect(lp);
+  car.start(now); mod.start(now);
+
+  // Slow random-ish LFO wandering the detune (Xenakis-style drift)
+  const lfo = ac.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.12 + Math.random() * 0.18;
+  const lfoG = ac.createGain(); lfoG.gain.value = 6;
+  lfo.connect(lfoG); oscs.forEach(o => lfoG.connect(o.detune)); lfo.start(now);
+
+  // Brush-friction noise through a band-pass, driven by velocity
+  const noise = ac.createBufferSource(); noise.buffer = noiseBuf; noise.loop = true;
+  const bp = ac.createBiquadFilter(); bp.type = 'bandpass';
+  bp.frequency.value = baseFreq * 3; bp.Q.value = T.noiseQ;
+  const noiseG = ac.createGain(); noiseG.gain.value = 0.0001;
+  noise.connect(bp); bp.connect(noiseG); noiseG.connect(lp);
+  noise.start(now);
+
+  // Bow-in
+  out.gain.setTargetAtTime(0.18, now, 0.12);
+
+  return { out, pan, lp, oscs, car, mod, modG, lfo, noise, bp, noiseG, baseOct: T.oct, lpBase: T.lpBase, lpVel: T.lpVel };
+}
+
+// Continuously steer a live voice from the brush position + speed.
+function updateVoice(v, x, y, speed, W, H) {
+  const ac = actx, now = ac.currentTime;
+  const f = yToFreq(y, H) * v.baseOct;
+  v.oscs.forEach(o => o.frequency.setTargetAtTime(f, now, 0.06));
+  v.car.frequency.setTargetAtTime(f, now, 0.06);
+  v.mod.frequency.setTargetAtTime(f * 2.76, now, 0.06);
+  v.bp.frequency.setTargetAtTime(f * 3, now, 0.08);
+  v.pan.pan.setTargetAtTime((x / W) * 2 - 1, now, 0.08);
+
+  const norm = Math.min(speed / 2.5, 1);                 // 0..1 brush speed
+  v.lp.frequency.setTargetAtTime(v.lpBase + norm * v.lpVel, now, 0.08);
+  v.noiseG.gain.setTargetAtTime(0.04 + norm * 0.22, now, 0.05);
+}
+
+// Release a voice with a long, reverberant tail, then free its nodes.
+function releaseVoice(v) {
+  const ac = actx, now = ac.currentTime;
+  v.out.gain.cancelScheduledValues(now);
+  v.out.gain.setTargetAtTime(0.0001, now, 0.45);
+  v.noiseG.gain.setTargetAtTime(0.0001, now, 0.3);
+  setTimeout(() => {
+    try {
+      [...v.oscs, v.car, v.mod, v.lfo, v.noise].forEach(n => { try { n.stop(); } catch (_) {} });
+      v.out.disconnect();
+    } catch (_) {}
+    voiceCount--;
+  }, 2200);
+}
+
+// Sparse inharmonic "ping" grain (prepared-piano / crotale colour), through reverb.
+function playGrain(color, y, H) {
+  const ac = getACtx(), now = ac.currentTime;
+  const root = yToFreq(y, H) * TIMBRE[color].oct;
+  const partial = BELL_PARTIALS[(Math.random() * BELL_PARTIALS.length) | 0];
+  const oct = [0.5, 1, 2][(Math.random() * 3) | 0];
+
+  const o = ac.createOscillator();
+  o.type = 'sine';
+  o.frequency.value = root * partial * oct * (1 + (Math.random() - 0.5) * 0.01);
+
+  const g = ac.createGain();
+  const peak = 0.06 + Math.random() * 0.05;
+  g.gain.setValueAtTime(0.0001, now);
+  g.gain.exponentialRampToValueAtTime(peak, now + 0.005);
+  g.gain.exponentialRampToValueAtTime(0.0001, now + 0.5 + Math.random() * 0.7);
+
+  o.connect(g); g.connect(master);
+  o.start(now); o.stop(now + 1.4);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  INK RENDERING
+// ═══════════════════════════════════════════════════════════════════════════
+const canvas = document.getElementById('c');
+const g = canvas.getContext('2d');
+let W = 0, H = 0, DPR = 1;
+
+// Pre-rendered soft brush sprite per colour (feathered radial blob = にじみ edge).
+const sprites = {};
+function buildSprites() {
+  for (const key in INKS) {
+    const [r, gg, b] = INKS[key].rgb;
+    const s = document.createElement('canvas');
+    const S = 128; s.width = s.height = S;
+    const sc = s.getContext('2d');
+    const grad = sc.createRadialGradient(S/2, S/2, 0, S/2, S/2, S/2);
+    grad.addColorStop(0.0, `rgba(${r},${gg},${b},1)`);
+    grad.addColorStop(0.35, `rgba(${r},${gg},${b},0.82)`);
+    grad.addColorStop(0.7,  `rgba(${r},${gg},${b},0.30)`);
+    grad.addColorStop(1.0,  `rgba(${r},${gg},${b},0)`);
+    sc.fillStyle = grad;
+    sc.fillRect(0, 0, S, S);
+    sprites[key] = s;
+  }
+}
+buildSprites();
+
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = window.innerWidth; H = window.innerHeight;
+  canvas.width = W * DPR; canvas.height = H * DPR;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  g.setTransform(DPR, 0, 0, DPR, 0, 0);
+  paintPaper();
+}
+
+function paintPaper() {
+  g.globalCompositeOperation = 'source-over';
+  g.fillStyle = '#faf8f3';
+  g.fillRect(0, 0, W, H);
+}
+
+// Stamp one ink dab. Multiply compositing makes overlapping inks blend naturally.
+function stamp(color, x, y, radius, alpha) {
+  const sp = sprites[color];
+  g.globalCompositeOperation = 'multiply';
+  g.globalAlpha = alpha;
+  g.drawImage(sp, x - radius, y - radius, radius * 2, radius * 2);
+
+  // Occasional faint bleed speck near the stroke (にじみ)
+  if (Math.random() < BLEED_CHANCE) {
+    const a = Math.random() * Math.PI * 2;
+    const dist = radius * (0.8 + Math.random() * 1.4);
+    const rr = radius * (0.12 + Math.random() * 0.25);
+    g.globalAlpha = alpha * 0.25;
+    g.drawImage(sp, x + Math.cos(a) * dist - rr, y + Math.sin(a) * dist - rr, rr * 2, rr * 2);
+  }
+  g.globalAlpha = 1;
+}
+
+// ─── Animation loop: gently fade the whole canvas toward paper white ──────────
+// This is what makes traced strokes linger as afterimages and then dissolve.
+function frame() {
+  g.globalCompositeOperation = 'source-over';
+  g.fillStyle = `rgba(250,248,243,${FADE_ALPHA})`;
+  g.fillRect(0, 0, W, H);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  POINTER → STROKE + VOICE
+// ═══════════════════════════════════════════════════════════════════════════
+const strokes = new Map();   // pointerId → { x, y, t, voice, color, sinceGrain }
+
+function strokeStart(id, x, y, pressure) {
+  const color = currentColor;
+  let voice = null;
+  if (voiceCount < MAX_VOICES) { voice = makeVoice(color, x, y, W, H); voiceCount++; }
+  strokes.set(id, { x, y, t: performance.now(), voice, color, sinceGrain: 0 });
+  stamp(color, x, y, R_SLOW * 0.6 * (0.7 + pressure), 0.5);
+}
+
+function strokeMove(id, x, y, pressure) {
+  const s = strokes.get(id);
+  if (!s) return;
+  const now = performance.now();
+  const dx = x - s.x, dy = y - s.y;
+  const dist = Math.hypot(dx, dy);
+  const dt = Math.max(now - s.t, 1);
+  const speed = dist / dt;                                  // px per ms
+
+  // Slow brush → wide, dark pooling ink; fast brush → thin, dry, light.
+  const norm = Math.min(speed / 2.2, 1);
+  let radius = (R_SLOW + (R_FAST - R_SLOW) * norm) * (0.6 + pressure * 0.8);
+  const alpha = (0.55 - norm * 0.32) * (0.7 + pressure * 0.5);
+
+  // Lay stamps along the segment so the stroke is continuous.
+  const step = Math.max(radius * STAMP_SPACE, 1);
+  const n = Math.max(Math.floor(dist / step), 1);
+  for (let i = 1; i <= n; i++) {
+    const px = s.x + dx * (i / n);
+    const py = s.y + dy * (i / n);
+    stamp(s.color, px, py, radius, alpha);
+  }
+
+  // Sparse grain pings, density tied to distance travelled.
+  s.sinceGrain += dist;
+  if (s.sinceGrain > 130 && Math.random() < 0.6) { playGrain(s.color, y, H); s.sinceGrain = 0; }
+
+  if (s.voice) updateVoice(s.voice, x, y, speed, W, H);
+  s.x = x; s.y = y; s.t = now;
+}
+
+function strokeEnd(id) {
+  const s = strokes.get(id);
+  if (!s) return;
+  if (s.voice) releaseVoice(s.voice);
+  strokes.delete(id);
+}
+
+canvas.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  canvas.setPointerCapture(e.pointerId);
+  dismissHint();
+  strokeStart(e.pointerId, e.clientX, e.clientY, e.pressure || 0.5);
+}, { passive: false });
+
+canvas.addEventListener('pointermove', e => {
+  if (!strokes.has(e.pointerId)) return;
+  e.preventDefault();
+  // Use coalesced events for smoother high-rate strokes when available.
+  const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+  for (const ev of (evs.length ? evs : [e]))
+    strokeMove(e.pointerId, ev.clientX, ev.clientY, ev.pressure || 0.5);
+}, { passive: false });
+
+['pointerup', 'pointercancel', 'pointerleave'].forEach(type =>
+  canvas.addEventListener(type, e => strokeEnd(e.pointerId)));
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  UI — palette + clear
+// ═══════════════════════════════════════════════════════════════════════════
+document.querySelectorAll('.swatch').forEach(sw => {
+  sw.addEventListener('click', () => {
+    document.querySelectorAll('.swatch').forEach(o => o.classList.remove('active'));
+    sw.classList.add('active');
+    currentColor = sw.dataset.color;
+  });
+});
+
+document.getElementById('clearBtn').addEventListener('click', paintPaper);
+
+window.addEventListener('resize', resize);
+resize();
+
+// ─── Hint ─────────────────────────────────────────────────────────────────────
+const hint = document.getElementById('hint');
+let hintGone = false;
+function dismissHint() {
+  if (hintGone) return;
+  hintGone = true;
+  hint.style.opacity = '0';
+}
+</script>
+</body>
+</html>
