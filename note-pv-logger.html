@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>note PV Logger — 導入ガイド | や印工務店</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #f0ebe3;
+    --ink: #1c1a16;
+    --ink-soft: #2b2823;
+    --muted: #6f675b;
+    --rule: #3a342c;
+    --terracotta: #b5451b;
+    --serif: "EB Garamond", "Times New Roman", serif;
+    --mono: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    --jp: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--jp);
+    line-height: 1.85;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 720px; margin: 0 auto; padding: 48px 26px 64px; }
+  .back {
+    font-family: var(--mono); font-size: 12px; letter-spacing: .08em;
+    color: var(--muted); text-decoration: none;
+  }
+  .back:hover { color: var(--terracotta); }
+  h1 {
+    font-size: clamp(28px, 6vw, 40px); font-weight: 700; letter-spacing: .01em;
+    margin: 18px 0 6px; line-height: 1.3;
+  }
+  .subtitle {
+    font-family: var(--serif); font-style: italic; color: var(--terracotta);
+    font-size: 16px; letter-spacing: .08em; margin-bottom: 36px;
+  }
+  h2 {
+    font-size: 19px; font-weight: 700; margin: 52px 0 14px;
+    padding-bottom: 8px; border-bottom: 1px solid var(--rule);
+  }
+  h2 .num { font-family: var(--mono); color: var(--terracotta); font-size: 14px; margin-right: 10px; }
+  h3 { font-size: 15px; margin: 26px 0 8px; }
+  p, li { font-size: 14.5px; color: var(--ink-soft); }
+  ol, ul { padding-left: 1.4em; }
+  li { margin: 6px 0; }
+  code {
+    font-family: var(--mono); font-size: .92em;
+    background: rgba(58,52,44,.08); border-radius: 4px; padding: 1px 6px;
+  }
+  pre {
+    background: #1c1a16; color: #e8e1d4; border-radius: 10px;
+    padding: 16px 18px; overflow-x: auto;
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.7;
+  }
+  pre code { background: none; padding: 0; color: inherit; }
+  a { color: var(--terracotta); }
+  .box {
+    border: 1px solid var(--rule); border-radius: 10px;
+    padding: 14px 18px; margin: 18px 0; font-size: 13.5px;
+  }
+  .box.warn { border-color: var(--terracotta); background: rgba(181,69,27,.05); }
+  .box .box-title { font-weight: 700; display: block; margin-bottom: 4px; }
+  .btn {
+    display: inline-block; background: var(--terracotta); color: #fff;
+    text-decoration: none; font-weight: 700; font-size: 14px;
+    padding: 10px 22px; border-radius: 999px; margin: 8px 8px 8px 0;
+  }
+  .btn.sub { background: transparent; color: var(--terracotta); border: 1.5px solid var(--terracotta); }
+  .flow {
+    font-family: var(--mono); font-size: 12px; line-height: 2;
+    background: rgba(58,52,44,.06); border-radius: 10px; padding: 14px 18px;
+    overflow-x: auto; white-space: pre;
+  }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; margin: 14px 0; }
+  th, td { border: 1px solid rgba(58,52,44,.3); padding: 7px 10px; text-align: left; vertical-align: top; }
+  th { background: rgba(58,52,44,.06); font-weight: 700; }
+  .footer { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--rule);
+    font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: .1em; }
+</style>
+</head>
+<body>
+<main class="page">
+  <a class="back" href="index.html">← や印工務店 作品一覧</a>
+  <h1>📊 note PV Logger</h1>
+  <p class="subtitle">— note のアクセス数（ビュー）を全記事まとめて書き出す</p>
+
+  <p>
+    note のダッシュボードに表示される<strong>記事ごとのビュー・スキ・コメント数を全件まとめて取得</strong>し、
+    <strong>CSV / TSV / Markdown</strong> で書き出すユーザースクリプトです。
+    note にログインしているブラウザのセッションをそのまま使うので、
+    <strong>API キーやトークンの登録は不要</strong>。スプレッドシートでの集計や、Obsidian でのビュー数の記録に使えます。
+  </p>
+
+  <div class="flow">note にログインした状態で note.com を開く
+                  │
+                  ▼
+   右下のボタンを押す ──→ パネルで期間を選んで「取得」
+                  │           （全記事をページめくりして自動収集）
+                  ▼
+   CSV / TSV / Markdown で保存・コピー
+       ├─ CSV    → Excel・スプレッドシートに読み込み
+       ├─ TSV    → そのまま表に貼り付け
+       └─ .md    → Obsidian Vault に置いて記録（日付つきスナップショット）</div>
+
+  <h2><span class="num">01</span>2種類のスクリプト</h2>
+  <p>用途に合わせて好きな方（または両方）を入れてください。取得する数値はどちらも同じで、書き出す形式だけが違います。</p>
+  <table>
+    <tr><th>スクリプト</th><th>ボタン</th><th>書き出せる形式</th><th>主な用途</th></tr>
+    <tr>
+      <td><code>note-pv-logger.user.js</code><br>(PV Logger)</td>
+      <td>📊 PV</td>
+      <td>CSV（Excel用・BOM付き）<br>TSV（コピー）</td>
+      <td>スプレッドシートで集計・グラフ化したいとき</td>
+    </tr>
+    <tr>
+      <td><code>note-pv-md-logger.user.js</code><br>(PV Markdown Logger)</td>
+      <td>📝 PV→MD</td>
+      <td>Markdown（.md保存・コピー）</td>
+      <td>Obsidian Vault にビュー数を記録したいとき</td>
+    </tr>
+  </table>
+
+  <h2><span class="num">02</span>仕組みと特徴</h2>
+  <ul>
+    <li>note のダッシュボードが内部で使っている統計 API（<code>/api/v1/stats/pv</code>）を、最終ページまで自動でめくって全記事ぶん取得します。</li>
+    <li>認証は<strong>ログイン中のブラウザのセッション（Cookie）</strong>をそのまま使います。<strong>トークンやパスワードの入力は一切不要</strong>です。</li>
+    <li><strong>期間（全期間 / 月間 / 週間）</strong>を選んで取得できます。</li>
+    <li>取得結果はパネル内の表で確認できるほか、ボタン一発で保存・コピーできます。</li>
+    <li>取得日時を一緒に記録するので、定期的に取れば<strong>ビュー数の推移</strong>も追えます。</li>
+  </ul>
+  <div class="box warn">
+    <span class="box-title">⚠️ 自分のアカウントのデータ取得にだけ使ってください</span>
+    これは note の<strong>非公式</strong>な内部 API を利用する方法です。自分のログイン中アカウントの統計を読み取るだけですが、
+    note 側の仕様変更で動かなくなる可能性があります。自己責任でご利用ください。
+  </div>
+
+  <h2><span class="num">03</span>PC への導入（5分）</h2>
+  <ol>
+    <li>ユーザースクリプトマネージャーを入れる：
+      <a href="https://www.tampermonkey.net/" target="_blank" rel="noopener">Tampermonkey</a> または
+      <a href="https://violentmonkey.github.io/" target="_blank" rel="noopener">Violentmonkey</a></li>
+    <li><strong>Chrome の場合のみ：デベロッパーモードを有効化する</strong><br>
+      アドレスバーに <code>chrome://extensions</code> と入力 → 右上の「<strong>デベロッパー モード</strong>」をオンにする。<br>
+      <em>これをしないと Chrome がスクリプトのインストールをブロックします（「このウェブサイトから追加することはできません」エラー）。Firefox や Violentmonkey ではこの手順は不要です。</em></li>
+    <li>下のボタンから、使いたい方のスクリプトをインストール（両方入れても構いません）</li>
+  </ol>
+  <div class="box warn">
+    <span class="box-title">⚠️ Chrome で「このウェブサイトから追加することはできません」と出る場合</span>
+    次の順に確認してください：
+    <ol style="margin:6px 0 0">
+      <li><code>chrome://extensions</code> → 右上「デベロッパー モード」をオン</li>
+      <li><strong>Chrome を完全に再起動</strong>（デベロッパーモードはブラウザ再起動後に反映されます）</li>
+      <li>このページを <code>file://</code>（ローカルファイル）で開いている場合：<code>chrome://extensions</code> → Tampermonkey の「詳細」→「<strong>ファイルの URL へのアクセスを許可する</strong>」をオン</li>
+    </ol>
+    それでもダメなら手動インストールが確実です：Tampermonkey アイコン → ダッシュボード → 「ユーティリティ」タブ → 「ファイルからインポート」で <code>.user.js</code> ファイルを選択。
+  </div>
+  <p>
+    <a class="btn" href="note-pv-logger.user.js">CSV/TSV版をインストール</a>
+    <a class="btn sub" href="note-pv-md-logger.user.js">Markdown版をインストール</a>
+  </p>
+
+  <h2><span class="num">04</span>iPhone への導入</h2>
+  <p>iPhone でも Safari 上の note.com で同じように使えます。アップローダーなどの追加スクリプトは不要、1本入れるだけです。</p>
+  <ol>
+    <li>App Store で <a href="https://apps.apple.com/app/userscripts/id1463298887" target="_blank" rel="noopener">Userscripts</a> アプリを入れ、設定 → Safari → 機能拡張 で有効化</li>
+    <li>Safari で本ページを開き、上のボタンから使いたい方のスクリプトをインストール</li>
+    <li>Safari で note.com にログインした状態で開き、右下のボタンから取得</li>
+  </ol>
+  <div class="box">
+    <span class="box-title">取得した .md / CSV はどこへ行く？</span>
+    iPhone ではダウンロードした <code>.md</code> や <code>.csv</code> は「ファイル」アプリに保存されます。
+    Obsidian の Vault フォルダ（iCloud など）に移動すれば取り込めます。表に貼るだけなら「コピー」が手軽です。
+  </div>
+
+  <h2><span class="num">05</span>使い方</h2>
+  <ol>
+    <li><strong>note にログインした状態で</strong> note.com の任意のページを開く</li>
+    <li>画面右下に出るボタン（<strong>📊 PV</strong> または <strong>📝 PV→MD</strong>）をタップしてパネルを開く</li>
+    <li>期間（<strong>全期間 / 月間 / 週間</strong>）を選んで「<strong>取得</strong>」を押す</li>
+    <li>記事数と合計ビューが表示され、表で内容を確認できる</li>
+    <li>あとは書き出すだけ：
+      <ul>
+        <li><strong>CSV/TSV版</strong>：「CSV保存」（Excel向け）／「コピー」（スプレッドシートに貼り付け）</li>
+        <li><strong>Markdown版</strong>：「.md保存」（Obsidian に置く）／「MDコピー」</li>
+      </ul>
+    </li>
+  </ol>
+  <div class="box">
+    <span class="box-title">ログインしていないと取れません</span>
+    数値が取れない・「認証エラー」と出る場合は、まず同じブラウザで note にログインしているか確認してください。
+  </div>
+
+  <h2><span class="num">06</span>書き出されるデータ</h2>
+
+  <h3>CSV / TSV版</h3>
+  <p>1行 = 1記事。取得日時の列が入るので、日付ごとに同じシートへ貯めていけば推移を追えます。</p>
+<pre><code>取得日時,期間,記事ID,タイトル,URL,ビュー,スキ,コメント
+2026-06-13 21:40,all,1234567890,記事タイトル,https://note.com/yzrswork/n/xxxx,1234,56,7
+...</code></pre>
+
+  <h3>Markdown版（Obsidian向け）</h3>
+  <p>取得するたびに <code>note-pv_&lt;期間&gt;_&lt;日時&gt;.md</code> という<strong>1スナップショット = 1ファイル</strong>が作られます。
+     フロントマターに合計値が入るので、Obsidian の Dataview で推移を集計できます。</p>
+<pre><code>note-pv_all_20260613-2140.md
+
+---
+type: note-pv-snapshot
+fetched_at: "2026-06-13 21:40"
+date: 2026-06-13
+filter: all
+filter_label: "全期間"
+articles: 42
+total_pv: 12345
+total_like: 678
+total_comment: 9
+tags: [note, pv, stats]
+---
+
+# note PV スナップショット (2026-06-13 21:40 / 全期間)
+
+- 記事数: 42
+- 合計ビュー: 12,345
+- 合計スキ: 678
+- 合計コメント: 9
+
+| タイトル | ビュー | スキ | コメント |
+| --- | ---: | ---: | ---: |
+| [記事タイトル](https://note.com/yzrswork/n/xxxx) | 1234 | 56 | 7 |
+| ... | ... | ... | ... |</code></pre>
+
+  <h2><span class="num">07</span>注意事項</h2>
+  <table>
+    <tr><th>項目</th><th>内容</th></tr>
+    <tr><td>非公式 API</td><td>note の内部 API を使う非公式な方法です。note 側の仕様変更で、ある日突然動かなくなる可能性があります。</td></tr>
+    <tr><td>自分のデータのみ</td><td>取得できるのは、ログイン中のあなた自身のアカウントの統計だけです。</td></tr>
+    <tr><td>トークン不要</td><td>ブラウザのログインセッションを使うため、PAT やパスワードの保存はありません。</td></tr>
+    <tr><td>取得件数が多い場合</td><td>記事数に応じて API を複数回呼びます（負荷軽減のため各ページの間に短い待ちを入れています）。記事が非常に多いと取得に少し時間がかかります。</td></tr>
+    <tr><td>数値の基準</td><td>表示される数値は note のダッシュボードと同じ集計です。期間（全期間/月間/週間）によって値が変わります。</td></tr>
+  </table>
+
+  <h2><span class="num">08</span>うまく動かないとき</h2>
+  <ul>
+    <li>ボタンが出ない → note.com 以外のページでは出ません。note.com を開いた状態で Tampermonkey/Userscripts のメニューを開き、スクリプトがオンになっているか確認 → オンにしたらページをリロード。</li>
+    <li>「認証エラー: noteにログインしてください」と出る → 同じブラウザで note にログインし直してから、もう一度「取得」を押してください。</li>
+    <li>ビューが <code>0</code> ばかり／取得できない → note 側の API 仕様が変わった可能性があります。期間を変えて試し、それでもダメなら時間をおいて再度お試しください。</li>
+    <li>CSV を Excel で開くと文字化けする → CSV版は文字化け対策（BOM）付きで保存しています。それでも崩れる場合は「コピー」で TSV をスプレッドシートに貼る方法をお試しください。</li>
+    <li>iPhone で保存先がわからない → ダウンロードは「ファイル」アプリに入ります。手早く使うなら「コピー」が確実です。</li>
+  </ul>
+
+  <div class="footer">© や印工務店 / yzrswork — Printed on the Web</div>
+</main>
+</body>
+</html>
