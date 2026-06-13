@@ -88,7 +88,8 @@ let currentColor = 'black';
 
 // ─── Visual tuning ────────────────────────────────────────────────────────────
 const PAPER        = '#fbfaf6';
-const FADE_ALPHA   = 0.008;  // per-frame fade — slow, so washes pool and stain
+const WET_FADE     = 0.018;  // per-frame dissolve of the WET layer (滲んで消えていく)
+const STAIN_RATIO  = 0.5;    // how much of each wash sinks into the permanent stain
 const R_SLOW       = 40;     // brush radius when moving slowly (wet pooling)
 const R_FAST       = 13;     // brush radius when moving fast
 const STAMP_SPACE  = 0.30;   // stamp spacing as a fraction of brush radius
@@ -236,6 +237,18 @@ const canvas = document.getElementById('c');
 const g = canvas.getContext('2d');
 let W = 0, H = 0, DPR = 1;
 
+// Two offscreen layers composited as  paper × stain × wet  every frame:
+//   stainCv — permanent pigment that builds up & deepens with each pass
+//   wetCv   — the wet wash on top, which blooms then slowly dissolves
+let stainCv, sctx, wetCv, wctx;
+function makeLayer() {
+  const cv = document.createElement('canvas');
+  cv.width = Math.max(W * DPR, 1); cv.height = Math.max(H * DPR, 1);
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  return { cv, ctx };
+}
+
 // Pre-rendered soft wash sprite per colour (very feathered = wet bleed).
 const sprites = {};
 function buildSprites() {
@@ -262,47 +275,64 @@ function resize() {
   canvas.width = W * DPR; canvas.height = H * DPR;
   canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
   g.setTransform(DPR, 0, 0, DPR, 0, 0);
-  paintPaper();
+  ({ cv: stainCv, ctx: sctx } = makeLayer());
+  ({ cv: wetCv,   ctx: wctx } = makeLayer());
 }
 
+// Wipe both pigment layers (the visible paper is repainted every frame).
 function paintPaper() {
-  g.globalCompositeOperation = 'source-over';
-  g.fillStyle = PAPER;
-  g.fillRect(0, 0, W, H);
+  sctx.clearRect(0, 0, W, H);
+  wctx.clearRect(0, 0, W, H);
 }
 
-// Lay one wash dab. Multiply compositing blends overlapping pigments naturally.
+// Lay one wash dab. The wet wash sits on the wet layer (it will dissolve); a
+// fainter copy sinks into the permanent stain layer, where overlapping passes
+// multiply together — so re-tracing the same place deepens the colour.
 function stamp(color, x, y, radius, alpha, withBloom) {
   const sp = sprites[color];
-  g.globalCompositeOperation = 'multiply';
 
-  // Wet bloom: a large, very faint halo (water carrying pigment outward).
+  // ── Wet layer (source-over: keeps the pure pigment hue, no graying) ──
+  wctx.globalCompositeOperation = 'source-over';
   if (withBloom) {
-    g.globalAlpha = alpha * 0.16;
+    wctx.globalAlpha = alpha * 0.16;
     const br = radius * 2.4;
-    g.drawImage(sp, x - br, y - br, br * 2, br * 2);
+    wctx.drawImage(sp, x - br, y - br, br * 2, br * 2);
   }
-
-  // Core wash
-  g.globalAlpha = alpha;
-  g.drawImage(sp, x - radius, y - radius, radius * 2, radius * 2);
-
-  // Granulation: scattered faint specks (pigment settling in the water)
+  wctx.globalAlpha = alpha;
+  wctx.drawImage(sp, x - radius, y - radius, radius * 2, radius * 2);
   if (Math.random() < GRAIN_CHANCE) {
     const a = Math.random() * Math.PI * 2;
     const dist = radius * (0.9 + Math.random() * 1.8);
     const rr = radius * (0.14 + Math.random() * 0.3);
-    g.globalAlpha = alpha * 0.3;
-    g.drawImage(sp, x + Math.cos(a) * dist - rr, y + Math.sin(a) * dist - rr, rr * 2, rr * 2);
+    wctx.globalAlpha = alpha * 0.3;
+    wctx.drawImage(sp, x + Math.cos(a) * dist - rr, y + Math.sin(a) * dist - rr, rr * 2, rr * 2);
   }
-  g.globalAlpha = 1;
+  wctx.globalAlpha = 1;
+
+  // ── Stain layer (multiply: permanent, accumulates & darkens with layering) ──
+  sctx.globalCompositeOperation = 'multiply';
+  sctx.globalAlpha = alpha * STAIN_RATIO;
+  sctx.drawImage(sp, x - radius, y - radius, radius * 2, radius * 2);
+  sctx.globalAlpha = 1;
 }
 
-// ─── Animation loop: slowly fade toward paper so washes settle then dissolve ──
+// ─── Animation loop ───────────────────────────────────────────────────────────
+// Dissolve the wet layer a touch each frame (滲んで消えていく), then composite
+// paper × stain × wet so the faint stain always remains underneath.
 function frame() {
+  wctx.globalCompositeOperation = 'destination-out';
+  wctx.fillStyle = `rgba(0,0,0,${WET_FADE})`;
+  wctx.fillRect(0, 0, W, H);
+  wctx.globalCompositeOperation = 'source-over';
+
   g.globalCompositeOperation = 'source-over';
-  g.fillStyle = `rgba(251,250,246,${FADE_ALPHA})`;
+  g.fillStyle = PAPER;
   g.fillRect(0, 0, W, H);
+  g.globalCompositeOperation = 'multiply';
+  g.drawImage(stainCv, 0, 0, W, H);
+  g.drawImage(wetCv, 0, 0, W, H);
+  g.globalCompositeOperation = 'source-over';
+
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
