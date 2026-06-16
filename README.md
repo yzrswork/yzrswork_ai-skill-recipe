@@ -18,6 +18,7 @@
 | `note-pv-logger.html` | note PV Logger | noteの全記事のビュー数をダッシュボードAPIから取得し、CSV/TSV/Markdownで書き出すユーザースクリプトの導入ガイド（`note-pv-logger.user.js` / `note-pv-md-logger.user.js`）。トークン不要 |
 | `note-pv-logger.user.js` | note PV Logger | noteのダッシュボードAPIから全記事のビュー・スキ・コメント数を取得し、CSVダウンロード/TSVコピーできるユーザースクリプト。noteにログインした状態でページ右下の「📊 PV」ボタンから使う |
 | `note-pv-md-logger.user.js` | note PV Markdown Logger | 同じくnoteの全記事ビュー数を取得し、Obsidian向けに「1スナップショット=1ファイル」のMarkdown（frontmatter付き表）としてダウンロード/コピーできるユーザースクリプト。右下の「📝 PV→MD」ボタンから使う |
+| `bench/index.html` | 工房の電卓 / Maker's Bench | 電子工作の作業台に常駐するオフライン計算ツール集（オームの法則・LED直列抵抗・カラーコード・555タイマー・電池駆動時間・エンジニア表記パーサ）。Amazonアフィリエイト対応PWA。 |
 
 ## ローカルで動かす
 
