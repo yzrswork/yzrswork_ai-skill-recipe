@@ -216,6 +216,7 @@
 
     <footer>
       <div>このリストは <a href="https://note.com/yzrswork" target="_blank" rel="noopener noreferrer">note の「電子工作部品の話」シリーズ ↗</a> をもとにした、や印工務店の実機での選定です。</div>
+      <div>現行モデル確認: 2026年6月（HAKKO FX600 / AstroAI 4000カウント / Jesverty SPS-3010M）。価格・在庫は市況で変動します。</div>
       <div><a href="../tools/index.html">← 道具箱（ほかの実用ツール）</a></div>
       <div class="footer-meta">© や印工務店 / yzrswork — Maker's Starter Kit</div>
     </footer>
@@ -276,16 +277,16 @@ const GROUPS = [
 /* ---------- アイテム（vol.2 工具 / vol.3 部品ストック より） ---------- */
 const ITEMS = [
   // Step 1
-  { id: 'iron', cat: 'tool-1', title: 'ハンダごて（温調式）', why: 'これがないと始まらない。最初から温度調整付きが正解。', pick: 'HAKKO FX600A クリアタイプ＋こて台セット', kw: 'HAKKO FX600A はんだこて こて台 セット' },
+  { id: 'iron', cat: 'tool-1', title: 'ハンダごて（温調式）', why: 'これがないと始まらない。最初から温度調整付きが正解。', pick: 'HAKKO FX600（温調 200〜500℃）＋こて台', kw: 'HAKKO FX600 はんだこて 温調 こて台 セット' },
   { id: 'nipper', cat: 'tool-1', title: 'ニッパー', why: 'リード線や部品の足を切る。切れ味で差が出る工具。', pick: 'ENGINEER ニッパー', kw: 'ENGINEER ニッパー 電子工作' },
   { id: 'breadboard', cat: 'tool-1', title: 'ブレッドボード＋ジャンパー線セット', why: 'ハンダ付けせず回路を仮組みして「動くか試す」。', pick: 'ブレッドボード＋ジャンパー線セット（1,500〜2,000円）', kw: 'ブレッドボード ジャンパー線 セット' },
   // Step 2
-  { id: 'tester', cat: 'tool-2', title: 'テスター（マルチメーター）', why: '動かない原因の9割は「つながってない」か「電圧がおかしい」。切り分けが一気に楽になる。', pick: 'AstroAI デジタルマルチメーター 4000カウント', kw: 'AstroAI デジタルマルチメーター 4000カウント' },
+  { id: 'tester', cat: 'tool-2', title: 'テスター（マルチメーター）', why: '動かない原因の9割は「つながってない」か「電圧がおかしい」。切り分けが一気に楽になる。', pick: 'AstroAI 4000カウント（TRMS・3年保証）', kw: 'AstroAI デジタルマルチメーター 4000カウント TRMS' },
   { id: 'probe', cat: 'tool-2', title: 'テスタープローブ（極細ニードル）', why: '狭い箇所に刺しやすくなる。標準プローブの不満を解消。', pick: '金メッキ 極細ニードルタイプ T-03', kw: 'テスターリード 極細 ニードル T-03' },
   { id: 'stand', cat: 'tool-2', title: 'サポートスタンド', why: '基板や部品をクリップで固定。「押さえる手がない」を解決。', pick: '新富士バーナー RZ-300（ネジはステン蝶ボルト換装推奨）', kw: '新富士バーナー サポートスタンド RZ-300' },
   { id: 'stripper', cat: 'tool-2', title: 'ワイヤーストリッパー', why: '被覆を銅線を傷つけず剥がす。細いシリコン線もサクッと。', pick: 'ENGINEER PAW-01（電線径 自動調節）', kw: 'ENGINEER ワイヤーストリッパー PAW-01' },
   // Step 3
-  { id: 'psu', cat: 'tool-3', title: '直流安定化電源', why: '電圧・電流を自分で設定。ラズパイ/Arduinoで「電源を安定させたい」と思ってからで十分。', pick: 'SPS-3010M（30V/10A・USB PD付き）', kw: '直流安定化電源 SPS-3010M 30V 10A' },
+  { id: 'psu', cat: 'tool-3', title: '直流安定化電源', why: '電圧・電流を自分で設定。ラズパイ/Arduinoで「電源を安定させたい」と思ってからで十分。', pick: 'Jesverty SPS-3010M（30V/10A・USB PD・エンコーダ）', kw: 'Jesverty 直流安定化電源 SPS-3010M 30V 10A' },
   // 部品ストック
   { id: 'jumper', cat: 'stock', title: 'ジャンパー線', why: 'オス-オス/オス-メス/メス-メスの3種セットでほぼ対応。', pick: 'ELEGOO 120pcs 多色デュポンワイヤー', kw: 'ELEGOO ジャンパーワイヤー 120本 セット', tip: '急ぎ→Amazon' },
   { id: 'resistor', cat: 'stock', title: '抵抗セット', why: 'LEDを焼かないための必須部品。収納ケース付きが整理に効く。', pick: 'GOODCHI 600個（10Ω〜1MΩ・30種・各20）', kw: 'GOODCHI 金属皮膜抵抗 600個 セット 収納ケース', tip: '急ぎ→Amazon' },
