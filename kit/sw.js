@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kit-v2';
+const CACHE_NAME = 'kit-v3';
 const ASSETS = [
   './',
   './index.html',

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bench-v2';
+const CACHE_NAME = 'bench-v3';
 const ASSETS = [
   './',
   './index.html',

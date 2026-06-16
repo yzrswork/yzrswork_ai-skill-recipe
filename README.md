@@ -57,4 +57,11 @@ pip install Pillow
 python generate_icons.py
 ```
 
+OGP共有カード（note/Xでのリッチ表示用 `icons/og-card.png` 1200x630）は `generate_og.py` で生成できる:
+
+```bash
+pip install Pillow
+python generate_og.py
+```
+
 `memo.html` や `manifest.json` を更新したら `sw.js` の `CACHE_NAME` を bump すること（`memo-v1` → `memo-v2` …）。
