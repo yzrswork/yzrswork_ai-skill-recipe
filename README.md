@@ -20,6 +20,7 @@
 | `note-pv-md-logger.user.js` | note PV Markdown Logger | 同じくnoteの全記事ビュー数を取得し、Obsidian向けに「1スナップショット=1ファイル」のMarkdown（frontmatter付き表）としてダウンロード/コピーできるユーザースクリプト。右下の「📝 PV→MD」ボタンから使う |
 | `bench/index.html` | 工房の電卓 / Maker's Bench | 電子工作の作業台に常駐するオフライン計算ツール集（オームの法則・LED直列抵抗・カラーコード・555タイマー・電池駆動時間・エンジニア表記パーサ）。Amazonアフィリエイト対応PWA。 |
 | `fixit/index.html` | 直し方ナビ / Fix-it Navigator | よくあるトラブルを質問に答えるだけで切り分ける対話式診断ウィザードPWA。iPhoneのYahoo!メール（IMAP/SMTP遮断）とWindows11 24H2の共有フォルダ問題を収録。note記事から `#yahoo-mail` `#win-share` で直リンク可。オフライン対応・Amazonアフィリエイト対応。 |
+| `kit/index.html` | 装備ナビ / Maker's Starter Kit | 電子工作の工具・部品ストックをステップ別にチェックし、Amazonの買い物リストに集約するPWA。「持ってる」消し込み・調達先ガイド（Amazon/AliExpress/秋月千石/aitendo）つき。note「電子工作部品の話」vol.1〜3の選定がベース。オフライン対応・Amazonアフィリエイト対応。 |
 
 ## ローカルで動かす
 
