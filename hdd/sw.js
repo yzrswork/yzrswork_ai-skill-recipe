@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fixit-v2';
+const CACHE_NAME = 'hdd-v1';
 const ASSETS = [
   './',
   './index.html',
@@ -9,7 +9,7 @@ const ASSETS = [
 ];
 
 // ASSETSを絶対URLに正規化したSet（fetch判定で使用）
-const FIXIT_ASSET_URLS = new Set(
+const HDD_ASSET_URLS = new Set(
   ASSETS.map(path => new URL(path, self.location.href).href)
 );
 
@@ -45,8 +45,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // fixitアプリの既知アセット以外は素通り（他ページに介入しない）
-  if (!FIXIT_ASSET_URLS.has(url.href)) {
+  // hddアプリの既知アセット以外は素通り（他ページに介入しない）
+  if (!HDD_ASSET_URLS.has(url.href)) {
     return;
   }
 
@@ -76,8 +76,8 @@ self.addEventListener('fetch', (event) => {
 
 // === キャッシュ更新ルール ===
 // index.html や manifest.webmanifest を更新したら CACHE_NAME を bump すること
-// 例: 'fixit-v1' → 'fixit-v2'
+// 例: 'hdd-v1' → 'hdd-v2'
 //
 // === キャッシュ範囲 ===
-// このSWは /fixit/ スコープで、ASSETS配列に列挙された既知アセットのみキャッシュする。
-// 他ページ（memo.html, bench/ 等）には介入しない。
+// このSWは /hdd/ スコープで、ASSETS配列に列挙された既知アセットのみキャッシュする。
+// 他ページ（memo.html, bench/, fixit/, kit/, lab/ 等）には介入しない。

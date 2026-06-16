@@ -753,6 +753,191 @@ const TREES = {
         ]
       }
     }
+  },
+
+  'pc-boot': {
+    num: '03',
+    title: '自作PCが起動しない／ビープ音が鳴る',
+    sub: '電源は入るのに画面が出ない・ビープ音で止まる時の切り分け',
+    article: { label: '元記事（note）', url: 'https://note.com/yzrswork/n/n2c9286a10d3e' },
+    start: 'p0',
+    nodes: {
+      p0: {
+        type: 'question',
+        text: '自作PCで、電源は入るのに起動しない・ビープ音が鳴りますか？',
+        help: 'ビープ音＝GPU故障とは限りません。安く試せる対処から順に切り分けます（ビープコードの意味はマザーボードのマニュアルで要確認）。',
+        options: [
+          { label: 'ビープ音が鳴る', next: 'p1' },
+          { label: '電源は入るが画面が出ない（ビープなし）', next: 'pBasic' },
+          { label: '別の自作PCトラブル', next: 'pOther', style: 'ghost' }
+        ]
+      },
+      pOther: {
+        type: 'solution',
+        text: 'このナビは「起動時のビープ音・画面が出ない」向けです',
+        text2: '組み立て全体や他のトラブルは、はじめての自作PCまとめ（ハブ記事）が地図になります。',
+        links: [{ label: 'はじめての自作PCまとめ', url: 'https://note.com/yzrswork/n/nae5cdc6a50f1' }],
+        options: [{ label: '最初に戻る', next: '__home', style: 'ghost' }]
+      },
+      p1: {
+        type: 'question',
+        text: 'ビープ音のパターンは？',
+        help: 'メーカーで意味が違うことがあります。長音1＋短音2は映像（VGA）系の定番。マザーのマニュアルやビープ一覧で確認を。',
+        options: [
+          { label: '長音1＋短音2（映像・VGA系）', next: 'pVga' },
+          { label: 'その他のパターン／よく分からない', next: 'pBasic' }
+        ]
+      },
+      pBasic: {
+        type: 'question',
+        text: 'まず基本の切り分けをします（安く確実）',
+        steps: [
+          'CPU補助電源（8ピン）を差し直す',
+          'メモリを1枚だけにして起動テスト',
+          'GPUを一度外して再装着',
+          'CMOSクリア（マザーボードのボタン電池を抜く）'
+        ],
+        options: [
+          { label: 'これで直った', next: 'pWin', style: 'primary' },
+          { label: '変わらない', next: 'pVga' }
+        ]
+      },
+      pVga: {
+        type: 'question',
+        text: '受け取り側（モニター・ケーブル・中継機器）を疑います',
+        help: '実例では原因がGPUではなく「モニターの信号受信タイミング」でした。映像は出るのにビープが鳴る場合は特にこのパターンの可能性。',
+        steps: [
+          'モニターの入力ポートを変える（HDMI1／HDMI2／DisplayPort）',
+          'ケーブルを別規格・別メーカーに交換する',
+          '可能なら別のモニターで試す'
+        ],
+        options: [
+          { label: 'これで直った', next: 'pWin', style: 'primary' },
+          { label: 'まだ鳴る／画面が出ない', next: 'pSelector' }
+        ]
+      },
+      pSelector: {
+        type: 'solution',
+        text: 'HDMIセレクター／スプリッターを挟む',
+        text2: 'モニターとPCの間にHDMI切替器を挟むと、信号が保持されてエラーを回避できることがあります（実例ではこれで完全解消）。電源不要の安価なものでOK。',
+        steps: [
+          'モニターとPCの間にHDMIセレクターを挟む',
+          '起動してビープ音・表示を確認する'
+        ],
+        affiliate: { keyword: 'HDMI 切替器 セレクター 4K 電源不要', label: 'HDMI切替器を探す', note: '¥600前後から' },
+        options: [
+          { label: '解消した！', next: 'pWin', style: 'primary' },
+          { label: 'まだダメ', next: 'pBios' }
+        ]
+      },
+      pBios: {
+        type: 'solution',
+        text: 'ソフト対処と最終手段',
+        steps: [
+          'マザーボード公式から最新BIOSに更新（CPU世代対応・ファイル名のリネーム規則に注意）',
+          'CMOSクリアをもう一度試す',
+          'それでもダメならGPUの交換・RMA申請を検討'
+        ],
+        links: [
+          { label: 'ビープ音トラブルの記事', url: 'https://note.com/yzrswork/n/n2c9286a10d3e' },
+          { label: 'はじめての自作PCまとめ', url: 'https://note.com/yzrswork/n/nae5cdc6a50f1' }
+        ],
+        options: [{ label: '最初に戻る', next: '__home', style: 'ghost' }]
+      },
+      pWin: {
+        type: 'solution',
+        text: '解決しました。おつかれさまでした。',
+        text2: 'ビープ音＝GPU故障とは限りません。接続環境（モニター・ケーブル・中継機器）も原因になります。高額パーツを疑う前に、安価な対処から順番に、が教訓。',
+        links: [{ label: '元記事で全手順を見る', url: 'https://note.com/yzrswork/n/n2c9286a10d3e' }],
+        options: [{ label: '最初に戻る', next: '__home', style: 'ghost' }]
+      }
+    }
+  },
+
+  'obsidian-sync': {
+    num: '04',
+    title: 'iPhoneのObsidianがiCloudで同期できない',
+    sub: '「Store in iCloud」が押せない／保管庫のマトリョーシカ現象',
+    article: { label: '元記事（note）', url: 'https://note.com/yzrswork/n/nbdf94c650c6c' },
+    start: 'o0',
+    nodes: {
+      o0: {
+        type: 'question',
+        text: 'iPhoneのObsidianをiCloudで同期したいのに、うまくいきませんか？',
+        help: 'Appleの作法でハマりがちです。症状から切り分けます。',
+        options: [
+          { label: '「Store in iCloud」が押せない／グレーアウト', next: 'oGray' },
+          { label: '設定はONなのにアプリが「iCloudが有効でない」と言う', next: 'oGray' },
+          { label: '一部ノートが見つからない／PCの変更が反映されない', next: 'oMatryoshka' },
+          { label: 'これから新規に構築したい', next: 'oSetup' }
+        ]
+      },
+      oSetup: {
+        type: 'question',
+        text: '正しい作り方（PC先行は厳禁）',
+        help: '「ファイルを置けば同期される」ではありません。iPhone側で専用フォルダ（アジト）を作らせるのが先です。',
+        steps: [
+          'iPhone版Obsidianで Create new vault をタップ',
+          '「Store in iCloud」をONにして保管庫を作成（iCloud Driveに専用フォルダができる）',
+          'そのあとにPC側のデータをそのフォルダへ移す',
+          'Indexing が回って同期完了'
+        ],
+        options: [
+          { label: 'スイッチがONにできない', next: 'oGray' },
+          { label: '作ったがノートが反映されない', next: 'oMatryoshka' },
+          { label: '同期できた', next: 'oWin', style: 'primary' }
+        ]
+      },
+      oGray: {
+        type: 'solution',
+        text: '最後の手段は「Apple ID 再ログイン」',
+        text2: '設定ではONなのにアプリが認識しない時、iCloudの同期エンジンが根本でフリーズしていることがあります。Apple IDのサインアウト→再ログインが定番の特効薬です。',
+        warn: 'サインアウトはApple Pay等の紐付けが一時的に解除されます。時間に余裕をもって行ってください。',
+        steps: [
+          'まず再起動・設定のON/OFFを一通り試す',
+          '<code>設定 → 自分の名前</code> からサインアウト',
+          '再度サインインする',
+          'Obsidianで Create new vault →「Store in iCloud」が押せるか確認'
+        ],
+        options: [
+          { label: '押せるようになった', next: 'oSetup', style: 'primary' },
+          { label: 'まだダメ', next: 'oStuck' }
+        ]
+      },
+      oMatryoshka: {
+        type: 'solution',
+        text: '保管庫の中に保管庫（マトリョーシカ現象）を直す',
+        help: 'PCからドラッグした時に、空の保管庫の中へ保管庫を丸ごと入れてしまうと、<code>.obsidian</code> が二重になりアプリが混乱します。',
+        steps: [
+          'PC側でiCloud Driveの階層を整理（保管庫フォルダ内の余計なフォルダを取り除く）',
+          '複数できた <code>.obsidian</code> のうち不要なものを削除し、設定フォルダを1つだけにする',
+          'iPhone版Obsidianを再起動して再スキャン',
+          'PCで金庫アイコンからVaultのパスが正しい場所か確認'
+        ],
+        options: [
+          { label: '直った', next: 'oWin', style: 'primary' },
+          { label: 'まだ変', next: 'oStuck' }
+        ]
+      },
+      oStuck: {
+        type: 'solution',
+        text: 'それでも不整合が残るなら',
+        steps: [
+          '雲マーク（ストレージ最適化）をオフにし、ファイルを常にローカルに実体化させる',
+          'iOSのファイルアプリで実体がダウンロード済みか確認',
+          '最後の手段として Apple ID 再ログインをもう一度試す'
+        ],
+        links: [{ label: '元記事で詳しく読む', url: 'https://note.com/yzrswork/n/nbdf94c650c6c' }],
+        options: [{ label: '最初に戻る', next: '__home', style: 'ghost' }]
+      },
+      oWin: {
+        type: 'solution',
+        text: '同期できました。おつかれさまでした。',
+        text2: 'ポイントは「iPhone側でStore in iCloudを先行」「雲マーク最適化を避けてローカル実体化」「理屈で直らない時はApple ID再ログイン」の3つ。',
+        links: [{ label: '元記事を見る', url: 'https://note.com/yzrswork/n/nbdf94c650c6c' }],
+        options: [{ label: '最初に戻る', next: '__home', style: 'ghost' }]
+      }
+    }
   }
 };
 
