@@ -47,6 +47,7 @@ CARDS = [
     ("lab",   "og-lab.png",   "ELECTRONICS", "e-photoframe Lab", "Modules & 5V power planner",       "Catalog  ·  Current budget"),
     ("hdd",   "og-hdd.png",   "PC BUILD",    "HDD Picker",       "WD color & CMR / SMR",             "By use  ·  Model-suffix check"),
     ("mem",   "og-mem.png",   "PC BUILD",    "Memory Picker",    "DDR spec & capacity",              "Socket  ·  Use  ·  Dual-channel"),
+    ("build", "og-build.png", "PC BUILD",    "PC Build Planner", "Socket · RAM · Storage · PSU",     "Compatibility & power estimate"),
 ]
 
 

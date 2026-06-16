@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lab-v5';
+const CACHE_NAME = 'build-v1';
 const ASSETS = [
   './',
   './index.html',
@@ -9,7 +9,7 @@ const ASSETS = [
 ];
 
 // ASSETSを絶対URLに正規化したSet（fetch判定で使用）
-const LAB_ASSET_URLS = new Set(
+const BUILD_ASSET_URLS = new Set(
   ASSETS.map(path => new URL(path, self.location.href).href)
 );
 
@@ -45,8 +45,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // labアプリの既知アセット以外は素通り（他ページに介入しない）
-  if (!LAB_ASSET_URLS.has(url.href)) {
+  // buildアプリの既知アセット以外は素通り（他ページに介入しない）
+  if (!BUILD_ASSET_URLS.has(url.href)) {
     return;
   }
 
@@ -76,8 +76,8 @@ self.addEventListener('fetch', (event) => {
 
 // === キャッシュ更新ルール ===
 // index.html や manifest.webmanifest を更新したら CACHE_NAME を bump すること
-// 例: 'lab-v1' → 'lab-v2'
+// 例: 'build-v1' → 'build-v2'
 //
 // === キャッシュ範囲 ===
-// このSWは /lab/ スコープで、ASSETS配列に列挙された既知アセットのみキャッシュする。
-// 他ページ（memo.html, bench/, fixit/, kit/ 等）には介入しない。
+// このSWは /build/ スコープで、ASSETS配列に列挙された既知アセットのみキャッシュする。
+// 他ページには介入しない。
