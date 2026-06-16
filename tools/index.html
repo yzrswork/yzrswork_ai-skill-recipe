@@ -89,7 +89,10 @@
   <main class="page">
     <div class="topbar">
       <a class="home" href="../index.html"><span class="dot">●</span> や印工務店</a>
-      <button class="share" id="share">共有</button>
+      <span style="display:flex;gap:8px;">
+        <button class="share" id="install" style="display:none;">インストール</button>
+        <button class="share" id="share">共有</button>
+      </span>
     </div>
 
     <header class="hero">
@@ -162,6 +165,23 @@
       const b = document.getElementById('share'); const t = b.textContent; b.textContent = 'コピー済'; setTimeout(() => b.textContent = t, 1500);
     } catch (e) { /* キャンセル等は無視 */ }
   });
+
+  // インストール（beforeinstallprompt 対応ブラウザでボタンを出す）
+  let deferredPrompt = null;
+  const installBtn = document.getElementById('install');
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = '';
+  });
+  installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    try { await deferredPrompt.userChoice; } catch (e) {}
+    deferredPrompt = null;
+    installBtn.style.display = 'none';
+  });
+  window.addEventListener('appinstalled', () => { installBtn.style.display = 'none'; });
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {

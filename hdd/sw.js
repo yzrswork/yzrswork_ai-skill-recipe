@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hdd-v4';
+const CACHE_NAME = 'hdd-v5';
 const ASSETS = [
   './',
   './index.html',
