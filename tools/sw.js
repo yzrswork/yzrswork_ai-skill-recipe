@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bench-v2';
+const CACHE_NAME = 'tools-v1';
 const ASSETS = [
   './',
   './index.html',
@@ -9,7 +9,7 @@ const ASSETS = [
 ];
 
 // ASSETSを絶対URLに正規化したSet（fetch判定で使用）
-const BENCH_ASSET_URLS = new Set(
+const TOOLS_ASSET_URLS = new Set(
   ASSETS.map(path => new URL(path, self.location.href).href)
 );
 
@@ -35,23 +35,21 @@ self.addEventListener('fetch', (event) => {
   const request = event.request;
   const url = new URL(request.url);
 
-  // クロスオリジン（Google Fonts CDN等）は素通り
+  // クロスオリジン（Google Fonts等）は素通り
   if (url.origin !== self.location.origin) {
     return;
   }
 
-  // GET以外（POST/PUT/DELETE等）は素通り
+  // GET以外は素通り
   if (request.method !== 'GET') {
     return;
   }
 
-  // benchアプリの既知アセット以外は素通り
-  // → index.html, memo.html 等の他ページに影響しない
-  if (!BENCH_ASSET_URLS.has(url.href)) {
+  // 道具箱の既知アセット以外は素通り（他ページに介入しない）
+  if (!TOOLS_ASSET_URLS.has(url.href)) {
     return;
   }
 
-  // ここから先はbenchアプリのアセットのみ
   // Cache First + ネットワークフォールバック
   event.respondWith(
     caches.match(request).then((cached) => {
@@ -59,7 +57,6 @@ self.addEventListener('fetch', (event) => {
 
       return fetch(request)
         .then((response) => {
-          // 成功レスポンスのみキャッシュに追加
           if (response.ok && response.type === 'basic') {
             const clone = response.clone();
             caches.open(CACHE_NAME).then((cache) => {
@@ -69,21 +66,18 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() => {
-          // ネットワーク失敗時：documentリクエストならindex.htmlを返す
           if (request.destination === 'document') {
             return caches.match('./index.html');
           }
-          // それ以外はそのままエラーを返す
         });
     })
   );
 });
 
 // === キャッシュ更新ルール ===
-// manifest.webmanifest や index.html を更新したら CACHE_NAME を bump すること
-// 例: 'bench-v1' → 'bench-v2'
+// index.html や manifest.webmanifest を更新したら CACHE_NAME を bump すること
+// 例: 'tools-v1' → 'tools-v2'
 //
 // === キャッシュ範囲 ===
-// このSWはASSETS配列に列挙されたbenchアプリの既知アセットのみキャッシュする。
-// 同一オリジンの他ページ（ルートindex.html、memo.html等）には介入しない。
-// ASSETSに新規ファイルを追加した場合はCACHE_NAMEのbumpも必須。
+// このSWは /tools/ スコープで、ASSETS配列に列挙された既知アセットのみキャッシュする。
+// 他ページ（各ツール）には介入しない。

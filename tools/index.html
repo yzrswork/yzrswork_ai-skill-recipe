@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>道具箱 — や印工務店の実用ツール</title>
+<link rel="manifest" href="./manifest.webmanifest" />
+<meta name="theme-color" content="#f0ebe3" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="道具箱" />
+<link rel="apple-touch-icon" href="../icons/icon-192.png" />
+<meta name="description" content="や印工務店の実用ツール置き場。電子工作の計算・買い物、トラブル診断、自作PCのパーツ選びを、オフラインで使えるPWAとしてまとめた道具箱。" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="や印工務店 — YZRS WORK" />
+<meta property="og:locale" content="ja_JP" />
+<meta property="og:title" content="道具箱 — や印工務店の実用ツール" />
+<meta property="og:description" content="電子工作の計算・買い物、トラブル診断、自作PCのパーツ選び。オフラインで使えるPWAの道具箱。" />
+<meta property="og:url" content="https://yzrswork.github.io/yzrswork_ai-skill-recipe/tools/" />
+<meta property="og:image" content="https://yzrswork.github.io/yzrswork_ai-skill-recipe/icons/icon-512.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="道具箱 — や印工務店の実用ツール" />
+<meta name="twitter:description" content="電子工作の計算・買い物、トラブル診断、自作PCのパーツ選び。オフラインで使えるPWAの道具箱。" />
+<meta name="twitter:image" content="https://yzrswork.github.io/yzrswork_ai-skill-recipe/icons/icon-512.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #f0ebe3; --paper-2: #e8e1d4; --card: #f6f2ea;
+    --ink: #1c1a16; --ink-soft: #2b2823; --muted: #6f675b;
+    --rule: #3a342c; --rule-soft: rgba(58,52,44,0.28);
+    --terracotta: #b5451b; --terracotta-deep: #8e3514;
+    --serif: "EB Garamond","Times New Roman",serif;
+    --mono: "DM Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+    --jp: "Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper); color: var(--ink); font-family: var(--jp);
+    line-height: 1.65; -webkit-font-smoothing: antialiased; min-height: 100vh;
+    position: relative; overflow-x: hidden;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none;
+    background-image: radial-gradient(rgba(70,50,30,0.06) 1px, transparent 1px), radial-gradient(rgba(70,50,30,0.04) 1px, transparent 1px);
+    background-size: 3px 3px, 7px 7px; background-position: 0 0, 1px 2px;
+    z-index: 0; mix-blend-mode: multiply; opacity: 0.9;
+  }
+  .page { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; padding: 28px 20px calc(44px + env(safe-area-inset-bottom)); }
+
+  .topbar { display: flex; justify-content: space-between; align-items: center; font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding-bottom: 14px; border-bottom: 1px solid var(--rule); margin-bottom: 26px; }
+  .topbar a.home { color: var(--ink); text-decoration: none; }
+  .topbar .dot { color: var(--terracotta); }
+  .share { background: none; border: 1px solid var(--rule-soft); border-radius: 7px; padding: 6px 12px; cursor: pointer; color: var(--ink-soft); font-family: var(--jp); font-size: 12px; }
+  .share:hover { border-color: var(--terracotta); color: var(--terracotta); }
+
+  header.hero { margin-bottom: 18px; }
+  .hero h1 { font-weight: 700; font-size: clamp(32px, 9vw, 50px); line-height: 1.05; margin: 0 0 12px; }
+  .hero .en { font-family: var(--serif); font-style: italic; color: var(--terracotta); font-size: 16px; letter-spacing: 0.1em; display: block; margin-bottom: 14px; }
+  .hero p { font-size: 14px; color: var(--ink-soft); max-width: 40ch; margin: 0; }
+
+  .ios-hint { font-size: 12px; color: var(--muted); background: var(--card); border: 1px solid var(--rule-soft); border-radius: 9px; padding: 10px 13px; margin: 18px 0 6px; }
+  .ios-hint b { color: var(--ink-soft); }
+
+  .group-head { display: flex; align-items: baseline; gap: 10px; margin: 28px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--rule-soft); }
+  .group-head .g-jp { font-weight: 700; font-size: 14px; letter-spacing: 0.08em; }
+  .group-head .g-en { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--terracotta); }
+
+  .tools { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 11px; }
+  .tool a { display: grid; grid-template-columns: auto 1fr auto; column-gap: 14px; align-items: baseline; background: var(--card); border: 1px solid var(--rule-soft); border-radius: 11px; padding: 16px 16px; text-decoration: none; color: var(--ink); transition: border-color 160ms ease, transform 120ms ease; }
+  .tool a:hover { border-color: var(--terracotta); transform: translateX(2px); }
+  .tool .t-name { font-weight: 700; font-size: 17px; line-height: 1.3; }
+  .tool .t-en { font-family: var(--serif); font-style: italic; color: var(--muted); font-size: 0.8em; margin-left: 8px; }
+  .tool .arrow { font-family: var(--mono); color: var(--terracotta); align-self: center; }
+  .tool .t-desc { grid-column: 2 / 4; font-size: 13px; color: var(--muted); margin-top: 5px; line-height: 1.6; }
+  .tool .t-sub { grid-column: 2 / 4; margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .tool .t-sub a { display: inline-block; grid-column: auto; background: var(--paper); border: 1px solid var(--rule-soft); border-radius: 14px; padding: 4px 11px; font-size: 11.5px; font-family: var(--mono); color: var(--ink-soft); transition: none; }
+  .tool .t-sub a:hover { transform: none; border-color: var(--terracotta); color: var(--terracotta); }
+
+  footer { margin-top: 38px; padding-top: 20px; border-top: 1px solid var(--rule); font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 10px; }
+  footer a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule-soft); }
+  footer a:hover { color: var(--terracotta); border-color: var(--terracotta); }
+  .footer-meta { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+</style>
+</head>
+<body>
+  <main class="page">
+    <div class="topbar">
+      <a class="home" href="../index.html"><span class="dot">●</span> や印工務店</a>
+      <button class="share" id="share">共有</button>
+    </div>
+
+    <header class="hero">
+      <h1>道具箱<span class="en">— The Toolbox</span></h1>
+      <p>記事から生まれた実用ツールをまとめた置き場。どれもオフラインで動き、ホーム画面に追加すればアプリのように使えます。</p>
+    </header>
+
+    <div class="ios-hint">
+      <b>ホーム画面に追加:</b> iPhoneは共有ボタン → 「ホーム画面に追加」。Androidはメニュー →「アプリをインストール」。各ツール単体でも追加できます。
+    </div>
+
+    <!-- 電子工作 -->
+    <div class="group-head"><span class="g-jp">電 子 工 作</span><span class="g-en">Electronics</span></div>
+    <ul class="tools">
+      <li class="tool"><a href="../bench/index.html">
+        <span class="t-name">工房の電卓<span class="t-en">— Maker's Bench</span></span><span class="arrow">→</span>
+        <span class="t-desc">オームの法則・LED抵抗・カラーコード・555・電池駆動時間。作業台のオフライン計算ツール集。</span>
+      </a></li>
+      <li class="tool"><a href="../kit/index.html">
+        <span class="t-name">装備ナビ<span class="t-en">— Starter Kit</span></span><span class="arrow">→</span>
+        <span class="t-desc">工具と部品ストックをステップ別にチェックし、Amazonの買い物リストに集約。調達先ガイドつき。</span>
+      </a></li>
+      <li class="tool"><a href="../lab/index.html">
+        <span class="t-name">e-photoframe ラボ<span class="t-en">— Modules & Power</span></span><span class="arrow">→</span>
+        <span class="t-desc">シリーズで使ったモジュールの図鑑と、5V単一電源の配電プランナー。</span>
+      </a></li>
+    </ul>
+
+    <!-- トラブル解決 -->
+    <div class="group-head"><span class="g-jp">ト ラ ブ ル 解 決</span><span class="g-en">Fix-it</span></div>
+    <ul class="tools">
+      <li class="tool"><a href="../fixit/index.html">
+        <span class="t-name">直し方ナビ<span class="t-en">— Fix-it Navigator</span></span><span class="arrow">→</span>
+        <span class="t-desc">質問に答えるだけで原因を切り分ける診断ナビ。4件を収録。</span>
+        <span class="t-sub">
+          <a href="../fixit/index.html#yahoo-mail">Yahoo!メール</a>
+          <a href="../fixit/index.html#win-share">Windows共有</a>
+          <a href="../fixit/index.html#pc-boot">自作PCビープ</a>
+          <a href="../fixit/index.html#obsidian-sync">Obsidian同期</a>
+        </span>
+      </a></li>
+    </ul>
+
+    <!-- 自作PC -->
+    <div class="group-head"><span class="g-jp">自 作 P C</span><span class="g-en">PC Build</span></div>
+    <ul class="tools">
+      <li class="tool"><a href="../hdd/index.html">
+        <span class="t-name">HDD選びナビ<span class="t-en">— WD Color & CMR/SMR</span></span><span class="arrow">→</span>
+        <span class="t-desc">用途から色、型番末尾でCMR/SMRを判定。RAID/NASにSMRを避けるための早見。</span>
+      </a></li>
+      <li class="tool"><a href="../mem/index.html">
+        <span class="t-name">メモリ選びナビ<span class="t-en">— DDR Spec & Capacity</span></span><span class="arrow">→</span>
+        <span class="t-desc">ソケットからDDR規格、用途から容量、2枚構成（デュアルチャネル）で。2026年の対応を反映。</span>
+      </a></li>
+    </ul>
+
+    <footer>
+      <div>制作の覚書は <a href="https://note.com/yzrswork" target="_blank" rel="noopener noreferrer">note @yzrswork ↗</a>。作品一覧は <a href="../index.html">こちら</a>。</div>
+      <div class="footer-meta">© や印工務店 / yzrswork — The Toolbox</div>
+    </footer>
+  </main>
+
+<script>
+  // 共有（Web Share APIが無ければURLをコピー）
+  document.getElementById('share').addEventListener('click', async () => {
+    const data = { title: '道具箱 — や印工務店の実用ツール', text: '電子工作・トラブル解決・自作PCの実用ツール（オフライン対応）', url: location.href };
+    try {
+      if (navigator.share) { await navigator.share(data); return; }
+      await navigator.clipboard.writeText(location.href);
+      const b = document.getElementById('share'); const t = b.textContent; b.textContent = 'コピー済'; setTimeout(() => b.textContent = t, 1500);
+    } catch (e) { /* キャンセル等は無視 */ }
+  });
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(e => console.warn('SW登録失敗', e));
+    });
+  }
+</script>
+</body>
+</html>
