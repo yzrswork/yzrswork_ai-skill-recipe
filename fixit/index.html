@@ -484,7 +484,25 @@ const TREES = {
         options: [
           { label: 'はい（パスワードは変えていない）', next: 'y1' },
           { label: 'パスワード自体を忘れた／変えた', next: 'yAcct' },
+          { label: 'メールソフトのIMAP/SMTP設定値が知りたい', next: 'ySettings', style: 'ghost' },
           { label: '症状がちょっと違う', next: 'yOther', style: 'ghost' }
+        ]
+      },
+      ySettings: {
+        type: 'solution',
+        text: 'メールソフトのサーバ設定値（IMAP / SMTP / POP）',
+        text2: 'iPhone標準メール以外（Thunderbird等）で設定する場合の値です。先にPC側で「IMAP/POP/SMTPアクセス」を有効化しておく必要があります。',
+        steps: [
+          '受信 IMAP: <code>imap.mail.yahoo.co.jp</code> ／ ポート <code>993</code> ／ SSL(SSL/TLS) 有効',
+          '受信 POP: <code>pop.mail.yahoo.co.jp</code> ／ ポート <code>995</code> ／ SSL 有効',
+          '送信 SMTP: <code>smtp.mail.yahoo.co.jp</code> ／ ポート <code>465</code> または <code>587</code> ／ SSL 有効・認証あり',
+          '2段階認証を使っている場合は「アプリパスワード」を発行して使う',
+          'つながらない時は、先にアクセス許可（IMAP/SMTPを「利用する」）を確認'
+        ],
+        help: 'サーバ値は変わることがあります。最新はYahoo!メール公式ヘルプでも確認してください。',
+        options: [
+          { label: 'アクセス許可の設定手順へ', next: 'y3', style: 'primary' },
+          { label: '最初に戻る', next: '__home', style: 'ghost' }
         ]
       },
       yAcct: {
@@ -785,7 +803,28 @@ const TREES = {
         help: 'メーカーで意味が違うことがあります。長音1＋短音2は映像（VGA）系の定番。マザーのマニュアルやビープ一覧で確認を。',
         options: [
           { label: '長音1＋短音2（映像・VGA系）', next: 'pVga' },
-          { label: 'その他のパターン／よく分からない', next: 'pBasic' }
+          { label: 'その他のパターン／よく分からない', next: 'pBasic' },
+          { label: 'ビープ音の意味を一覧で見たい', next: 'pBeep', style: 'ghost' }
+        ]
+      },
+      pBeep: {
+        type: 'solution',
+        text: 'ビープ音の意味（早見）',
+        help: 'BIOSメーカーで意味が異なります。回数・長短・繰り返しを正確に数えてから、マザーボードのマニュアルで最終確認を。',
+        steps: [
+          'AWARD系｜短音1回: 正常起動（問題なし）',
+          'AWARD系｜長音1＋短音2: グラフィック（VGA）エラー ← 今回の本命',
+          'AWARD系｜長音1＋短音1: メインメモリ（RAM）エラー',
+          'AWARD系｜短音2回: CMOS（設定）エラー',
+          'AWARD系｜長音の連続: メモリの接続不良・破損',
+          'AWARD系｜短音の連続: 電源供給のエラー',
+          'AMI系｜長音1回: 正常（AWARDと逆なので注意）／短音くり返し: メモリ系'
+        ],
+        links: [{ label: 'ビープ音トラブルの記事', url: 'https://note.com/yzrswork/n/n2c9286a10d3e' }],
+        options: [
+          { label: 'VGA系だった → 映像側を切り分ける', next: 'pVga', style: 'primary' },
+          { label: 'まず基本の切り分けへ', next: 'pBasic' },
+          { label: '最初に戻る', next: '__home', style: 'ghost' }
         ]
       },
       pBasic: {

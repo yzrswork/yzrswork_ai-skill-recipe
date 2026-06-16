@@ -182,10 +182,10 @@
       </ul>
     </div>
 
-    <p class="disclaimer">※ 色だけでは記録方式（CMR/SMR）は確定できません。CMR/SMRが混在する型番もあるため、最終判断は必ず型番の「Recording Technology」を公式で確認してください。型番例は2025年時点のもので、世代により仕様が変わることがあります。</p>
+    <p class="disclaimer">※ 色だけでは記録方式（CMR/SMR）は確定できません。WDは旧Red Plus（EFRX）を現行のEFZX/EFPX（いずれもCMR）へ静かに置き換えており、容量・世代で末尾が変わります。最終判断は必ず型番の「Recording Technology」を<a href="https://support-en.wd.com/app/answers/detailweb/a_id/50697/" target="_blank" rel="noopener noreferrer">WD公式</a>で確認してください（型番例は2026年6月時点）。</p>
 
     <footer>
-      <div>この早見は <a href="https://note.com/yzrswork/n/nd2c3b422957a" target="_blank" rel="noopener noreferrer">note「WDの色の選び方ガイド」 ↗</a> をもとにしています。役に立ったら記事にスキをもらえると励みになります。</div>
+      <div>この早見は <a href="https://note.com/yzrswork/n/nd2c3b422957a" target="_blank" rel="noopener noreferrer">note「WDの色の選び方ガイド」 ↗</a> と最新の公式情報をもとにしています。役に立ったら記事にスキをもらえると励みになります。</div>
       <div class="footer-meta">© や印工務店 / yzrswork — HDD Picker</div>
     </footer>
   </main>
@@ -239,15 +239,17 @@ const SERIES = [
   { name: 'Red（無印）', verdict: 'smr', text: '基本SMR' }
 ];
 
-/* ---------- 型番末尾ルール（2025年時点の例） ---------- */
+/* ---------- 型番末尾ルール（2026年6月時点・WD公式で要確認） ---------- */
 const SUFFIX = [
-  { suf: 'EFRX', v: 'cmr', note: '例: WD20EFRX（Red Plus 2TB）' },
-  { suf: 'EFAX', v: 'smr', note: '例: WD20EFAX（Red 2TB）' },
-  { suf: 'EARZ', v: 'cmr', note: '例: WD20EARZ（Blue 2TB 新型）' },
-  { suf: 'EZBX', v: 'smr', note: '例: WD20EZBX（Blue 2TB 7200rpm）' },
-  { suf: 'EZAZ', v: 'smr', note: '例: WD20EZAZ（Blue 2TB 5400rpm）' }
+  { suf: 'EFPX', v: 'cmr', note: '例: WD40EFPX（現行 Red Plus 4TB・CMR・256MB）' },
+  { suf: 'EFZX', v: 'cmr', note: '例: WD40EFZX（現行 Red Plus 4TB・CMR・128MB）' },
+  { suf: 'EFRX', v: 'cmr', note: '例: WD20EFRX（旧 Red Plus・CMR。現行はEFZX/EFPXへ置換）' },
+  { suf: 'EFAX', v: 'smr', note: '例: WD20EFAX（Red 無印 2TB・SMR）' },
+  { suf: 'EARZ', v: 'cmr', note: '例: WD20EARZ（Blue 2TB 新型・CMR）' },
+  { suf: 'EZBX', v: 'smr', note: '例: WD20EZBX（Blue 2TB 7200rpm・SMR）' },
+  { suf: 'EZAZ', v: 'smr', note: '例: WD20EZAZ（Blue 2TB 5400rpm・SMR）' }
 ];
-const EXAMPLES = ['WD20EARZ', 'WD20EFRX', 'WD40EFRX', 'WD20EZAZ', 'WD20EZBX', 'WD20EFAX'];
+const EXAMPLES = ['WD40EFPX', 'WD40EFZX', 'WD20EFRX', 'WD20EARZ', 'WD20EZAZ', 'WD20EFAX'];
 
 /* ---------- ユーティリティ ---------- */
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }

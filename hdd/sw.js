@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hdd-v1';
+const CACHE_NAME = 'hdd-v2';
 const ASSETS = [
   './',
   './index.html',
