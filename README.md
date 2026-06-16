@@ -22,7 +22,8 @@
 | `fixit/index.html` | 直し方ナビ / Fix-it Navigator | よくあるトラブルを質問に答えるだけで切り分ける対話式診断ウィザードPWA。Yahoo!メール（IMAP/SMTP遮断）・Windows11 24H2共有フォルダ・自作PCのビープ音／起動不良・iPhone版Obsidian同期の4件を収録。note記事から `#yahoo-mail` `#win-share` `#pc-boot` `#obsidian-sync` で直リンク可。オフライン対応・Amazonアフィリエイト対応。 |
 | `kit/index.html` | 装備ナビ / Maker's Starter Kit | 電子工作の工具・部品ストックをステップ別にチェックし、Amazonの買い物リストに集約するPWA。「持ってる」消し込み・調達先ガイド（Amazon/AliExpress/秋月千石/aitendo）つき。note「電子工作部品の話」vol.1〜3の選定がベース。オフライン対応・Amazonアフィリエイト対応。 |
 | `lab/index.html` | e-photoframe ラボ / Modules & Power Planner | e-photoframeシリーズで使ったモジュール（ZN02B/TM1637/XY-WRBT/HW-104/Digispark/TP4056/SPL-2等）の図鑑と、5V単一電源（PDB-1構成）の配電プランナーを2タブで収録するPWA。消費電流を積み上げてACアダプタ容量・ポート数の余裕を確認。各モジュールは出典note記事つき。オフライン対応・Amazonアフィリエイト対応。 |
-| `hdd/index.html` | HDD選びナビ / WD Color & CMR/SMR | Western DigitalのHDDを用途から色（Blue/Red Plus/Red/Purple/Black）で選び、CMR/SMRをシリーズ別早見と型番末尾チェッカー（EFRX/EFAX/EARZ/EZAZ/EZBX）で判定するPWA。RAID/NASにSMRを避けるための注意つき。note「WDの色の選び方ガイド」がベース。オフライン対応・Amazonアフィリエイト対応。 |
+| `hdd/index.html` | HDD選びナビ / WD Color & CMR/SMR | Western DigitalのHDDを用途から色（Blue/Red Plus/Red/Purple/Black）で選び、CMR/SMRをシリーズ別早見と型番末尾チェッカー（EFPX/EFZX/EFRX/EFAX/EARZ/EZAZ/EZBX）で判定するPWA。RAID/NASにSMRを避けるための注意つき。note「WDの色の選び方ガイド」＋最新公式情報がベース。オフライン対応・Amazonアフィリエイト対応。 |
+| `mem/index.html` | メモリ選びナビ / DDR Spec & Capacity | 自作PCのメモリを、ソケット（AM5/AM4/LGA1700/LGA1851）からDDR規格を確認し、用途から容量を選び、2枚構成（デュアルチャネル）で組むための選び方PWA。XMP/EXPO・JEDEC定格・ノッチ非互換の注意つき。note「DDR3〜DDR5の話」＋2026年の最新ソケット対応がベース。オフライン対応・Amazonアフィリエイト対応。 |
 
 ## ローカルで動かす
 
