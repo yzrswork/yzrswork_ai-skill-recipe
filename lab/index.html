@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>e-photoframe ラボ — Modules & 5V Power Planner</title>
+<link rel="manifest" href="./manifest.webmanifest" />
+<meta name="theme-color" content="#f0ebe3" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="epf ラボ" />
+<link rel="apple-touch-icon" href="../icons/icon-192.png" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="や印工務店 — YZRS WORK" />
+<meta property="og:locale" content="ja_JP" />
+<meta property="og:title" content="e-photoframe ラボ — Modules & Power Planner" />
+<meta property="og:description" content="e-photoframeシリーズのモジュール図鑑と、5V単一電源の配電プランナー。消費電流を積み上げて余裕を確認。" />
+<meta property="og:url" content="https://yzrswork.github.io/yzrswork_ai-skill-recipe/lab/" />
+<meta property="og:image" content="https://yzrswork.github.io/yzrswork_ai-skill-recipe/icons/og-lab.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="e-photoframe ラボ — Modules & Power Planner" />
+<meta name="twitter:description" content="モジュール図鑑と5V配電プランナー。消費電流を積み上げてACアダプタ容量とポート数の余裕を確認。" />
+<meta name="twitter:image" content="https://yzrswork.github.io/yzrswork_ai-skill-recipe/icons/og-lab.png" />
+<meta name="description" content="e-photoframeシリーズで使ったモジュールの図鑑と、5V単一電源の配電プランナー。消費電流を積み上げてACアダプタ容量とポート数の余裕を確認。オフライン対応。" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #f0ebe3; --paper-2: #e8e1d4; --card: #f6f2ea;
+    --ink: #1c1a16; --ink-soft: #2b2823; --muted: #6f675b;
+    --rule: #3a342c; --rule-soft: rgba(58,52,44,0.28);
+    --terracotta: #b5451b; --terracotta-deep: #8e3514;
+    --ok: #4f6f3e; --warn: #b5451b;
+    --serif: "EB Garamond","Times New Roman",serif;
+    --mono: "DM Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+    --jp: "Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper); color: var(--ink); font-family: var(--jp);
+    line-height: 1.65; -webkit-font-smoothing: antialiased; min-height: 100vh;
+    position: relative; overflow-x: hidden;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none;
+    background-image: radial-gradient(rgba(70,50,30,0.06) 1px, transparent 1px), radial-gradient(rgba(70,50,30,0.04) 1px, transparent 1px);
+    background-size: 3px 3px, 7px 7px; background-position: 0 0, 1px 2px;
+    z-index: 0; mix-blend-mode: multiply; opacity: 0.9;
+  }
+  .page { position: relative; z-index: 1; max-width: 660px; margin: 0 auto; padding: 24px 18px calc(44px + env(safe-area-inset-bottom)); }
+
+  .topbar { display: flex; justify-content: space-between; align-items: center; font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding-bottom: 14px; border-bottom: 1px solid var(--rule); margin-bottom: 18px; }
+  .topbar .brand { color: var(--ink); }
+  .topbar .brand .dot { color: var(--terracotta); }
+  .gear { background: none; border: none; font-size: 18px; cursor: pointer; padding: 4px 6px; color: var(--muted); line-height: 1; }
+  .gear:hover { color: var(--terracotta); }
+
+  header.hero { margin-bottom: 16px; }
+  .hero h1 { font-weight: 700; font-size: clamp(24px, 6.5vw, 34px); line-height: 1.15; margin: 0 0 8px; }
+  .hero .en { font-family: var(--serif); font-style: italic; color: var(--terracotta); font-size: 14px; letter-spacing: 0.08em; display: block; margin-bottom: 12px; }
+  .hero p { font-size: 13.5px; color: var(--ink-soft); max-width: 42ch; margin: 0; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 8px; margin: 18px 0 16px; }
+  .tab { flex: 1; font-family: var(--jp); font-weight: 700; font-size: 14px; padding: 11px 8px; border-radius: 9px; cursor: pointer; border: 1px solid var(--rule); background: var(--paper); color: var(--ink-soft); }
+  .tab.active { background: var(--terracotta); border-color: var(--terracotta); color: #fff; }
+
+  .hide { display: none; }
+
+  /* Filter chips */
+  .chips { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 14px; }
+  .chip { font-size: 12.5px; font-weight: 500; padding: 6px 12px; border-radius: 18px; cursor: pointer; border: 1px solid var(--rule); background: var(--paper); color: var(--ink-soft); }
+  .chip.active { background: var(--terracotta); border-color: var(--terracotta); color: #fff; }
+
+  /* Module cards */
+  .mod { background: var(--card); border: 1px solid var(--rule-soft); border-radius: 11px; padding: 14px 15px; margin-bottom: 11px; }
+  .mod .m-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .mod .m-name { font-weight: 700; font-size: 16px; }
+  .mod .m-badge { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--terracotta); white-space: nowrap; }
+  .mod .m-role { font-size: 13px; color: var(--ink-soft); margin: 5px 0 8px; }
+  .mod .m-meta { display: flex; flex-wrap: wrap; gap: 6px 14px; font-family: var(--mono); font-size: 11.5px; color: var(--muted); margin-bottom: 8px; }
+  .mod .m-meta b { color: var(--ink); font-weight: 500; }
+  .mod .m-caveat { font-size: 12.5px; color: var(--terracotta-deep); background: rgba(181,69,27,0.08); border-radius: 7px; padding: 8px 11px; margin: 0 0 9px; }
+  .mod .m-caveat .cv-lab { font-weight: 700; }
+  .mod .m-actions { display: flex; gap: 7px; flex-wrap: wrap; }
+  .btn { font-family: var(--jp); font-size: 12.5px; font-weight: 500; border-radius: 7px; padding: 8px 12px; cursor: pointer; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+  .btn:hover { border-color: var(--terracotta); color: var(--terracotta); }
+  .btn.buy { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .btn.buy:hover { background: var(--terracotta); border-color: var(--terracotta); color: #fff; }
+  .btn.add.added { background: var(--ok); border-color: var(--ok); color: #fff; }
+
+  /* Planner */
+  .rail-banner { font-size: 13px; color: var(--terracotta-deep); background: rgba(181,69,27,0.1); border-left: 3px solid var(--terracotta); border-radius: 0 8px 8px 0; padding: 10px 13px; margin-bottom: 16px; }
+  .rail-banner b { font-weight: 700; }
+  .gauge { background: var(--card); border: 1px solid var(--rule-soft); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+  .gauge .g-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .gauge .g-big { font-family: var(--mono); font-size: 26px; font-weight: 500; }
+  .gauge .g-big.over { color: var(--warn); }
+  .gauge .g-big.ok { color: var(--ok); }
+  .gauge .g-sub { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .bar { height: 12px; border-radius: 6px; background: var(--paper-2); overflow: hidden; margin: 8px 0 4px; }
+  .bar > span { display: block; height: 100%; background: var(--ok); transition: width 200ms ease; }
+  .bar > span.over { background: var(--warn); }
+  .gauge .g-stats { display: flex; gap: 18px; flex-wrap: wrap; font-family: var(--mono); font-size: 12px; color: var(--ink-soft); margin-top: 8px; }
+  .gauge .g-stats .lab { color: var(--muted); }
+  .gauge .g-stats .bad { color: var(--warn); font-weight: 500; }
+
+  .loads { margin-bottom: 12px; }
+  .load { display: grid; grid-template-columns: 1fr auto auto auto; gap: 8px; align-items: center; background: var(--card); border: 1px solid var(--rule-soft); border-radius: 9px; padding: 9px 11px; margin-bottom: 8px; }
+  .load .l-name { font-size: 13.5px; font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .load input.l-ma { width: 64px; font-family: var(--mono); font-size: 13px; padding: 6px 7px; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); color: var(--ink); text-align: right; }
+  .load .l-unit { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .load .qty { display: inline-flex; align-items: center; gap: 4px; }
+  .load .qty button { width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--rule); background: var(--paper); cursor: pointer; font-family: var(--mono); font-size: 14px; color: var(--ink); }
+  .load .qty span { font-family: var(--mono); font-size: 13px; min-width: 16px; text-align: center; }
+  .load .l-del { background: none; border: none; color: var(--terracotta); cursor: pointer; font-size: 16px; padding: 2px 4px; }
+  .loads-empty { font-size: 13px; color: var(--muted); text-align: center; padding: 16px 0; }
+
+  .add-custom { display: flex; gap: 8px; margin-bottom: 14px; }
+  .add-custom input { flex: 1; min-width: 0; padding: 9px 10px; border: 1px solid var(--rule); border-radius: 7px; font-family: var(--jp); font-size: 13px; background: var(--card); color: var(--ink); }
+  .add-custom input.ma { flex: 0 0 84px; font-family: var(--mono); text-align: right; }
+  .add-custom button { border: 1px solid var(--terracotta); background: var(--terracotta); color: #fff; border-radius: 7px; padding: 9px 14px; font-weight: 600; cursor: pointer; font-size: 13px; }
+
+  .config { display: flex; gap: 12px; flex-wrap: wrap; background: var(--card); border: 1px solid var(--rule-soft); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; }
+  .config .cfg { display: flex; flex-direction: column; gap: 3px; }
+  .config label { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .config input { width: 90px; padding: 7px 9px; border: 1px solid var(--rule); border-radius: 6px; font-family: var(--mono); font-size: 13px; background: var(--paper); color: var(--ink); }
+  .note-small { font-size: 11.5px; color: var(--muted); margin: 4px 0 18px; }
+
+  footer { margin-top: 30px; padding-top: 18px; border-top: 1px solid var(--rule); font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 10px; }
+  footer a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule-soft); }
+  footer a:hover { color: var(--terracotta); border-color: var(--terracotta); }
+  .footer-meta { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+
+  /* Settings modal */
+  .modal-bg { position: fixed; inset: 0; background: rgba(28,26,22,0.55); z-index: 20; display: none; align-items: center; justify-content: center; padding: 18px; }
+  .modal-bg.open { display: flex; }
+  .modal { background: var(--paper); border-radius: 13px; padding: 20px 18px; max-width: 440px; width: 100%; border: 1px solid var(--rule); }
+  .modal h2 { font-size: 17px; margin: 0 0 4px; }
+  .modal .m-sub { font-size: 12.5px; color: var(--muted); margin: 0 0 14px; }
+  .modal label.m-lab { font-size: 12px; font-family: var(--mono); color: var(--muted); display: block; margin-bottom: 6px; letter-spacing: 0.05em; }
+  .modal input.m-in { width: 100%; padding: 11px 12px; border: 1px solid var(--rule); border-radius: 8px; font-family: var(--mono); font-size: 14px; background: var(--card); color: var(--ink); }
+  .modal .m-row { display: flex; gap: 10px; margin-top: 16px; }
+  .modal .m-row button { flex: 1; padding: 11px; border-radius: 8px; font-family: var(--jp); font-weight: 600; font-size: 14px; cursor: pointer; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); }
+  .modal .m-row button.primary { background: var(--terracotta); border-color: var(--terracotta); color: #fff; }
+  .modal .saved { font-size: 12px; color: var(--ok); margin-top: 10px; min-height: 16px; }
+</style>
+</head>
+<body>
+  <main class="page">
+    <div class="topbar">
+      <span class="brand"><span class="dot">●</span> e-photoframe ラボ</span>
+      <button class="gear" id="gear" aria-label="設定">⚙</button>
+    </div>
+
+    <header class="hero">
+      <h1>e-photoframe ラボ<span class="en">— Modules & 5V Power Planner</span></h1>
+      <p>シリーズで実際に使ったモジュールの図鑑と、5V単一電源の配電プランナー。消費電流を積み上げて、ACアダプタ容量とポート数の余裕を確かめます。</p>
+    </header>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="catalog" id="tab-catalog">モジュール図鑑</button>
+      <button class="tab" data-tab="planner" id="tab-planner">5V電源プランナー</button>
+    </div>
+
+    <!-- ===== Catalog ===== -->
+    <section id="view-catalog">
+      <div class="chips" id="chips"></div>
+      <div id="modlist"></div>
+    </section>
+
+    <!-- ===== Planner ===== -->
+    <section id="view-planner" class="hide">
+      <div class="rail-banner">
+        <b>5V統一が大前提。</b> シリーズは全作品5V駆動で、PDB-1から分配しています。<b>12Vを入れると一斉に死にます。</b>ACアダプタは5V固定で。
+      </div>
+
+      <div class="config">
+        <div class="cfg"><label>ACアダプタ (mA)</label><input type="number" id="cfg-budget" min="100" step="100" /></div>
+        <div class="cfg"><label>ポート数 (SPL-2等)</label><input type="number" id="cfg-ports" min="1" step="1" /></div>
+        <div class="cfg"><label>レール電圧 (V)</label><input type="number" id="cfg-rail" min="1" step="0.1" /></div>
+      </div>
+      <p class="note-small">初期値はPDB-1の構成（5V / 4000mA / SPL-2 x10）。消費電流は<b>目安です。正確には各モジュールをテスターで実測</b>してください。</p>
+
+      <div class="gauge" id="gauge"></div>
+
+      <div class="loads" id="loads"></div>
+
+      <div class="add-custom">
+        <input type="text" id="add-name" placeholder="モジュール名（手入力）" />
+        <input type="number" id="add-ma" class="ma" placeholder="mA" min="0" step="1" />
+        <button id="add-btn">追加</button>
+      </div>
+      <p class="note-small">「モジュール図鑑」タブの各カードからも「＋プランナー」で追加できます。</p>
+    </section>
+
+    <footer>
+      <div>図鑑の情報は <a href="https://note.com/yzrswork" target="_blank" rel="noopener noreferrer">note の e-photoframe シリーズ ↗</a> の各記事に基づきます。電圧・消費電流の確定値は実機での実測を。</div>
+      <div><a href="../tools/index.html">← 道具箱（ほかの実用ツール）</a></div>
+      <div class="footer-meta">© や印工務店 / yzrswork — e-photoframe Lab</div>
+    </footer>
+  </main>
+
+  <!-- Settings modal -->
+  <div class="modal-bg" id="set-bg">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="設定">
+      <h2>設定</h2>
+      <p class="m-sub">AmazonアソシエイトのトラッキングIDを入れると、「探す」リンクにあなたのタグが付きます（任意・端末内にのみ保存）。</p>
+      <label class="m-lab" for="tag-input">Amazon アソシエイトタグ</label>
+      <input type="text" id="tag-input" class="m-in" placeholder="yourtag-22" autocomplete="off" spellcheck="false" />
+      <div class="saved" id="tag-saved"></div>
+      <div class="m-row">
+        <button id="tag-clear">クリア</button>
+        <button class="primary" id="tag-save">保存</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* =========================================================
+   e-photoframe ラボ — Modules & 5V Power Planner
+   依存ゼロの単一HTML。データ送信なし、オフライン動作。
+   note「e-photoframe」シリーズで実際に使ったモジュールの図鑑と、
+   PDB-1（5V単一電源・SPL-2 x10）を前提にした配電プランナー。
+   ピン配など未確定の情報は載せず、記事に書かれた事実＋データシート
+   検索リンクで構成。消費電流は「目安（要実測）」として編集可能。
+   ========================================================= */
+
+/* ---------- モジュールデータ（出典: 各note記事） ----------
+   kind: 'load'（電流を消費）/ 'passive'（パッシブ部品）/ 'source'（電源側）
+   ma: プランナー初期値の目安（mA）。passive/sourceは0。要実測。
+   volt: 記事で言及された動作電圧（不明は '-'）。
+*/
+const MODULES = [
+  { id: 'zn02b', name: 'ZN02B 電圧計モジュール', cat: '表示', kind: 'load', ma: 20, volt: '5V', role: '3桁7セグで電圧をそのまま表示。5VのUSBで「5.1X」と出る。volt-1ではジャンク時計の丸窓から覗かせた。', pair: '電源ラインに並列', caveat: '', kw: 'ZN02B 電圧計モジュール 3桁', art: { label: 'volt-1', url: 'https://note.com/yzrswork/n/nf4fd6d490cdb' } },
+  { id: 'meter', name: 'PLAYTRON アナログメーター', cat: '表示', kind: 'passive', ma: 1, volt: '-', role: '電圧を針で表示する凸型アナログメーター。SPEV-1ではソーラーパネルと直結し、部屋の明るさで針が揺れる。', pair: 'ソーラー/電源に直結', caveat: '胴体がフレーム背面に約22mm突出。ビス穴なしで貫通穴に嵌め込み。', kw: 'アナログ電圧計 パネルメーター', art: { label: 'SPEV-1', url: 'https://note.com/yzrswork/n/nb8b0f1ece577' } },
+  { id: 'tm1637', name: 'TM1637 6桁7セグ', cat: '表示', kind: 'load', ma: 40, volt: '5V', role: 'DIO/CLK の2本で制御できる7セグ表示モジュール。IM-1ではカウントダウン/横バーの2モード表示に使用。', pair: 'Digispark等のMCUで制御', caveat: '6桁は3桁+3桁チャンク構成で、setSegmentsのインデックスと物理桁が逆転する。実機でマッピング確定を。', kw: 'TM1637 6桁 7セグメント', art: { label: 'IM-1', url: 'https://note.com/yzrswork/n/n546adc606ab9' } },
+  { id: 'xywrbt', name: 'XY-WRBT Bluetooth 5.0 レシーバー', cat: '音', kind: 'load', ma: 30, volt: '5V', role: 'Bluetoothで音声を受信する基板。ambient boardでフレームにスピーカーを内蔵した際の受信部。', pair: 'HW-104アンプ + B50Kボリューム', caveat: '', kw: 'XY-WRBT Bluetooth 5.0 オーディオ レシーバー', art: { label: '3作品まとめ', url: 'https://note.com/yzrswork/n/n6cd8528c839a' } },
+  { id: 'hw104', name: 'HW-104 デジタルアンプ基板', cat: '音', kind: 'load', ma: 40, volt: '5V', role: '小型デジタルアンプ。XY-WRBTで受けた音を増幅してスピーカーを鳴らす。', pair: 'XY-WRBTレシーバー', caveat: '消費電流は音量で大きく変動。完成後に音量不足が出て、スピーカー交換とボリューム位置変更で解決した例あり。', kw: 'HW-104 デジタルアンプ基板', art: { label: '3作品まとめ', url: 'https://note.com/yzrswork/n/n6cd8528c839a' } },
+  { id: 'b50k', name: 'B50K ポテンショメータ', cat: '音', kind: 'passive', ma: 0, volt: '-', role: '音量調整用の可変抵抗（Bカーブ50kΩ）。ambient boardでは入力側に配置。', pair: 'アンプの入力前段', caveat: 'パッシブ部品（電流消費なし）。', kw: 'ポテンショメータ B50K 可変抵抗', art: { label: '3作品まとめ', url: 'https://note.com/yzrswork/n/n6cd8528c839a' } },
+  { id: 'digispark', name: 'Digispark (ATtiny85)', cat: '制御', kind: 'load', ma: 20, volt: '5V', role: 'ほぼ切手サイズのMCUボード。IM-1ではハーフミラーへの映り込みを避けるため背面に外付けし、TM1637を制御。', pair: 'TM1637など2線制御の表示器', caveat: 'ピン数は少ないがDIO/CLKの2線制御には十分。', kw: 'Digispark ATtiny85 開発ボード', art: { label: 'IM-1', url: 'https://note.com/yzrswork/n/n546adc606ab9' } },
+  { id: 'tp4056', name: 'TP4056 充電モジュール（保護回路付き）', cat: '電源', kind: 'load', ma: 0, volt: '5V入力', role: 'リチウム電池の充電モジュール。field supplyでLiPoと組んで可搬電源にした。', pair: 'LiPoバッテリー + 電圧計', caveat: '充電電流はボード上のRprog抵抗で決まる（Icharge≈1200/Rprog[Ω] mA。Rprog 1.2kΩ で約1A）。負荷ではなく充電器なので、プランナーでは充電電流を実測値で入れる。', kw: 'TP4056 リチウム 充電モジュール 保護回路付き', art: { label: '3作品まとめ', url: 'https://note.com/yzrswork/n/n6cd8528c839a' } },
+  { id: 'spl2', name: 'SPL-2 コネクタ（WAGO）', cat: '電源', kind: 'passive', ma: 0, volt: '5V', role: 'PDB-1で5Vを各作品へ配る接続口。背板にマジックテープ脱着式で10個並べた。', pair: 'バスバー端子台 + 各作品', caveat: '分岐はできない。入力A-出力A / 入力B-出力Bの1対1パススルー。', kw: 'WAGO SPL-2 コネクタ', art: { label: 'PDB-1', url: 'https://note.com/yzrswork/n/nf10af42494eb' } },
+  { id: 'solar', name: 'JD-T011 ソーラーパネル', cat: '電源', kind: 'source', ma: 0, volt: '-', role: '光を電気に変える小型パネル。SPEV-1ではアナログメーターと直結し、MCUなしで「光量を針で読む」。', pair: 'アナログメーター直結', caveat: '電源側（発電）であって負荷ではない。', kw: 'ソーラーパネル 小型 5V', art: { label: 'SPEV-1', url: 'https://note.com/yzrswork/n/nb8b0f1ece577' } },
+  { id: 'ledfil', name: 'LED Letter Filament（文字フィラメント）', cat: '表示', kind: 'load', ma: 20, volt: '3V', role: '文字型のLEDフィラメント。YZRS NEONではイニシャルを光らせ、タッチセンサーで点灯。', pair: '単三2本（約3V）直結 / 5Vなら要降圧', caveat: '定格3V。単三2本ならほぼ一致で昇圧なし直結だが、5Vレールにつなぐなら抵抗や降圧が必要。', kw: 'LED フィラメント 文字 3V', art: { label: '3作品まとめ', url: 'https://note.com/yzrswork/n/n6cd8528c839a' } }
+];
+
+const CATS = [ { id: 'all', label: 'すべて' }, { id: '表示', label: '表示' }, { id: '音', label: '音' }, { id: '電源', label: '電源' }, { id: '制御', label: '制御' } ];
+
+/* ---------- 状態 ---------- */
+let catFilter = 'all';
+let loads = loadLoads();        // [{key, name, ma, qty}]
+
+function loadLoads() {
+  try { const a = JSON.parse(localStorage.getItem('lab:loads') || '[]'); return Array.isArray(a) ? a : []; }
+  catch (e) { return []; }
+}
+function saveLoads() { localStorage.setItem('lab:loads', JSON.stringify(loads)); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function amazonUrl(kw) {
+  const tag = localStorage.getItem('lab:amazonTag') || '';
+  const base = 'https://www.amazon.co.jp/s?k=' + encodeURIComponent(kw);
+  return tag ? base + '&tag=' + encodeURIComponent(tag) : base;
+}
+function cfg(key, def) { const v = parseFloat(localStorage.getItem('lab:' + key)); return isFinite(v) && v > 0 ? v : def; }
+function setCfg(key, val) { localStorage.setItem('lab:' + key, String(val)); }
+
+/* ---------- タブ ---------- */
+function showTab(name) {
+  document.getElementById('tab-catalog').classList.toggle('active', name === 'catalog');
+  document.getElementById('tab-planner').classList.toggle('active', name === 'planner');
+  document.getElementById('view-catalog').classList.toggle('hide', name !== 'catalog');
+  document.getElementById('view-planner').classList.toggle('hide', name !== 'planner');
+  if (name === 'planner') renderPlanner();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+document.getElementById('tab-catalog').addEventListener('click', () => showTab('catalog'));
+document.getElementById('tab-planner').addEventListener('click', () => showTab('planner'));
+
+/* ---------- 図鑑 ---------- */
+function renderChips() {
+  document.getElementById('chips').innerHTML = CATS.map(c =>
+    `<button class="chip${catFilter === c.id ? ' active' : ''}" data-c="${c.id}">${c.label}</button>`).join('');
+  document.querySelectorAll('#chips .chip').forEach(b =>
+    b.addEventListener('click', () => { catFilter = b.getAttribute('data-c'); renderChips(); renderModules(); }));
+}
+const KIND_BADGE = { load: '負荷', passive: 'パッシブ', source: '電源側' };
+function renderModules() {
+  const list = document.getElementById('modlist');
+  const items = MODULES.filter(m => catFilter === 'all' || m.cat === catFilter);
+  list.innerHTML = items.map(m => {
+    const added = loads.some(l => l.key === m.id);
+    const maLine = m.kind === 'load' ? `<span><b>${m.ma}</b> mA（目安）</span>` : `<span><b>${esc(KIND_BADGE[m.kind])}</b></span>`;
+    return `
+      <div class="mod">
+        <div class="m-head"><span class="m-name">${esc(m.name)}</span><span class="m-badge">${esc(m.cat)}</span></div>
+        <div class="m-role">${esc(m.role)}</div>
+        <div class="m-meta">
+          <span class="lab">電圧 <b>${esc(m.volt)}</b></span>
+          ${maLine}
+          <span>組み合わせ <b>${esc(m.pair)}</b></span>
+        </div>
+        ${m.caveat ? `<div class="m-caveat"><span class="cv-lab">注意:</span> ${esc(m.caveat)}</div>` : ''}
+        <div class="m-actions">
+          <button class="btn add${added ? ' added' : ''}" data-add="${m.id}">${added ? '✓ 追加済み' : '＋ プランナー'}</button>
+          <a class="btn" href="${esc(m.art.url)}" target="_blank" rel="noopener noreferrer">出典: ${esc(m.art.label)} ↗</a>
+          <a class="btn buy" href="${esc(amazonUrl(m.kw))}" target="_blank" rel="noopener noreferrer">🛒 探す</a>
+        </div>
+      </div>`;
+  }).join('');
+  list.querySelectorAll('[data-add]').forEach(b =>
+    b.addEventListener('click', () => addModuleToPlanner(b.getAttribute('data-add'))));
+}
+
+function addModuleToPlanner(id) {
+  const m = MODULES.find(x => x.id === id);
+  if (!m) return;
+  const existing = loads.find(l => l.key === id);
+  if (existing) { existing.qty += 1; }
+  else { loads.push({ key: id, name: m.name, ma: m.ma, qty: 1 }); }
+  saveLoads();
+  renderModules();
+  // プランナー表示中なら反映
+  if (!document.getElementById('view-planner').classList.contains('hide')) renderPlanner();
+}
+
+/* ---------- プランナー ---------- */
+function renderPlanner() {
+  const budget = cfg('budget', 4000);
+  const ports = cfg('ports', 10);
+  const rail = cfg('rail', 5);
+  document.getElementById('cfg-budget').value = budget;
+  document.getElementById('cfg-ports').value = ports;
+  document.getElementById('cfg-rail').value = rail;
+
+  // loads list
+  const wrap = document.getElementById('loads');
+  if (!loads.length) {
+    wrap.innerHTML = '<div class="loads-empty">まだ負荷がありません。図鑑から「＋プランナー」、または下で手入力で追加してください。</div>';
+  } else {
+    wrap.innerHTML = loads.map((l, idx) => `
+      <div class="load">
+        <span class="l-name">${esc(l.name)}</span>
+        <span><input type="number" class="l-ma" data-ma="${idx}" value="${l.ma}" min="0" step="1" /> <span class="l-unit">mA</span></span>
+        <span class="qty">
+          <button data-dec="${idx}" aria-label="減らす">−</button>
+          <span>${l.qty}</span>
+          <button data-inc="${idx}" aria-label="増やす">＋</button>
+        </span>
+        <button class="l-del" data-del="${idx}" aria-label="削除">×</button>
+      </div>`).join('');
+  }
+
+  // totals
+  const totalMa = loads.reduce((s, l) => s + (Number(l.ma) || 0) * l.qty, 0);
+  const totalPorts = loads.reduce((s, l) => s + l.qty, 0);
+  const pct = budget > 0 ? Math.min(100, (totalMa / budget) * 100) : 0;
+  const overCurrent = totalMa > budget;
+  const overPorts = totalPorts > ports;
+  const watts = (rail * totalMa / 1000);
+
+  const g = document.getElementById('gauge');
+  g.innerHTML = `
+    <div class="g-row">
+      <span class="g-big ${overCurrent ? 'over' : 'ok'}">${totalMa} <span class="g-sub">/ ${budget} mA</span></span>
+      <span class="g-sub">${(rail).toFixed(1)}V ・ ${watts.toFixed(1)} W</span>
+    </div>
+    <div class="bar"><span class="${overCurrent ? 'over' : ''}" style="width:${pct}%"></span></div>
+    <div class="g-stats">
+      <span><span class="lab">電流の余裕</span> ${overCurrent ? '<span class="bad">超過 ' + (totalMa - budget) + 'mA</span>' : '残り ' + (budget - totalMa) + 'mA'}</span>
+      <span><span class="lab">ポート</span> <span class="${overPorts ? 'bad' : ''}">${totalPorts} / ${ports}</span></span>
+    </div>
+    ${overCurrent ? '<div class="g-stats"><span class="bad">ACアダプタの容量を超えています。アダプタを大きくするか負荷を減らしてください。</span></div>' : ''}
+    ${overPorts ? '<div class="g-stats"><span class="bad">配電ポート数を超えています。SPL-2等を増やすか集約してください。</span></div>' : ''}`;
+
+  // events
+  wrap.querySelectorAll('[data-ma]').forEach(inp =>
+    inp.addEventListener('input', () => { const i = +inp.getAttribute('data-ma'); loads[i].ma = Math.max(0, Number(inp.value) || 0); saveLoads(); updateTotalsOnly(); }));
+  wrap.querySelectorAll('[data-inc]').forEach(b =>
+    b.addEventListener('click', () => { loads[+b.getAttribute('data-inc')].qty += 1; saveLoads(); renderPlanner(); }));
+  wrap.querySelectorAll('[data-dec]').forEach(b =>
+    b.addEventListener('click', () => { const i = +b.getAttribute('data-dec'); loads[i].qty -= 1; if (loads[i].qty <= 0) loads.splice(i, 1); saveLoads(); renderPlanner(); renderModules(); }));
+  wrap.querySelectorAll('[data-del]').forEach(b =>
+    b.addEventListener('click', () => { loads.splice(+b.getAttribute('data-del'), 1); saveLoads(); renderPlanner(); renderModules(); }));
+}
+
+// mA入力中は全再描画せず合計だけ更新（フォーカスを失わないため）
+function updateTotalsOnly() {
+  const budget = cfg('budget', 4000);
+  const ports = cfg('ports', 10);
+  const rail = cfg('rail', 5);
+  const totalMa = loads.reduce((s, l) => s + (Number(l.ma) || 0) * l.qty, 0);
+  const totalPorts = loads.reduce((s, l) => s + l.qty, 0);
+  const pct = budget > 0 ? Math.min(100, (totalMa / budget) * 100) : 0;
+  const overCurrent = totalMa > budget;
+  const overPorts = totalPorts > ports;
+  const watts = (rail * totalMa / 1000);
+  const g = document.getElementById('gauge');
+  const big = g.querySelector('.g-big');
+  if (big) { big.className = 'g-big ' + (overCurrent ? 'over' : 'ok'); big.innerHTML = `${totalMa} <span class="g-sub">/ ${budget} mA</span>`; }
+  const sub = g.querySelector('.g-row .g-sub'); if (sub) sub.textContent = `${rail.toFixed(1)}V ・ ${watts.toFixed(1)} W`;
+  const barSpan = g.querySelector('.bar > span'); if (barSpan) { barSpan.style.width = pct + '%'; barSpan.className = overCurrent ? 'over' : ''; }
+  // 余裕表示は作り直す（簡潔のため renderPlanner のステータス行のみ更新）
+  const stats = g.querySelector('.g-stats');
+  if (stats) stats.innerHTML = `<span><span class="lab">電流の余裕</span> ${overCurrent ? '<span class="bad">超過 ' + (totalMa - budget) + 'mA</span>' : '残り ' + (budget - totalMa) + 'mA'}</span><span><span class="lab">ポート</span> <span class="${overPorts ? 'bad' : ''}">${totalPorts} / ${ports}</span></span>`;
+}
+
+// config inputs
+['budget', 'ports', 'rail'].forEach(key => {
+  const el = document.getElementById('cfg-' + key);
+  el.addEventListener('input', () => {
+    const v = Number(el.value);
+    if (isFinite(v) && v > 0) { setCfg(key, v); renderPlanner(); }
+  });
+});
+
+// 手入力で負荷追加
+document.getElementById('add-btn').addEventListener('click', () => {
+  const nameEl = document.getElementById('add-name');
+  const maEl = document.getElementById('add-ma');
+  const name = nameEl.value.trim();
+  const ma = Math.max(0, Number(maEl.value) || 0);
+  if (!name) { nameEl.focus(); return; }
+  loads.push({ key: 'custom-' + Date.now(), name: name, ma: ma, qty: 1 });
+  saveLoads();
+  nameEl.value = ''; maEl.value = '';
+  renderPlanner();
+});
+
+/* ---------- 設定モーダル ---------- */
+const setBg = document.getElementById('set-bg');
+const tagInput = document.getElementById('tag-input');
+const tagSaved = document.getElementById('tag-saved');
+document.getElementById('gear').addEventListener('click', () => {
+  tagInput.value = localStorage.getItem('lab:amazonTag') || '';
+  tagSaved.textContent = ''; setBg.classList.add('open');
+});
+setBg.addEventListener('click', e => { if (e.target === setBg) setBg.classList.remove('open'); });
+document.getElementById('tag-save').addEventListener('click', () => {
+  const v = tagInput.value.trim();
+  if (v) localStorage.setItem('lab:amazonTag', v); else localStorage.removeItem('lab:amazonTag');
+  tagSaved.textContent = '保存しました（リンクに反映）'; renderModules();
+});
+document.getElementById('tag-clear').addEventListener('click', () => {
+  localStorage.removeItem('lab:amazonTag'); tagInput.value = ''; tagSaved.textContent = 'クリアしました'; renderModules();
+});
+
+/* ---------- 起動 ---------- */
+renderChips();
+renderModules();
+
+/* ---------- Service Worker ---------- */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(e => console.warn('SW登録失敗', e));
+  });
+}
+</script>
+</body>
+</html>
