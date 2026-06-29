@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="電話ブロッカー" />
 <link rel="apple-touch-icon" href="../icons/icon-192.png" />
-<meta name="description" content="iPhone迷惑電話の一発ブロック。iOS 26コールスクリーニング設定ガイド+番号一括ブロックツール。" />
+<meta name="description" content="iPhone SE3 iOS 26の着信拒否バグ回避。ワンタップで着信拒否リストを開く+VCF一括ブロック。" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
@@ -21,6 +21,7 @@
   --terracotta: #b5451b; --terracotta-deep: #8e3514;
   --green: #2d6a3f; --green-bg: #e8f0e4;
   --red: #b5231b; --red-bg: #f5e6e4;
+  --blue: #1b5eb5; --blue-bg: #e4edf5;
   --serif: "EB Garamond","Times New Roman",serif;
   --mono: "DM Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
   --jp: "Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
@@ -44,7 +45,6 @@ body::before {
   margin: 0 auto; padding: 20px 16px calc(32px + env(safe-area-inset-bottom));
 }
 
-/* Topbar */
 .topbar {
   display: flex; justify-content: space-between; align-items: center;
   font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em;
@@ -54,7 +54,6 @@ body::before {
 .topbar a { color: var(--ink); text-decoration: none; }
 .topbar .dot { color: var(--terracotta); }
 
-/* Hero */
 .hero { margin-bottom: 20px; }
 .hero h1 {
   font-weight: 700; font-size: clamp(26px, 7vw, 36px);
@@ -72,8 +71,8 @@ body::before {
   margin-bottom: 20px;
 }
 .tab {
-  flex: 1; padding: 10px 8px; text-align: center;
-  font-size: 13px; font-weight: 500; color: var(--muted);
+  flex: 1; padding: 10px 6px; text-align: center;
+  font-size: 12px; font-weight: 500; color: var(--muted);
   background: none; border: none; cursor: pointer;
   border-bottom: 2px solid transparent; margin-bottom: -2px;
   font-family: var(--jp); transition: color 150ms;
@@ -97,14 +96,11 @@ body::before {
   text-transform: uppercase; letter-spacing: 0.12em; color: var(--terracotta);
 }
 
-/* Cards */
 .card {
   background: var(--card); border: 1px solid var(--rule-soft);
   border-radius: 11px; padding: 16px; margin-bottom: 14px;
 }
-.card-accent {
-  border-left: 3px solid var(--terracotta);
-}
+.card-accent { border-left: 3px solid var(--terracotta); }
 
 /* Steps */
 .steps { counter-reset: step; list-style: none; padding: 0; }
@@ -128,28 +124,38 @@ body::before {
   word-break: break-all;
 }
 
-/* Recommendation badge */
 .recommend {
   display: inline-block; background: var(--green-bg); color: var(--green);
   font-size: 11px; font-weight: 700; border-radius: 4px;
   padding: 2px 8px; margin-bottom: 8px;
 }
+.badge-blue {
+  display: inline-block; background: var(--blue-bg); color: var(--blue);
+  font-size: 11px; font-weight: 700; border-radius: 4px;
+  padding: 2px 8px; margin-bottom: 8px;
+}
+.badge-red {
+  display: inline-block; background: var(--red-bg); color: var(--red);
+  font-size: 11px; font-weight: 700; border-radius: 4px;
+  padding: 2px 8px; margin-bottom: 8px;
+}
 
-/* Input area */
-.input-row {
-  display: flex; gap: 8px; margin-bottom: 10px;
+/* Big action button */
+.big-action {
+  display: block; width: 100%; padding: 18px 20px;
+  background: var(--terracotta); color: #fff;
+  font-size: 17px; font-weight: 700; font-family: var(--jp);
+  border: none; border-radius: 12px; cursor: pointer;
+  text-decoration: none; text-align: center;
+  transition: opacity 150ms, transform 100ms;
+  -webkit-tap-highlight-color: transparent;
+  margin-bottom: 10px;
 }
-.input-row input {
-  flex: 1; min-width: 0; padding: 12px; font-size: 16px;
-  font-family: var(--mono); border: 1px solid var(--rule-soft);
-  border-radius: 8px; background: #fff; color: var(--ink);
-  -webkit-appearance: none; appearance: none;
+.big-action:active { transform: scale(0.97); opacity: 0.9; }
+.big-action-sub {
+  font-size: 12px; font-weight: 400; opacity: 0.85;
+  display: block; margin-top: 4px;
 }
-.input-row input:focus {
-  outline: none; border-color: var(--terracotta);
-  box-shadow: 0 0 0 2px rgba(181,69,27,0.15);
-}
-.input-row input::placeholder { color: var(--muted); font-size: 14px; }
 
 /* Buttons */
 .btn {
@@ -160,9 +166,7 @@ body::before {
   -webkit-tap-highlight-color: transparent;
 }
 .btn:active { transform: scale(0.97); }
-.btn-primary {
-  background: var(--terracotta); color: #fff;
-}
+.btn-primary { background: var(--terracotta); color: #fff; }
 .btn-secondary {
   background: var(--paper-2); color: var(--ink-soft);
   border: 1px solid var(--rule-soft);
@@ -179,6 +183,20 @@ body::before {
 .btn-full { width: 100%; }
 .btn-sm { padding: 8px 14px; font-size: 13px; }
 
+/* Input */
+.input-row { display: flex; gap: 8px; margin-bottom: 10px; }
+.input-row input {
+  flex: 1; min-width: 0; padding: 12px; font-size: 16px;
+  font-family: var(--mono); border: 1px solid var(--rule-soft);
+  border-radius: 8px; background: #fff; color: var(--ink);
+  -webkit-appearance: none; appearance: none;
+}
+.input-row input:focus {
+  outline: none; border-color: var(--terracotta);
+  box-shadow: 0 0 0 2px rgba(181,69,27,0.15);
+}
+.input-row input::placeholder { color: var(--muted); font-size: 14px; }
+
 /* Number list */
 .num-list { list-style: none; padding: 0; margin: 0; }
 .num-item {
@@ -193,7 +211,6 @@ body::before {
   border-radius: 4px; line-height: 1;
 }
 .num-item .num-del:hover { color: var(--red); background: var(--red-bg); }
-
 .num-count {
   font-size: 12px; color: var(--muted); margin-bottom: 10px;
   font-family: var(--mono);
@@ -202,11 +219,8 @@ body::before {
   text-align: center; padding: 24px 16px;
   color: var(--muted); font-size: 13px;
 }
-
-/* Actions bar */
 .actions { display: flex; gap: 8px; margin-top: 14px; }
 
-/* Info boxes */
 .info-box {
   background: var(--card); border: 1px solid var(--rule-soft);
   border-radius: 8px; padding: 12px 14px; margin-top: 14px;
@@ -219,40 +233,34 @@ body::before {
   background: var(--card); border: 1px solid var(--rule-soft);
   border-radius: 9px; padding: 12px 14px; margin-bottom: 10px;
 }
-.mode-card .mode-name {
-  font-weight: 700; font-size: 14px; margin-bottom: 4px;
-}
-.mode-card .mode-desc {
-  font-size: 13px; color: var(--ink-soft); line-height: 1.6;
-}
+.mode-card .mode-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+.mode-card .mode-desc { font-size: 13px; color: var(--ink-soft); line-height: 1.6; }
 .mode-card.recommended {
   border-color: var(--terracotta);
   background: linear-gradient(135deg, var(--card), rgba(181,69,27,0.04));
 }
 
-/* Toast */
-.toast {
-  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-  background: var(--ink); color: var(--paper); padding: 10px 20px;
-  border-radius: 20px; font-size: 13px; font-weight: 500;
-  z-index: 100; opacity: 0; transition: opacity 200ms;
-  pointer-events: none; white-space: nowrap;
+/* URL scheme test buttons */
+.scheme-grid {
+  display: flex; flex-direction: column; gap: 8px; margin: 12px 0;
 }
-.toast.show { opacity: 1; }
-
-/* Quick-block guide */
-.quick-steps {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
-  margin: 12px 0 8px;
+.scheme-btn {
+  display: block; width: 100%; padding: 14px 16px;
+  background: #fff; border: 1px solid var(--rule-soft);
+  border-radius: 10px; text-decoration: none; color: var(--ink);
+  font-family: var(--jp); font-size: 14px; font-weight: 500;
+  text-align: left; transition: border-color 150ms;
+  -webkit-tap-highlight-color: transparent;
 }
-.quick-step {
-  text-align: center; padding: 10px 4px;
-  background: var(--card); border: 1px solid var(--rule-soft);
-  border-radius: 8px; font-size: 11px; line-height: 1.4;
+.scheme-btn:active { border-color: var(--terracotta); background: var(--card); }
+.scheme-btn .scheme-label { font-weight: 700; display: block; margin-bottom: 2px; }
+.scheme-btn .scheme-url {
+  font-family: var(--mono); font-size: 10px; color: var(--muted);
+  word-break: break-all; display: block;
 }
-.quick-step .qs-num {
-  font-family: var(--mono); font-weight: 700; font-size: 16px;
-  color: var(--terracotta); display: block; margin-bottom: 4px;
+.scheme-btn .scheme-arrow {
+  float: right; color: var(--terracotta); font-family: var(--mono);
+  font-size: 16px; margin-top: -20px;
 }
 
 /* Collapsible */
@@ -269,7 +277,40 @@ body::before {
 .collapse-body { display: none; margin-top: 12px; }
 .collapse-body.open { display: block; }
 
-/* Footer */
+/* Shortcut recipe */
+.shortcut-recipe {
+  background: linear-gradient(135deg, #f5f0ff, #efe8ff);
+  border: 1px solid rgba(100,60,180,0.2);
+  border-radius: 11px; padding: 16px; margin-bottom: 14px;
+}
+.shortcut-recipe .sr-title {
+  font-weight: 700; font-size: 15px; margin-bottom: 10px;
+  color: #4a2d8a;
+}
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--ink); color: var(--paper); padding: 10px 20px;
+  border-radius: 20px; font-size: 13px; font-weight: 500;
+  z-index: 100; opacity: 0; transition: opacity 200ms;
+  pointer-events: none; white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+
+/* SE3 workaround visual */
+.workaround-flow {
+  display: grid; grid-template-columns: 1fr auto 1fr auto 1fr;
+  gap: 4px; align-items: center; margin: 14px 0;
+  font-size: 12px; text-align: center;
+}
+.wf-step {
+  background: var(--card); border: 1px solid var(--rule-soft);
+  border-radius: 8px; padding: 8px 4px; line-height: 1.4;
+}
+.wf-step b { display: block; font-size: 13px; color: var(--terracotta); }
+.wf-arrow { color: var(--muted); font-family: var(--mono); }
+
 footer {
   margin-top: 28px; padding-top: 16px;
   border-top: 1px solid var(--rule); font-size: 11px;
@@ -278,11 +319,11 @@ footer {
 footer a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule-soft); }
 footer a:hover { color: var(--terracotta); }
 
-/* Responsive for iPhone SE */
 @media (max-width: 375px) {
   .page { padding: 16px 12px calc(28px + env(safe-area-inset-bottom)); }
   .hero h1 { font-size: 24px; }
-  .quick-steps { grid-template-columns: repeat(2, 1fr); }
+  .workaround-flow { grid-template-columns: 1fr; gap: 6px; }
+  .wf-arrow { transform: rotate(90deg); }
 }
 </style>
 </head>
@@ -296,18 +337,143 @@ footer a:hover { color: var(--terracotta); }
 
   <header class="hero">
     <h1>迷惑電話<br>ブロッカー<span class="en">-- Spam Call Blocker</span></h1>
-    <p>iOS 26のスクリーニング設定で大半を自動処理。しつこい番号は一括VCFで着信拒否。</p>
+    <p>SE3で消えた着信拒否ボタンの代わり。ワンタップで設定画面へ飛ぶ+VCF一括ブロック。</p>
   </header>
 
-  <!-- Tabs -->
   <div class="tabs">
-    <button class="tab active" data-tab="screening">スクリーニング</button>
-    <button class="tab" data-tab="blocker">番号ブロック</button>
-    <button class="tab" data-tab="quick">手動最速</button>
+    <button class="tab active" data-tab="onetap">ワンタップ</button>
+    <button class="tab" data-tab="screening">スクリーニング</button>
+    <button class="tab" data-tab="vcf">VCF一括</button>
   </div>
 
-  <!-- ==================== Tab 1: Call Screening ==================== -->
-  <div id="panel-screening" class="tab-panel active">
+  <!-- ==================== Tab 1: One-Tap Block ==================== -->
+  <div id="panel-onetap" class="tab-panel active">
+
+    <div class="card card-accent">
+      <span class="badge-red">SE3 既知バグ対応</span>
+      <p style="font-size:14px;font-weight:700;margin-bottom:6px;">
+        iOS 26で(i)ボタンから着信拒否できない問題
+      </p>
+      <p style="font-size:13px;color:var(--ink-soft);">
+        iPhone SE3ではiOS 26以降、電話アプリの履歴から「連絡先を着信拒否」が表示されないバグが報告されています。
+        以下の方法で回避できます。
+      </p>
+    </div>
+
+    <!-- === Solution A: Direct settings link === -->
+    <div class="section-head">
+      <span class="s-jp">方法A: 設定画面を直接開く</span>
+      <span class="s-en">Direct Link</span>
+    </div>
+
+    <p style="font-size:13px;color:var(--ink-soft);margin-bottom:12px;">
+      下のボタンで「着信拒否した連絡先」の設定画面を直接開きます。
+      開いたら右上の<b>「+」</b>をタップして番号を追加。合計2タップ。
+    </p>
+
+    <div class="scheme-grid">
+      <a class="scheme-btn" id="schemeA" href="App-prefs:Privacy&path=BLOCKED" onclick="markWorking('A')">
+        <span class="scheme-label">着信拒否リストを開く (A)</span>
+        <span class="scheme-url">App-prefs:Privacy&path=BLOCKED</span>
+        <span class="scheme-arrow">-&gt;</span>
+      </a>
+      <a class="scheme-btn" id="schemeB" href="prefs:root=Privacy" onclick="markWorking('B')">
+        <span class="scheme-label">プライバシーと<wbr>セキュリティを開く (B)</span>
+        <span class="scheme-url">prefs:root=Privacy</span>
+        <span class="scheme-arrow">-&gt;</span>
+      </a>
+      <a class="scheme-btn" id="schemeC" href="App-prefs:Phone&path=BLOCKED" onclick="markWorking('C')">
+        <span class="scheme-label">電話 &gt; 着信拒否を開く (C)</span>
+        <span class="scheme-url">App-prefs:Phone&path=BLOCKED</span>
+        <span class="scheme-arrow">-&gt;</span>
+      </a>
+    </div>
+
+    <div class="info-box" id="schemeResult" style="display:none;"></div>
+
+    <div class="info-box">
+      <b>使い方:</b> 上の3つのリンクを順にタップして、設定アプリが開くか試してください。
+      開いたリンクをSafariのブックマークに追加し、ホーム画面に置けばワンタップで使えます。
+      <br><br>
+      <b>iOS版で異なる場合:</b> URLスキームはiOSのマイナーバージョンで変わることがあります。
+      どれも開かない場合は、下の「方法B」を使ってください。
+    </div>
+
+    <!-- === Solution B: Shortcut app === -->
+    <div class="section-head" style="margin-top:20px;">
+      <span class="s-jp">方法B: ショートカットで1タップ化</span>
+      <span class="s-en">Shortcut</span>
+    </div>
+
+    <div class="shortcut-recipe">
+      <div class="sr-title">ショートカットの作り方</div>
+      <ol class="steps">
+        <li>
+          <b>ショートカット</b>アプリを開き、右上の<b>「+」</b>で新規作成
+        </li>
+        <li>
+          <b>「アクションを追加」</b>をタップ →
+          検索で<b>「URLを開く」</b>を選択
+        </li>
+        <li>
+          URLに上のリンクで動いたURLを入力<br>
+          <span class="path" id="shortcutUrl">App-prefs:Privacy&amp;path=BLOCKED</span><br>
+          <button class="btn btn-sm btn-secondary" style="margin-top:6px;" id="copyUrlBtn">URLをコピー</button>
+        </li>
+        <li>
+          上部のショートカット名を<b>「着信拒否」</b>に変更
+        </li>
+        <li>
+          名前の横の<b>「V」</b>をタップ →<br>
+          <b>「ホーム画面に追加」</b>を選択
+        </li>
+      </ol>
+    </div>
+
+    <div class="info-box">
+      <b>完成後:</b> ホーム画面のアイコンを1タップ → 設定の着信拒否リストが開く → 「+」で番号追加。
+      電話アプリの(i)ボタンを経由しないので、SE3のバグに影響されません。
+    </div>
+
+    <!-- === Solution C: SE3 Classic View workaround === -->
+    <div class="section-head" style="margin-top:20px;">
+      <span class="s-jp">方法C: Classic表示で(i)ボタン復活</span>
+      <span class="s-en">Workaround</span>
+    </div>
+
+    <div class="card">
+      <p style="font-size:13px;color:var(--ink-soft);margin-bottom:10px;">
+        電話アプリの表示を「クラシック」に切り替えると(i)ボタンが復活する場合があります。
+        ただしSE3では追加のステップが必要です。
+      </p>
+      <ol class="steps">
+        <li>
+          電話アプリの<b>履歴</b>タブを開く
+        </li>
+        <li>
+          右上の <b>三本線アイコン</b> をタップ →<b>「クラシック」</b>を選択
+        </li>
+        <li>
+          ブロックしたい番号の<b>(i)</b>をタップ
+        </li>
+        <li>
+          画面が空白のまま → <b>ホームボタンを押して</b>ホーム画面に戻る
+        </li>
+        <li>
+          電話アプリに<b>戻る</b>と、項目が表示される。
+          一番下の<b>「連絡先を着信拒否」</b>をタップ
+        </li>
+      </ol>
+      <div class="info-box" style="margin-top:10px;">
+        <b>注意:</b> この方法はSE3特有のワークアラウンドです。
+        (i)をタップ後に空白になるのはバグで、ホームボタンで一旦離れて戻ると表示が修復されます。
+        手順が多いので、方法A/Bの方が快適です。
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== Tab 2: Call Screening ==================== -->
+  <div id="panel-screening" class="tab-panel">
     <div class="card card-accent">
       <span class="recommend">最も効果的</span>
       <p style="font-size:14px;font-weight:700;margin-bottom:6px;">iOS 26「通話スクリーニング」を有効にする</p>
@@ -323,22 +489,14 @@ footer a:hover { color: var(--terracotta); }
     </div>
 
     <ol class="steps">
-      <li>
-        <b>設定</b>アプリを開く
-      </li>
-      <li>
-        <span class="path">アプリ</span> をタップ
-      </li>
-      <li>
-        <span class="path">電話</span> をタップ
-      </li>
+      <li><b>設定</b>アプリを開く</li>
+      <li><span class="path">アプリ</span> をタップ</li>
+      <li><span class="path">電話</span> をタップ</li>
       <li>
         下へスクロールし<br>
         <span class="path">不明な発信者をスクリーニング</span> をタップ
       </li>
-      <li>
-        モードを選択（下記参照）
-      </li>
+      <li>モードを選択（下記参照）</li>
     </ol>
 
     <div class="section-head" style="margin-top:20px;">
@@ -376,23 +534,21 @@ footer a:hover { color: var(--terracotta); }
       <b>補足:</b> スクリーニングは連絡先に登録済みの番号には適用されません。
       家族、友人、取引先は事前に連絡先に登録しておけば通常どおり着信します。
       <br><br>
-      <b>通話の理由を尋ねる モード:</b> 迷惑電話業者はほぼ100%ここで切れます。
+      <b>通話の理由を尋ねるモード:</b> 迷惑電話業者はほぼ100%ここで切れます。
       正当な用件のある相手だけが録音を残すので、事実上の自動選別になります。
     </div>
   </div>
 
-  <!-- ==================== Tab 2: Number Blocker ==================== -->
-  <div id="panel-blocker" class="tab-panel">
+  <!-- ==================== Tab 3: VCF Batch Block ==================== -->
+  <div id="panel-vcf" class="tab-panel">
     <div class="card card-accent">
       <p style="font-size:14px;font-weight:700;margin-bottom:6px;">番号一括ブロック</p>
       <p style="font-size:13px;color:var(--ink-soft);">
-        スクリーニングを突破してくるしつこい番号用。
-        登録した番号をまとめてVCF（連絡先ファイル）に書き出し、
+        しつこい番号をまとめてVCF（連絡先ファイル）に書き出し、
         iPhoneにインポートして一括着信拒否。
       </p>
     </div>
 
-    <!-- Input -->
     <div class="section-head">
       <span class="s-jp">番号を追加</span>
       <span class="s-en">Add Number</span>
@@ -409,7 +565,6 @@ footer a:hover { color: var(--terracotta); }
       </button>
     </div>
 
-    <!-- List -->
     <div class="section-head">
       <span class="s-jp">ブロックリスト</span>
       <span class="s-en">Block List</span>
@@ -420,7 +575,6 @@ footer a:hover { color: var(--terracotta); }
       まだ番号が登録されていません。<br>上のフォームから追加してください。
     </div>
 
-    <!-- Actions -->
     <div class="actions">
       <button class="btn btn-success btn-full" id="exportBtn" disabled>
         VCFを書き出す
@@ -432,7 +586,6 @@ footer a:hover { color: var(--terracotta); }
       </button>
     </div>
 
-    <!-- Setup guide (collapsible) -->
     <div class="card" style="margin-top:16px;">
       <button class="collapse-toggle" id="setupToggle">
         <span>
@@ -452,7 +605,7 @@ footer a:hover { color: var(--terracotta); }
             ファイルを開くと連絡先アプリが起動。<b>「新規連絡先を作成」</b>を選択して保存
           </li>
           <li>
-            <span class="path">設定 &gt; アプリ &gt; 電話 &gt; 着信拒否した連絡先</span>
+            <span class="path">設定 &gt; プライバシーとセキュリティ &gt; 着信拒否した連絡先</span>
             を開き<b>「新規追加」</b>から「Spam Blocker」を選択
           </li>
         </ol>
@@ -462,58 +615,6 @@ footer a:hover { color: var(--terracotta); }
           新しい番号が追加されます。連絡先自体が着信拒否済みなので、
           追加した番号も自動的にブロックされます。
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ==================== Tab 3: Quick Manual Block ==================== -->
-  <div id="panel-quick" class="tab-panel">
-    <div class="card card-accent">
-      <p style="font-size:14px;font-weight:700;margin-bottom:6px;">手動ブロック最速手順</p>
-      <p style="font-size:13px;color:var(--ink-soft);">
-        今かかってきた番号をすぐブロックしたい場合の最短ルート。4タップで完了。
-      </p>
-    </div>
-
-    <div class="quick-steps">
-      <div class="quick-step">
-        <span class="qs-num">1</span>
-        電話アプリ<br><b>履歴</b>を開く
-      </div>
-      <div class="quick-step">
-        <span class="qs-num">2</span>
-        番号の右の<br><b>(i)</b> をタップ
-      </div>
-      <div class="quick-step">
-        <span class="qs-num">3</span>
-        下へスクロール<br><b>この発信者を<br>着信拒否</b>
-      </div>
-      <div class="quick-step">
-        <span class="qs-num">4</span>
-        <b>連絡先を<br>着信拒否</b><br>で確定
-      </div>
-    </div>
-
-    <div class="info-box">
-      <b>コツ:</b> 着信拒否した番号は
-      <span class="path">設定 &gt; アプリ &gt; 電話 &gt; 着信拒否した連絡先</span>
-      で一覧管理できます。解除もここから。
-    </div>
-
-    <div class="card" style="margin-top:16px;">
-      <button class="collapse-toggle" id="tipsToggle">
-        <span>
-          <span class="s-jp" style="font-size:14px;">追加の迷惑電話対策</span>
-        </span>
-        <span class="arrow-icon">&#x25B6;</span>
-      </button>
-      <div class="collapse-body" id="tipsBody">
-        <ul style="padding-left:18px;font-size:13px;color:var(--ink-soft);line-height:1.8;">
-          <li><b>キャリアの迷惑電話フィルター:</b> ドコモ、au、ソフトバンク各社が無料/有料の迷惑電話対策サービスを提供。キャリアのマイページから申し込み可能</li>
-          <li><b>番号を検索:</b> かかってきた番号をブラウザで検索すると、迷惑電話データベース（jpnumber.com等）で口コミが見つかることが多い</li>
-          <li><b>非通知拒否:</b> 非通知でかけてくる相手は、キャリア側で拒否設定可能（148に電話して設定）</li>
-          <li><b>留守電活用:</b> iOS 26のライブ留守番電話機能で、相手の用件をリアルタイムにテキスト表示。出る前に判断できる</li>
-        </ul>
       </div>
     </div>
   </div>
@@ -535,6 +636,7 @@ footer a:hover { color: var(--terracotta); }
   'use strict';
 
   var STORAGE_KEY = 'spam-blocker-numbers';
+  var SCHEME_KEY = 'spam-blocker-working-scheme';
 
   // --- DOM refs ---
   var numInput  = document.getElementById('numInput');
@@ -546,8 +648,8 @@ footer a:hover { color: var(--terracotta); }
   var exportBtn = document.getElementById('exportBtn');
   var clearBtn  = document.getElementById('clearBtn');
   var toastEl   = document.getElementById('toast');
+  var copyUrlBtn = document.getElementById('copyUrlBtn');
 
-  // --- State ---
   var numbers = loadNumbers();
 
   // --- Tabs ---
@@ -562,16 +664,57 @@ footer a:hover { color: var(--terracotta); }
 
   // --- Collapsibles ---
   setupCollapse('setupToggle', 'setupBody');
-  setupCollapse('tipsToggle', 'tipsBody');
 
   function setupCollapse(toggleId, bodyId) {
     var toggle = document.getElementById(toggleId);
     var body = document.getElementById(bodyId);
     toggle.addEventListener('click', function () {
-      var isOpen = body.classList.contains('open');
       body.classList.toggle('open');
       toggle.classList.toggle('open');
     });
+  }
+
+  // --- URL Scheme management ---
+  window.markWorking = function (label) {
+    var schemes = { A: 'App-prefs:Privacy&path=BLOCKED', B: 'prefs:root=Privacy', C: 'App-prefs:Phone&path=BLOCKED' };
+    var url = schemes[label];
+    if (url) {
+      localStorage.setItem(SCHEME_KEY, url);
+      document.getElementById('shortcutUrl').textContent = url;
+      var resultBox = document.getElementById('schemeResult');
+      resultBox.innerHTML = '<b>リンク ' + label + ' が動作しました?</b> ショートカットのURLにはこれを使ってください: <span class="path">' + url + '</span>';
+      resultBox.style.display = '';
+    }
+  };
+
+  var savedScheme = localStorage.getItem(SCHEME_KEY);
+  if (savedScheme) {
+    document.getElementById('shortcutUrl').textContent = savedScheme;
+  }
+
+  // Copy URL for shortcut
+  copyUrlBtn.addEventListener('click', function () {
+    var url = document.getElementById('shortcutUrl').textContent;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(function () {
+        showToast('URLをコピーしました');
+      }).catch(function () {
+        fallbackCopy(url);
+      });
+    } else {
+      fallbackCopy(url);
+    }
+  });
+
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;opacity:0;';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('URLをコピーしました');
   }
 
   // --- Number Management ---
@@ -587,7 +730,7 @@ footer a:hover { color: var(--terracotta); }
   }
 
   function normalizeNumber(raw) {
-    var n = raw.replace(/[\s　\-‐‑‒–—―−－()()]/g, '');
+    var n = raw.replace(/[\s　\-‐‑‒–—―−－()（）]/g, '');
     if (/^\+/.test(n)) return n;
     if (/^0/.test(n)) return n;
     return '';
@@ -595,21 +738,16 @@ footer a:hover { color: var(--terracotta); }
 
   function formatDisplay(num) {
     var n = num.replace(/^\+81/, '0');
-    if (/^0[789]0\d{8}$/.test(n)) {
+    if (/^0[789]0\d{8}$/.test(n))
       return n.slice(0,3) + '-' + n.slice(3,7) + '-' + n.slice(7);
-    }
-    if (/^0120\d{6}$/.test(n)) {
+    if (/^0120\d{6}$/.test(n))
       return n.slice(0,4) + '-' + n.slice(4,7) + '-' + n.slice(7);
-    }
-    if (/^0800\d{7}$/.test(n)) {
+    if (/^0800\d{7}$/.test(n))
       return n.slice(0,4) + '-' + n.slice(4,7) + '-' + n.slice(7);
-    }
-    if (/^050\d{8}$/.test(n)) {
+    if (/^050\d{8}$/.test(n))
       return n.slice(0,3) + '-' + n.slice(3,7) + '-' + n.slice(7);
-    }
-    if (/^0[3-6]\d{8}$/.test(n)) {
+    if (/^0[3-6]\d{8}$/.test(n))
       return n.slice(0,2) + '-' + n.slice(2,6) + '-' + n.slice(6);
-    }
     return num;
   }
 
@@ -667,7 +805,6 @@ footer a:hover { color: var(--terracotta); }
     }
   });
 
-  // --- Input ---
   addBtn.addEventListener('click', function () {
     if (addNumber(numInput.value)) {
       numInput.value = '';
@@ -695,8 +832,7 @@ footer a:hover { color: var(--terracotta); }
         }
       }).catch(function () {
         numInput.focus();
-        document.execCommand('paste');
-        showToast('入力欄に貼り付けてください');
+        showToast('入力欄を長押しして貼り付けてください');
       });
     } else {
       numInput.focus();
@@ -704,7 +840,6 @@ footer a:hover { color: var(--terracotta); }
     }
   });
 
-  // --- Export ---
   exportBtn.addEventListener('click', function () {
     if (!numbers.length) return;
     var lines = [
@@ -715,9 +850,7 @@ footer a:hover { color: var(--terracotta); }
     ];
     numbers.forEach(function (num) {
       var tel = num;
-      if (/^0/.test(tel)) {
-        tel = '+81' + tel.slice(1);
-      }
+      if (/^0/.test(tel)) tel = '+81' + tel.slice(1);
       lines.push('TEL;TYPE=CELL:' + tel);
     });
     lines.push('NOTE:Generated by ya-jirushi Spam Blocker');
@@ -740,7 +873,6 @@ footer a:hover { color: var(--terracotta); }
 
   clearBtn.addEventListener('click', clearAll);
 
-  // --- Toast ---
   var toastTimer = null;
   function showToast(msg) {
     toastEl.textContent = msg;
@@ -751,7 +883,6 @@ footer a:hover { color: var(--terracotta); }
     }, 2200);
   }
 
-  // --- Init ---
   renderList();
 })();
 </script>
