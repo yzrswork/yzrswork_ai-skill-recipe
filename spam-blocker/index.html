@@ -1,0 +1,759 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>迷惑電話ブロッカー - や印工務店</title>
+<meta name="theme-color" content="#f0ebe3" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="電話ブロッカー" />
+<link rel="apple-touch-icon" href="../icons/icon-192.png" />
+<meta name="description" content="iPhone迷惑電話の一発ブロック。iOS 26コールスクリーニング設定ガイド+番号一括ブロックツール。" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --paper: #f0ebe3; --paper-2: #e8e1d4; --card: #f6f2ea;
+  --ink: #1c1a16; --ink-soft: #2b2823; --muted: #6f675b;
+  --rule: #3a342c; --rule-soft: rgba(58,52,44,0.28);
+  --terracotta: #b5451b; --terracotta-deep: #8e3514;
+  --green: #2d6a3f; --green-bg: #e8f0e4;
+  --red: #b5231b; --red-bg: #f5e6e4;
+  --serif: "EB Garamond","Times New Roman",serif;
+  --mono: "DM Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --jp: "Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--paper); color: var(--ink); font-family: var(--jp);
+  line-height: 1.65; -webkit-font-smoothing: antialiased; min-height: 100vh;
+  position: relative; overflow-x: hidden;
+}
+body::before {
+  content: ""; position: fixed; inset: 0; pointer-events: none;
+  background-image: radial-gradient(rgba(70,50,30,0.06) 1px, transparent 1px),
+    radial-gradient(rgba(70,50,30,0.04) 1px, transparent 1px);
+  background-size: 3px 3px, 7px 7px; background-position: 0 0, 1px 2px;
+  z-index: 0; mix-blend-mode: multiply; opacity: 0.9;
+}
+.page {
+  position: relative; z-index: 1; max-width: 480px;
+  margin: 0 auto; padding: 20px 16px calc(32px + env(safe-area-inset-bottom));
+}
+
+/* Topbar */
+.topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--muted);
+  padding-bottom: 12px; border-bottom: 1px solid var(--rule); margin-bottom: 20px;
+}
+.topbar a { color: var(--ink); text-decoration: none; }
+.topbar .dot { color: var(--terracotta); }
+
+/* Hero */
+.hero { margin-bottom: 20px; }
+.hero h1 {
+  font-weight: 700; font-size: clamp(26px, 7vw, 36px);
+  line-height: 1.15; margin: 0 0 6px;
+}
+.hero .en {
+  font-family: var(--serif); font-style: italic; color: var(--terracotta);
+  font-size: 14px; letter-spacing: 0.1em; display: block; margin-bottom: 8px;
+}
+.hero p { font-size: 13px; color: var(--ink-soft); margin: 0; }
+
+/* Tabs */
+.tabs {
+  display: flex; gap: 0; border-bottom: 2px solid var(--rule-soft);
+  margin-bottom: 20px;
+}
+.tab {
+  flex: 1; padding: 10px 8px; text-align: center;
+  font-size: 13px; font-weight: 500; color: var(--muted);
+  background: none; border: none; cursor: pointer;
+  border-bottom: 2px solid transparent; margin-bottom: -2px;
+  font-family: var(--jp); transition: color 150ms;
+}
+.tab.active {
+  color: var(--terracotta); border-bottom-color: var(--terracotta);
+  font-weight: 700;
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* Section headers */
+.section-head {
+  display: flex; align-items: baseline; gap: 8px;
+  margin: 0 0 14px; padding-bottom: 6px;
+  border-bottom: 1px solid var(--rule-soft);
+}
+.section-head .s-jp { font-weight: 700; font-size: 15px; letter-spacing: 0.06em; }
+.section-head .s-en {
+  font-family: var(--mono); font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.12em; color: var(--terracotta);
+}
+
+/* Cards */
+.card {
+  background: var(--card); border: 1px solid var(--rule-soft);
+  border-radius: 11px; padding: 16px; margin-bottom: 14px;
+}
+.card-accent {
+  border-left: 3px solid var(--terracotta);
+}
+
+/* Steps */
+.steps { counter-reset: step; list-style: none; padding: 0; }
+.steps li {
+  counter-increment: step; position: relative;
+  padding: 0 0 14px 36px; font-size: 14px; line-height: 1.6;
+}
+.steps li:last-child { padding-bottom: 0; }
+.steps li::before {
+  content: counter(step);
+  position: absolute; left: 0; top: 1px;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--terracotta); color: #fff;
+  font-family: var(--mono); font-size: 12px; font-weight: 500;
+  display: flex; align-items: center; justify-content: center;
+}
+.steps .path {
+  display: inline-block; background: var(--paper-2);
+  border-radius: 4px; padding: 1px 6px; font-size: 12px;
+  font-family: var(--mono); color: var(--ink-soft);
+  word-break: break-all;
+}
+
+/* Recommendation badge */
+.recommend {
+  display: inline-block; background: var(--green-bg); color: var(--green);
+  font-size: 11px; font-weight: 700; border-radius: 4px;
+  padding: 2px 8px; margin-bottom: 8px;
+}
+
+/* Input area */
+.input-row {
+  display: flex; gap: 8px; margin-bottom: 10px;
+}
+.input-row input {
+  flex: 1; min-width: 0; padding: 12px; font-size: 16px;
+  font-family: var(--mono); border: 1px solid var(--rule-soft);
+  border-radius: 8px; background: #fff; color: var(--ink);
+  -webkit-appearance: none; appearance: none;
+}
+.input-row input:focus {
+  outline: none; border-color: var(--terracotta);
+  box-shadow: 0 0 0 2px rgba(181,69,27,0.15);
+}
+.input-row input::placeholder { color: var(--muted); font-size: 14px; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 6px; padding: 12px 18px; font-size: 14px; font-weight: 700;
+  font-family: var(--jp); border: none; border-radius: 8px;
+  cursor: pointer; transition: opacity 150ms, transform 100ms;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary {
+  background: var(--terracotta); color: #fff;
+}
+.btn-secondary {
+  background: var(--paper-2); color: var(--ink-soft);
+  border: 1px solid var(--rule-soft);
+}
+.btn-danger {
+  background: var(--red-bg); color: var(--red);
+  border: 1px solid rgba(181,35,27,0.2);
+}
+.btn-success {
+  background: var(--green-bg); color: var(--green);
+  border: 1px solid rgba(45,106,63,0.2);
+}
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-full { width: 100%; }
+.btn-sm { padding: 8px 14px; font-size: 13px; }
+
+/* Number list */
+.num-list { list-style: none; padding: 0; margin: 0; }
+.num-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px; background: #fff;
+  border: 1px solid var(--rule-soft); border-radius: 8px;
+  margin-bottom: 6px; font-family: var(--mono); font-size: 15px;
+}
+.num-item .num-del {
+  background: none; border: none; color: var(--muted);
+  font-size: 18px; cursor: pointer; padding: 4px 8px;
+  border-radius: 4px; line-height: 1;
+}
+.num-item .num-del:hover { color: var(--red); background: var(--red-bg); }
+
+.num-count {
+  font-size: 12px; color: var(--muted); margin-bottom: 10px;
+  font-family: var(--mono);
+}
+.empty-msg {
+  text-align: center; padding: 24px 16px;
+  color: var(--muted); font-size: 13px;
+}
+
+/* Actions bar */
+.actions { display: flex; gap: 8px; margin-top: 14px; }
+
+/* Info boxes */
+.info-box {
+  background: var(--card); border: 1px solid var(--rule-soft);
+  border-radius: 8px; padding: 12px 14px; margin-top: 14px;
+  font-size: 12px; color: var(--ink-soft); line-height: 1.7;
+}
+.info-box b { color: var(--ink); }
+
+/* Mode cards */
+.mode-card {
+  background: var(--card); border: 1px solid var(--rule-soft);
+  border-radius: 9px; padding: 12px 14px; margin-bottom: 10px;
+}
+.mode-card .mode-name {
+  font-weight: 700; font-size: 14px; margin-bottom: 4px;
+}
+.mode-card .mode-desc {
+  font-size: 13px; color: var(--ink-soft); line-height: 1.6;
+}
+.mode-card.recommended {
+  border-color: var(--terracotta);
+  background: linear-gradient(135deg, var(--card), rgba(181,69,27,0.04));
+}
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--ink); color: var(--paper); padding: 10px 20px;
+  border-radius: 20px; font-size: 13px; font-weight: 500;
+  z-index: 100; opacity: 0; transition: opacity 200ms;
+  pointer-events: none; white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+
+/* Quick-block guide */
+.quick-steps {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+  margin: 12px 0 8px;
+}
+.quick-step {
+  text-align: center; padding: 10px 4px;
+  background: var(--card); border: 1px solid var(--rule-soft);
+  border-radius: 8px; font-size: 11px; line-height: 1.4;
+}
+.quick-step .qs-num {
+  font-family: var(--mono); font-weight: 700; font-size: 16px;
+  color: var(--terracotta); display: block; margin-bottom: 4px;
+}
+
+/* Collapsible */
+.collapse-toggle {
+  width: 100%; background: none; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0; font-family: var(--jp); text-align: left;
+}
+.collapse-toggle .arrow-icon {
+  font-family: var(--mono); font-size: 12px; color: var(--terracotta);
+  transition: transform 200ms;
+}
+.collapse-toggle.open .arrow-icon { transform: rotate(90deg); }
+.collapse-body { display: none; margin-top: 12px; }
+.collapse-body.open { display: block; }
+
+/* Footer */
+footer {
+  margin-top: 28px; padding-top: 16px;
+  border-top: 1px solid var(--rule); font-size: 11px;
+  color: var(--muted); text-align: center;
+}
+footer a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule-soft); }
+footer a:hover { color: var(--terracotta); }
+
+/* Responsive for iPhone SE */
+@media (max-width: 375px) {
+  .page { padding: 16px 12px calc(28px + env(safe-area-inset-bottom)); }
+  .hero h1 { font-size: 24px; }
+  .quick-steps { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<main class="page">
+  <div class="topbar">
+    <a href="../tools/index.html"><span class="dot">&#x25CF;</span> や印工務店</a>
+    <span style="font-size:10px;">iPhone SE3 / iOS 26</span>
+  </div>
+
+  <header class="hero">
+    <h1>迷惑電話<br>ブロッカー<span class="en">-- Spam Call Blocker</span></h1>
+    <p>iOS 26のスクリーニング設定で大半を自動処理。しつこい番号は一括VCFで着信拒否。</p>
+  </header>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" data-tab="screening">スクリーニング</button>
+    <button class="tab" data-tab="blocker">番号ブロック</button>
+    <button class="tab" data-tab="quick">手動最速</button>
+  </div>
+
+  <!-- ==================== Tab 1: Call Screening ==================== -->
+  <div id="panel-screening" class="tab-panel active">
+    <div class="card card-accent">
+      <span class="recommend">最も効果的</span>
+      <p style="font-size:14px;font-weight:700;margin-bottom:6px;">iOS 26「通話スクリーニング」を有効にする</p>
+      <p style="font-size:13px;color:var(--ink-soft);">
+        一度だけ設定すれば、連絡先にない番号からの着信を自動でスクリーニング。
+        番号ごとにブロックする手間がなくなります。
+      </p>
+    </div>
+
+    <div class="section-head">
+      <span class="s-jp">設定手順</span>
+      <span class="s-en">Setup</span>
+    </div>
+
+    <ol class="steps">
+      <li>
+        <b>設定</b>アプリを開く
+      </li>
+      <li>
+        <span class="path">アプリ</span> をタップ
+      </li>
+      <li>
+        <span class="path">電話</span> をタップ
+      </li>
+      <li>
+        下へスクロールし<br>
+        <span class="path">不明な発信者をスクリーニング</span> をタップ
+      </li>
+      <li>
+        モードを選択（下記参照）
+      </li>
+    </ol>
+
+    <div class="section-head" style="margin-top:20px;">
+      <span class="s-jp">3つのモード</span>
+      <span class="s-en">Modes</span>
+    </div>
+
+    <div class="mode-card recommended">
+      <span class="recommend">おすすめ</span>
+      <div class="mode-name">通話の理由を尋ねる</div>
+      <div class="mode-desc">
+        不明な番号から着信すると、iPhoneが自動応答して相手に名前と用件を聞きます。
+        内容がテキストで画面に表示され、出るかどうかを判断できます。
+        正当な電話（配達、病院等）はちゃんと繋がるので安心。
+      </div>
+    </div>
+
+    <div class="mode-card">
+      <div class="mode-name">消音</div>
+      <div class="mode-desc">
+        不明な番号からの着信を音なしで留守番電話へ直送。
+        履歴には残るので後から確認可能。最も強力だが、
+        初めての配達業者等も無音になる点に注意。
+      </div>
+    </div>
+
+    <div class="mode-card">
+      <div class="mode-name">なし（オフ）</div>
+      <div class="mode-desc">
+        スクリーニングを無効化。全ての着信が通常どおり鳴ります。
+      </div>
+    </div>
+
+    <div class="info-box">
+      <b>補足:</b> スクリーニングは連絡先に登録済みの番号には適用されません。
+      家族、友人、取引先は事前に連絡先に登録しておけば通常どおり着信します。
+      <br><br>
+      <b>通話の理由を尋ねる モード:</b> 迷惑電話業者はほぼ100%ここで切れます。
+      正当な用件のある相手だけが録音を残すので、事実上の自動選別になります。
+    </div>
+  </div>
+
+  <!-- ==================== Tab 2: Number Blocker ==================== -->
+  <div id="panel-blocker" class="tab-panel">
+    <div class="card card-accent">
+      <p style="font-size:14px;font-weight:700;margin-bottom:6px;">番号一括ブロック</p>
+      <p style="font-size:13px;color:var(--ink-soft);">
+        スクリーニングを突破してくるしつこい番号用。
+        登録した番号をまとめてVCF（連絡先ファイル）に書き出し、
+        iPhoneにインポートして一括着信拒否。
+      </p>
+    </div>
+
+    <!-- Input -->
+    <div class="section-head">
+      <span class="s-jp">番号を追加</span>
+      <span class="s-en">Add Number</span>
+    </div>
+
+    <div class="input-row">
+      <input type="tel" id="numInput" placeholder="090-1234-5678"
+             inputmode="tel" autocomplete="off" />
+      <button class="btn btn-primary btn-sm" id="addBtn">追加</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <button class="btn btn-secondary btn-sm" id="pasteBtn" style="flex:1;">
+        クリップボードから貼付
+      </button>
+    </div>
+
+    <!-- List -->
+    <div class="section-head">
+      <span class="s-jp">ブロックリスト</span>
+      <span class="s-en">Block List</span>
+    </div>
+    <div class="num-count" id="numCount">0 件</div>
+    <ul class="num-list" id="numList"></ul>
+    <div class="empty-msg" id="emptyMsg">
+      まだ番号が登録されていません。<br>上のフォームから追加してください。
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button class="btn btn-success btn-full" id="exportBtn" disabled>
+        VCFを書き出す
+      </button>
+    </div>
+    <div class="actions">
+      <button class="btn btn-danger btn-sm" id="clearBtn" disabled style="flex:1;">
+        全件削除
+      </button>
+    </div>
+
+    <!-- Setup guide (collapsible) -->
+    <div class="card" style="margin-top:16px;">
+      <button class="collapse-toggle" id="setupToggle">
+        <span>
+          <span class="s-jp" style="font-size:14px;">インポート手順（初回のみ）</span>
+        </span>
+        <span class="arrow-icon">&#x25B6;</span>
+      </button>
+      <div class="collapse-body" id="setupBody">
+        <ol class="steps" style="margin-top:4px;">
+          <li>
+            上の<b>「VCFを書き出す」</b>をタップしてファイルをダウンロード
+          </li>
+          <li>
+            ダウンロード完了の通知、またはSafariのダウンロードボタンをタップ
+          </li>
+          <li>
+            ファイルを開くと連絡先アプリが起動。<b>「新規連絡先を作成」</b>を選択して保存
+          </li>
+          <li>
+            <span class="path">設定 &gt; アプリ &gt; 電話 &gt; 着信拒否した連絡先</span>
+            を開き<b>「新規追加」</b>から「Spam Blocker」を選択
+          </li>
+        </ol>
+        <div class="info-box" style="margin-top:10px;">
+          <b>2回目以降:</b> 番号を追加したら再度VCFを書き出し、ファイルを開いて
+          <b>「既存の連絡先に追加」</b>で「Spam Blocker」を選ぶと、
+          新しい番号が追加されます。連絡先自体が着信拒否済みなので、
+          追加した番号も自動的にブロックされます。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== Tab 3: Quick Manual Block ==================== -->
+  <div id="panel-quick" class="tab-panel">
+    <div class="card card-accent">
+      <p style="font-size:14px;font-weight:700;margin-bottom:6px;">手動ブロック最速手順</p>
+      <p style="font-size:13px;color:var(--ink-soft);">
+        今かかってきた番号をすぐブロックしたい場合の最短ルート。4タップで完了。
+      </p>
+    </div>
+
+    <div class="quick-steps">
+      <div class="quick-step">
+        <span class="qs-num">1</span>
+        電話アプリ<br><b>履歴</b>を開く
+      </div>
+      <div class="quick-step">
+        <span class="qs-num">2</span>
+        番号の右の<br><b>(i)</b> をタップ
+      </div>
+      <div class="quick-step">
+        <span class="qs-num">3</span>
+        下へスクロール<br><b>この発信者を<br>着信拒否</b>
+      </div>
+      <div class="quick-step">
+        <span class="qs-num">4</span>
+        <b>連絡先を<br>着信拒否</b><br>で確定
+      </div>
+    </div>
+
+    <div class="info-box">
+      <b>コツ:</b> 着信拒否した番号は
+      <span class="path">設定 &gt; アプリ &gt; 電話 &gt; 着信拒否した連絡先</span>
+      で一覧管理できます。解除もここから。
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <button class="collapse-toggle" id="tipsToggle">
+        <span>
+          <span class="s-jp" style="font-size:14px;">追加の迷惑電話対策</span>
+        </span>
+        <span class="arrow-icon">&#x25B6;</span>
+      </button>
+      <div class="collapse-body" id="tipsBody">
+        <ul style="padding-left:18px;font-size:13px;color:var(--ink-soft);line-height:1.8;">
+          <li><b>キャリアの迷惑電話フィルター:</b> ドコモ、au、ソフトバンク各社が無料/有料の迷惑電話対策サービスを提供。キャリアのマイページから申し込み可能</li>
+          <li><b>番号を検索:</b> かかってきた番号をブラウザで検索すると、迷惑電話データベース（jpnumber.com等）で口コミが見つかることが多い</li>
+          <li><b>非通知拒否:</b> 非通知でかけてくる相手は、キャリア側で拒否設定可能（148に電話して設定）</li>
+          <li><b>留守電活用:</b> iOS 26のライブ留守番電話機能で、相手の用件をリアルタイムにテキスト表示。出る前に判断できる</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <a href="../tools/index.html">道具箱に戻る</a>
+    &nbsp;/&nbsp;
+    <a href="../index.html">や印工務店</a>
+    <div style="margin-top:6px;font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;">
+      Spam Call Blocker -- YZRS WORK
+    </div>
+  </footer>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'spam-blocker-numbers';
+
+  // --- DOM refs ---
+  var numInput  = document.getElementById('numInput');
+  var addBtn    = document.getElementById('addBtn');
+  var pasteBtn  = document.getElementById('pasteBtn');
+  var numList   = document.getElementById('numList');
+  var numCount  = document.getElementById('numCount');
+  var emptyMsg  = document.getElementById('emptyMsg');
+  var exportBtn = document.getElementById('exportBtn');
+  var clearBtn  = document.getElementById('clearBtn');
+  var toastEl   = document.getElementById('toast');
+
+  // --- State ---
+  var numbers = loadNumbers();
+
+  // --- Tabs ---
+  document.querySelectorAll('.tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('active'); });
+      tab.classList.add('active');
+      document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+
+  // --- Collapsibles ---
+  setupCollapse('setupToggle', 'setupBody');
+  setupCollapse('tipsToggle', 'tipsBody');
+
+  function setupCollapse(toggleId, bodyId) {
+    var toggle = document.getElementById(toggleId);
+    var body = document.getElementById(bodyId);
+    toggle.addEventListener('click', function () {
+      var isOpen = body.classList.contains('open');
+      body.classList.toggle('open');
+      toggle.classList.toggle('open');
+    });
+  }
+
+  // --- Number Management ---
+  function loadNumbers() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) { return []; }
+  }
+
+  function saveNumbers() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(numbers));
+  }
+
+  function normalizeNumber(raw) {
+    var n = raw.replace(/[\s　\-‐‑‒–—―−－()()]/g, '');
+    if (/^\+/.test(n)) return n;
+    if (/^0/.test(n)) return n;
+    return '';
+  }
+
+  function formatDisplay(num) {
+    var n = num.replace(/^\+81/, '0');
+    if (/^0[789]0\d{8}$/.test(n)) {
+      return n.slice(0,3) + '-' + n.slice(3,7) + '-' + n.slice(7);
+    }
+    if (/^0120\d{6}$/.test(n)) {
+      return n.slice(0,4) + '-' + n.slice(4,7) + '-' + n.slice(7);
+    }
+    if (/^0800\d{7}$/.test(n)) {
+      return n.slice(0,4) + '-' + n.slice(4,7) + '-' + n.slice(7);
+    }
+    if (/^050\d{8}$/.test(n)) {
+      return n.slice(0,3) + '-' + n.slice(3,7) + '-' + n.slice(7);
+    }
+    if (/^0[3-6]\d{8}$/.test(n)) {
+      return n.slice(0,2) + '-' + n.slice(2,6) + '-' + n.slice(6);
+    }
+    return num;
+  }
+
+  function addNumber(raw) {
+    var n = normalizeNumber(raw);
+    if (!n || n.length < 6) {
+      showToast('有効な電話番号を入力してください');
+      return false;
+    }
+    if (numbers.indexOf(n) !== -1) {
+      showToast('この番号は登録済みです');
+      return false;
+    }
+    numbers.push(n);
+    saveNumbers();
+    renderList();
+    showToast('追加しました: ' + formatDisplay(n));
+    return true;
+  }
+
+  function removeNumber(index) {
+    numbers.splice(index, 1);
+    saveNumbers();
+    renderList();
+  }
+
+  function clearAll() {
+    if (!confirm(numbers.length + ' 件の番号を全て削除しますか?')) return;
+    numbers = [];
+    saveNumbers();
+    renderList();
+    showToast('全件削除しました');
+  }
+
+  function renderList() {
+    numList.innerHTML = '';
+    numCount.textContent = numbers.length + ' 件';
+    emptyMsg.style.display = numbers.length ? 'none' : 'block';
+    exportBtn.disabled = !numbers.length;
+    clearBtn.disabled = !numbers.length;
+
+    numbers.forEach(function (num, i) {
+      var li = document.createElement('li');
+      li.className = 'num-item';
+      li.innerHTML =
+        '<span>' + formatDisplay(num) + '</span>' +
+        '<button class="num-del" data-i="' + i + '">x</button>';
+      numList.appendChild(li);
+    });
+  }
+
+  numList.addEventListener('click', function (e) {
+    if (e.target.classList.contains('num-del')) {
+      removeNumber(parseInt(e.target.dataset.i, 10));
+    }
+  });
+
+  // --- Input ---
+  addBtn.addEventListener('click', function () {
+    if (addNumber(numInput.value)) {
+      numInput.value = '';
+      numInput.focus();
+    }
+  });
+
+  numInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addBtn.click();
+    }
+  });
+
+  pasteBtn.addEventListener('click', function () {
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      navigator.clipboard.readText().then(function (text) {
+        var cleaned = text.trim();
+        if (cleaned) {
+          numInput.value = cleaned;
+          addNumber(cleaned);
+          numInput.value = '';
+        } else {
+          showToast('クリップボードが空です');
+        }
+      }).catch(function () {
+        numInput.focus();
+        document.execCommand('paste');
+        showToast('入力欄に貼り付けてください');
+      });
+    } else {
+      numInput.focus();
+      showToast('入力欄を長押しして貼り付けてください');
+    }
+  });
+
+  // --- Export ---
+  exportBtn.addEventListener('click', function () {
+    if (!numbers.length) return;
+    var lines = [
+      'BEGIN:VCARD',
+      'VERSION:3.0',
+      'FN:Spam Blocker',
+      'N:Blocker;Spam;;;'
+    ];
+    numbers.forEach(function (num) {
+      var tel = num;
+      if (/^0/.test(tel)) {
+        tel = '+81' + tel.slice(1);
+      }
+      lines.push('TEL;TYPE=CELL:' + tel);
+    });
+    lines.push('NOTE:Generated by ya-jirushi Spam Blocker');
+    lines.push('END:VCARD');
+
+    var blob = new Blob([lines.join('\r\n')], { type: 'text/vcard;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'spam-blocker.vcf';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () {
+      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }, 1000);
+    showToast(numbers.length + ' 件のVCFを書き出しました');
+  });
+
+  clearBtn.addEventListener('click', clearAll);
+
+  // --- Toast ---
+  var toastTimer = null;
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      toastEl.classList.remove('show');
+    }, 2200);
+  }
+
+  // --- Init ---
+  renderList();
+})();
+</script>
+</body>
+</html>
