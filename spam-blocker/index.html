@@ -258,10 +258,6 @@ body::before {
   font-family: var(--mono); font-size: 10px; color: var(--muted);
   word-break: break-all; display: block;
 }
-.scheme-btn .scheme-arrow {
-  float: right; color: var(--terracotta); font-family: var(--mono);
-  font-size: 16px; margin-top: -20px;
-}
 
 /* Collapsible */
 .collapse-toggle {
@@ -352,61 +348,28 @@ footer a:hover { color: var(--terracotta); }
     <div class="card card-accent">
       <span class="badge-red">SE3 既知バグ対応</span>
       <p style="font-size:14px;font-weight:700;margin-bottom:6px;">
-        iOS 26で(i)ボタンから着信拒否できない問題
+        iOS 26で(i)ボタン/左スワイプから着信拒否できない問題
       </p>
       <p style="font-size:13px;color:var(--ink-soft);">
-        iPhone SE3ではiOS 26以降、電話アプリの履歴から「連絡先を着信拒否」が表示されないバグが報告されています。
-        以下の方法で回避できます。
+        iPhone SE3ではiOS 26以降、電話アプリの履歴から「連絡先を着信拒否」が表示されず、
+        左スワイプのブロックアイコンも出ないバグが報告されています。
+        Safariからの設定ディープリンクも制限されるため、<b>ショートカットアプリ</b>で回避します。
       </p>
     </div>
 
-    <!-- === Solution A: Direct settings link === -->
+    <!-- === Solution A: Shortcut app (PRIMARY) === -->
     <div class="section-head">
-      <span class="s-jp">方法A: 設定画面を直接開く</span>
-      <span class="s-en">Direct Link</span>
+      <span class="s-jp">方法A: ショートカットで1タップ化</span>
+      <span class="s-en">Recommended</span>
     </div>
 
-    <p style="font-size:13px;color:var(--ink-soft);margin-bottom:12px;">
-      下のボタンで「着信拒否した連絡先」の設定画面を直接開きます。
-      開いたら右上の<b>「+」</b>をタップして番号を追加。合計2タップ。
+    <p style="font-size:13px;color:var(--ink-soft);margin-bottom:14px;">
+      ショートカットアプリはSafariと違い、設定アプリの<b>深い階層まで直接開けます</b>。
+      一度作ればホーム画面から1タップで着信拒否リストへ。
     </p>
 
-    <div class="scheme-grid">
-      <a class="scheme-btn" id="schemeA" href="App-prefs:Privacy&path=BLOCKED" onclick="markWorking('A')">
-        <span class="scheme-label">着信拒否リストを開く (A)</span>
-        <span class="scheme-url">App-prefs:Privacy&path=BLOCKED</span>
-        <span class="scheme-arrow">-&gt;</span>
-      </a>
-      <a class="scheme-btn" id="schemeB" href="prefs:root=Privacy" onclick="markWorking('B')">
-        <span class="scheme-label">プライバシーと<wbr>セキュリティを開く (B)</span>
-        <span class="scheme-url">prefs:root=Privacy</span>
-        <span class="scheme-arrow">-&gt;</span>
-      </a>
-      <a class="scheme-btn" id="schemeC" href="App-prefs:Phone&path=BLOCKED" onclick="markWorking('C')">
-        <span class="scheme-label">電話 &gt; 着信拒否を開く (C)</span>
-        <span class="scheme-url">App-prefs:Phone&path=BLOCKED</span>
-        <span class="scheme-arrow">-&gt;</span>
-      </a>
-    </div>
-
-    <div class="info-box" id="schemeResult" style="display:none;"></div>
-
-    <div class="info-box">
-      <b>使い方:</b> 上の3つのリンクを順にタップして、設定アプリが開くか試してください。
-      開いたリンクをSafariのブックマークに追加し、ホーム画面に置けばワンタップで使えます。
-      <br><br>
-      <b>iOS版で異なる場合:</b> URLスキームはiOSのマイナーバージョンで変わることがあります。
-      どれも開かない場合は、下の「方法B」を使ってください。
-    </div>
-
-    <!-- === Solution B: Shortcut app === -->
-    <div class="section-head" style="margin-top:20px;">
-      <span class="s-jp">方法B: ショートカットで1タップ化</span>
-      <span class="s-en">Shortcut</span>
-    </div>
-
     <div class="shortcut-recipe">
-      <div class="sr-title">ショートカットの作り方</div>
+      <div class="sr-title">ショートカットの作り方（3分）</div>
       <ol class="steps">
         <li>
           <b>ショートカット</b>アプリを開き、右上の<b>「+」</b>で新規作成
@@ -416,9 +379,14 @@ footer a:hover { color: var(--terracotta); }
           検索で<b>「URLを開く」</b>を選択
         </li>
         <li>
-          URLに上のリンクで動いたURLを入力<br>
-          <span class="path" id="shortcutUrl">App-prefs:Privacy&amp;path=BLOCKED</span><br>
+          URL欄に以下を入力（コピーボタンで貼付）<br>
+          <span class="path" id="shortcutUrl">prefs:root=Privacy</span>
           <button class="btn btn-sm btn-secondary" style="margin-top:6px;" id="copyUrlBtn">URLをコピー</button>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5;">
+            まずこのURLで試してください。ショートカット実行で
+            「プライバシーとセキュリティ」が開いたら成功。
+            そこから「着信拒否した連絡先」は1タップです。
+          </div>
         </li>
         <li>
           上部のショートカット名を<b>「着信拒否」</b>に変更
@@ -430,28 +398,69 @@ footer a:hover { color: var(--terracotta); }
       </ol>
     </div>
 
-    <div class="info-box">
-      <b>完成後:</b> ホーム画面のアイコンを1タップ → 設定の着信拒否リストが開く → 「+」で番号追加。
-      電話アプリの(i)ボタンを経由しないので、SE3のバグに影響されません。
+    <div class="card" style="margin-top:0;">
+      <button class="collapse-toggle" id="urlToggle">
+        <span>
+          <span class="s-jp" style="font-size:13px;">上のURLで設定トップにしか飛ばない場合</span>
+        </span>
+        <span class="arrow-icon">&#x25B6;</span>
+      </button>
+      <div class="collapse-body" id="urlBody">
+        <p style="font-size:12px;color:var(--ink-soft);margin-bottom:10px;">
+          ショートカットの「URLを開く」に以下を順に試してください。
+          iOS 26のマイナーバージョンで動くURLが異なります。
+        </p>
+        <div class="scheme-grid">
+          <div class="scheme-btn" style="cursor:default;">
+            <span class="scheme-label">候補 1（推奨）</span>
+            <span class="scheme-url" data-url="prefs:root=Privacy">prefs:root=Privacy</span>
+            <button class="btn btn-sm btn-secondary copy-scheme" data-url="prefs:root=Privacy" style="margin-top:6px;">コピー</button>
+          </div>
+          <div class="scheme-btn" style="cursor:default;">
+            <span class="scheme-label">候補 2</span>
+            <span class="scheme-url" data-url="prefs:root=Privacy&path=BlockedContacts">prefs:root=Privacy&amp;path=BlockedContacts</span>
+            <button class="btn btn-sm btn-secondary copy-scheme" data-url="prefs:root=Privacy&path=BlockedContacts" style="margin-top:6px;">コピー</button>
+          </div>
+          <div class="scheme-btn" style="cursor:default;">
+            <span class="scheme-label">候補 3</span>
+            <span class="scheme-url" data-url="prefs:root=Phone&path=Blocked">prefs:root=Phone&amp;path=Blocked</span>
+            <button class="btn btn-sm btn-secondary copy-scheme" data-url="prefs:root=Phone&path=Blocked" style="margin-top:6px;">コピー</button>
+          </div>
+          <div class="scheme-btn" style="cursor:default;">
+            <span class="scheme-label">候補 4</span>
+            <span class="scheme-url" data-url="prefs:root=MAIL&path=Blocked">prefs:root=MAIL&amp;path=Blocked</span>
+            <button class="btn btn-sm btn-secondary copy-scheme" data-url="prefs:root=MAIL&path=Blocked" style="margin-top:6px;">コピー</button>
+          </div>
+        </div>
+        <div class="info-box" style="margin-top:8px;">
+          <b>テスト方法:</b> ショートカットにURLを入力 → 右下の再生ボタンで実行 →
+          開いた画面を確認。着信拒否リストに直接飛んだURLを採用。
+        </div>
+      </div>
     </div>
 
-    <!-- === Solution C: SE3 Classic View workaround === -->
+    <div class="info-box">
+      <b>完成後の使い方（2ステップ）:</b><br>
+      1. ホーム画面のアイコンをタップ → 着信拒否リストが開く<br>
+      2. 右上の「+」で番号を追加
+    </div>
+
+    <!-- === Solution B: SE3 Classic View workaround === -->
     <div class="section-head" style="margin-top:20px;">
-      <span class="s-jp">方法C: Classic表示で(i)ボタン復活</span>
-      <span class="s-en">Workaround</span>
+      <span class="s-jp">方法B: Classic表示で(i)ボタン復活</span>
+      <span class="s-en">Fallback</span>
     </div>
 
     <div class="card">
       <p style="font-size:13px;color:var(--ink-soft);margin-bottom:10px;">
-        電話アプリの表示を「クラシック」に切り替えると(i)ボタンが復活する場合があります。
-        ただしSE3では追加のステップが必要です。
+        ショートカットを作るまでの暫定策。電話アプリ内で完結しますが手順は多めです。
       </p>
       <ol class="steps">
         <li>
-          電話アプリの<b>履歴</b>タブを開く
+          電話アプリ → <b>履歴</b>タブ
         </li>
         <li>
-          右上の <b>三本線アイコン</b> をタップ →<b>「クラシック」</b>を選択
+          右上の <b>三本線アイコン</b> →<b>「クラシック」</b>を選択
         </li>
         <li>
           ブロックしたい番号の<b>(i)</b>をタップ
@@ -460,14 +469,13 @@ footer a:hover { color: var(--terracotta); }
           画面が空白のまま → <b>ホームボタンを押して</b>ホーム画面に戻る
         </li>
         <li>
-          電話アプリに<b>戻る</b>と、項目が表示される。
+          電話アプリに<b>戻る</b>と項目が表示される →<br>
           一番下の<b>「連絡先を着信拒否」</b>をタップ
         </li>
       </ol>
       <div class="info-box" style="margin-top:10px;">
-        <b>注意:</b> この方法はSE3特有のワークアラウンドです。
-        (i)をタップ後に空白になるのはバグで、ホームボタンで一旦離れて戻ると表示が修復されます。
-        手順が多いので、方法A/Bの方が快適です。
+        <b>SE3固有:</b> (i)タップ後の空白はバグです。
+        ホームボタンで離れて戻ると表示が修復されます。
       </div>
     </div>
   </div>
@@ -674,37 +682,18 @@ footer a:hover { color: var(--terracotta); }
     });
   }
 
-  // --- URL Scheme management ---
-  window.markWorking = function (label) {
-    var schemes = { A: 'App-prefs:Privacy&path=BLOCKED', B: 'prefs:root=Privacy', C: 'App-prefs:Phone&path=BLOCKED' };
-    var url = schemes[label];
-    if (url) {
-      localStorage.setItem(SCHEME_KEY, url);
-      document.getElementById('shortcutUrl').textContent = url;
-      var resultBox = document.getElementById('schemeResult');
-      resultBox.innerHTML = '<b>リンク ' + label + ' が動作しました?</b> ショートカットのURLにはこれを使ってください: <span class="path">' + url + '</span>';
-      resultBox.style.display = '';
-    }
-  };
-
-  var savedScheme = localStorage.getItem(SCHEME_KEY);
-  if (savedScheme) {
-    document.getElementById('shortcutUrl').textContent = savedScheme;
-  }
-
-  // Copy URL for shortcut
-  copyUrlBtn.addEventListener('click', function () {
-    var url = document.getElementById('shortcutUrl').textContent;
+  // --- Clipboard copy ---
+  function copyToClipboard(text) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(url).then(function () {
-        showToast('URLをコピーしました');
+      navigator.clipboard.writeText(text).then(function () {
+        showToast('コピーしました: ' + text);
       }).catch(function () {
-        fallbackCopy(url);
+        fallbackCopy(text);
       });
     } else {
-      fallbackCopy(url);
+      fallbackCopy(text);
     }
-  });
+  }
 
   function fallbackCopy(text) {
     var ta = document.createElement('textarea');
@@ -714,8 +703,21 @@ footer a:hover { color: var(--terracotta); }
     ta.select();
     document.execCommand('copy');
     document.body.removeChild(ta);
-    showToast('URLをコピーしました');
+    showToast('コピーしました: ' + text);
   }
+
+  copyUrlBtn.addEventListener('click', function () {
+    copyToClipboard(document.getElementById('shortcutUrl').textContent);
+  });
+
+  document.querySelectorAll('.copy-scheme').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      copyToClipboard(btn.dataset.url);
+    });
+  });
+
+  // --- Collapsible: URL candidates ---
+  setupCollapse('urlToggle', 'urlBody');
 
   // --- Number Management ---
   function loadNumbers() {
