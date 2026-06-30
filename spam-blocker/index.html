@@ -424,7 +424,7 @@ footer a:hover { color: var(--terracotta); }
           </p>
         </div>
         <div class="shortcut-recipe" style="margin-bottom:0;margin-top:10px;">
-          <div class="sr-title">ショートカットの作り方</div>
+          <div class="sr-title">ショートカットの作り方（vCard方式）</div>
           <ol class="steps">
             <li>
               <b>ショートカット</b>アプリ → 右上<b>「+」</b>で新規作成
@@ -433,9 +433,25 @@ footer a:hover { color: var(--terracotta); }
               <b>「アクションを追加」</b> → 検索で<b>「クリップボードを取得」</b>を追加
             </li>
             <li>
-              続けて<b>「新規連絡先を追加」</b>アクションを追加。<br>
-              電話番号に<b>「クリップボード」</b>変数を設定、<br>
-              姓に<b>「SPAM」</b>と入力
+              続けて<b>「テキスト」</b>アクションを追加。<br>
+              テキスト欄に以下をそのまま入力:
+              <div style="background:#fff;border:1px solid rgba(100,60,180,0.2);border-radius:6px;padding:10px;margin:8px 0;font-family:var(--mono);font-size:12px;line-height:1.8;white-space:pre;overflow-x:auto;">BEGIN:VCARD
+VERSION:3.0
+FN:SPAM
+N:;SPAM;;;
+TEL;TYPE=CELL:<span style="background:#e0d4f5;padding:1px 4px;border-radius:3px;color:#4a2d8a;">クリップボード</span>
+END:VCARD</div>
+              <span style="font-size:12px;color:var(--ink-soft);">
+                <b>TEL:</b>の右側は手入力せず、キーボード上部の変数候補から
+                <b>「クリップボード」</b>をタップして挿入してください
+              </span>
+            </li>
+            <li>
+              続けて<b>「名前を設定」</b>アクションを追加。<br>
+              名前を<b>「spam.vcf」</b>に変更
+            </li>
+            <li>
+              続けて<b>「クイックルック」</b>アクションを追加
             </li>
             <li>
               ショートカット名を<b>「迷惑電話ブロック」</b>に変更 →<br>
@@ -445,7 +461,7 @@ footer a:hover { color: var(--terracotta); }
         </div>
         <div class="info-box" style="margin-top:10px;">
           <b>使い方:</b> 履歴で番号をコピー → ホーム画面のアイコンをタップ →
-          連絡先が作成される → <b>「既存の連絡先に追加」→「SPAM」を選択</b> → 完了。
+          連絡先プレビューが表示 → <b>「既存の連絡先に追加」→「SPAM」を選択</b> → 完了。
           ブロック済みの連絡先に番号が追加されるので、自動的にブロックされます。
         </div>
       </div>
