@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="電話ブロッカー" />
 <link rel="apple-touch-icon" href="../icons/icon-192.png" />
-<meta name="description" content="iPhone SE3 iOS 26の着信拒否バグ回避。ワンタップで着信拒否リストを開く+VCF一括ブロック。" />
+<meta name="description" content="iPhone SE3 iOS 26の着信拒否バグ回避。番号からVCF連絡先を即作成してブロック+コールスクリーニング設定ガイド。" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
@@ -240,29 +240,6 @@ body::before {
   background: linear-gradient(135deg, var(--card), rgba(181,69,27,0.04));
 }
 
-/* URL scheme test buttons */
-.scheme-grid {
-  display: flex; flex-direction: column; gap: 8px; margin: 12px 0;
-}
-.scheme-btn {
-  display: block; width: 100%; padding: 14px 16px;
-  background: #fff; border: 1px solid var(--rule-soft);
-  border-radius: 10px; text-decoration: none; color: var(--ink);
-  font-family: var(--jp); font-size: 14px; font-weight: 500;
-  text-align: left; transition: border-color 150ms;
-  -webkit-tap-highlight-color: transparent;
-}
-.scheme-btn:active { border-color: var(--terracotta); background: var(--card); }
-.scheme-btn .scheme-label { font-weight: 700; display: block; margin-bottom: 2px; }
-.scheme-btn .scheme-url {
-  font-family: var(--mono); font-size: 10px; color: var(--muted);
-  word-break: break-all; display: block;
-}
-.scheme-btn .scheme-arrow {
-  float: right; color: var(--terracotta); font-family: var(--mono);
-  font-size: 16px; margin-top: -20px;
-}
-
 /* Collapsible */
 .collapse-toggle {
   width: 100%; background: none; border: none; cursor: pointer;
@@ -337,7 +314,7 @@ footer a:hover { color: var(--terracotta); }
 
   <header class="hero">
     <h1>迷惑電話<br>ブロッカー<span class="en">-- Spam Call Blocker</span></h1>
-    <p>SE3で消えた着信拒否ボタンの代わり。ワンタップで設定画面へ飛ぶ+VCF一括ブロック。</p>
+    <p>SE3で消えた着信拒否ボタンの代わり。番号を入れて連絡先を即作成、そこからブロック。</p>
   </header>
 
   <div class="tabs">
@@ -352,122 +329,141 @@ footer a:hover { color: var(--terracotta); }
     <div class="card card-accent">
       <span class="badge-red">SE3 既知バグ対応</span>
       <p style="font-size:14px;font-weight:700;margin-bottom:6px;">
-        iOS 26で(i)ボタンから着信拒否できない問題
+        iOS 26で(i)ボタン/左スワイプから着信拒否できない問題
       </p>
       <p style="font-size:13px;color:var(--ink-soft);">
-        iPhone SE3ではiOS 26以降、電話アプリの履歴から「連絡先を着信拒否」が表示されないバグが報告されています。
-        以下の方法で回避できます。
+        SE3ではPhone appの履歴画面のブロック機能にバグがありますが、
+        <b>連絡先アプリからのブロックは正常に動作します</b>。
+        番号を連絡先として即作成し、そこからブロックする方式で回避します。
       </p>
     </div>
 
-    <!-- === Solution A: Direct settings link === -->
+    <!-- === Quick block === -->
     <div class="section-head">
-      <span class="s-jp">方法A: 設定画面を直接開く</span>
-      <span class="s-en">Direct Link</span>
+      <span class="s-jp">即ブロック</span>
+      <span class="s-en">Quick Block</span>
     </div>
 
     <p style="font-size:13px;color:var(--ink-soft);margin-bottom:12px;">
-      下のボタンで「着信拒否した連絡先」の設定画面を直接開きます。
-      開いたら右上の<b>「+」</b>をタップして番号を追加。合計2タップ。
+      番号を入力して「連絡先を作成」をタップ。ダウンロードされたファイルを開くと
+      連絡先アプリが起動するので、保存してから<b>「この発信者を着信拒否」</b>で完了。
     </p>
 
-    <div class="scheme-grid">
-      <a class="scheme-btn" id="schemeA" href="App-prefs:Privacy&path=BLOCKED" onclick="markWorking('A')">
-        <span class="scheme-label">着信拒否リストを開く (A)</span>
-        <span class="scheme-url">App-prefs:Privacy&path=BLOCKED</span>
-        <span class="scheme-arrow">-&gt;</span>
-      </a>
-      <a class="scheme-btn" id="schemeB" href="prefs:root=Privacy" onclick="markWorking('B')">
-        <span class="scheme-label">プライバシーと<wbr>セキュリティを開く (B)</span>
-        <span class="scheme-url">prefs:root=Privacy</span>
-        <span class="scheme-arrow">-&gt;</span>
-      </a>
-      <a class="scheme-btn" id="schemeC" href="App-prefs:Phone&path=BLOCKED" onclick="markWorking('C')">
-        <span class="scheme-label">電話 &gt; 着信拒否を開く (C)</span>
-        <span class="scheme-url">App-prefs:Phone&path=BLOCKED</span>
-        <span class="scheme-arrow">-&gt;</span>
-      </a>
+    <div class="input-row">
+      <input type="tel" id="quickInput" placeholder="090-1234-5678"
+             inputmode="tel" autocomplete="off" />
     </div>
+    <div style="display:flex;gap:8px;margin-bottom:8px;">
+      <button class="btn btn-secondary btn-sm" id="quickPaste" style="flex:1;">
+        クリップボードから貼付
+      </button>
+    </div>
+    <button class="big-action" id="quickBlock" disabled>
+      着信拒否用の連絡先を作成
+      <span class="big-action-sub">VCFをダウンロード → 連絡先アプリで開く</span>
+    </button>
 
-    <div class="info-box" id="schemeResult" style="display:none;"></div>
+    <div class="section-head" style="margin-top:18px;">
+      <span class="s-jp">手順</span>
+      <span class="s-en">Flow</span>
+    </div>
+    <ol class="steps">
+      <li>
+        電話アプリの<b>履歴</b>で迷惑番号を<b>長押し → コピー</b>
+      </li>
+      <li>
+        このページに戻り<b>「クリップボードから貼付」→「連絡先を作成」</b>
+      </li>
+      <li>
+        ダウンロードされた.vcfファイルを開く（Safari下部のダウンロードボタン、または通知から）
+      </li>
+      <li>
+        連絡先アプリが開くので<b>「新規連絡先を作成」→「完了」</b>で保存
+      </li>
+      <li>
+        保存した連絡先を開き、一番下の<b>「この発信者を着信拒否」</b>をタップ
+      </li>
+    </ol>
 
     <div class="info-box">
-      <b>使い方:</b> 上の3つのリンクを順にタップして、設定アプリが開くか試してください。
-      開いたリンクをSafariのブックマークに追加し、ホーム画面に置けばワンタップで使えます。
-      <br><br>
-      <b>iOS版で異なる場合:</b> URLスキームはiOSのマイナーバージョンで変わることがあります。
-      どれも開かない場合は、下の「方法B」を使ってください。
+      <b>ポイント:</b> Phone appの履歴画面のブロック機能にバグがあるだけで、
+      連絡先アプリの「この発信者を着信拒否」は正常に動作します。
+      連絡先を経由することでバグを完全に回避できます。
     </div>
 
-    <!-- === Solution B: Shortcut app === -->
+    <!-- === Shortcut automation === -->
     <div class="section-head" style="margin-top:20px;">
-      <span class="s-jp">方法B: ショートカットで1タップ化</span>
+      <span class="s-jp">更に時短: ショートカット自動化</span>
       <span class="s-en">Shortcut</span>
     </div>
 
-    <div class="shortcut-recipe">
-      <div class="sr-title">ショートカットの作り方</div>
-      <ol class="steps">
-        <li>
-          <b>ショートカット</b>アプリを開き、右上の<b>「+」</b>で新規作成
-        </li>
-        <li>
-          <b>「アクションを追加」</b>をタップ →
-          検索で<b>「URLを開く」</b>を選択
-        </li>
-        <li>
-          URLに上のリンクで動いたURLを入力<br>
-          <span class="path" id="shortcutUrl">App-prefs:Privacy&amp;path=BLOCKED</span><br>
-          <button class="btn btn-sm btn-secondary" style="margin-top:6px;" id="copyUrlBtn">URLをコピー</button>
-        </li>
-        <li>
-          上部のショートカット名を<b>「着信拒否」</b>に変更
-        </li>
-        <li>
-          名前の横の<b>「V」</b>をタップ →<br>
-          <b>「ホーム画面に追加」</b>を選択
-        </li>
-      </ol>
+    <div class="card">
+      <button class="collapse-toggle" id="shortcutToggle">
+        <span>
+          <span class="s-jp" style="font-size:13px;">ショートカットで連絡先作成を自動化</span>
+        </span>
+        <span class="arrow-icon">&#x25B6;</span>
+      </button>
+      <div class="collapse-body" id="shortcutBody">
+        <p style="font-size:12px;color:var(--ink-soft);margin-bottom:10px;">
+          クリップボードの番号から連絡先を自動作成するショートカットを作れば、
+          このページを開く手間も省けます。
+        </p>
+        <div class="shortcut-recipe" style="margin-bottom:0;">
+          <div class="sr-title">ショートカットの作り方</div>
+          <ol class="steps">
+            <li>
+              <b>ショートカット</b>アプリ → 右上<b>「+」</b>で新規作成
+            </li>
+            <li>
+              <b>「アクションを追加」</b> → 検索で<b>「クリップボードを取得」</b>を追加
+            </li>
+            <li>
+              続けて<b>「新規連絡先を追加」</b>アクションを追加。<br>
+              電話番号に<b>「クリップボード」</b>変数を設定、<br>
+              姓に<b>「SPAM」</b>と入力
+            </li>
+            <li>
+              ショートカット名を<b>「迷惑電話ブロック」</b>に変更 →<br>
+              <b>「V」→「ホーム画面に追加」</b>
+            </li>
+          </ol>
+        </div>
+        <div class="info-box" style="margin-top:10px;">
+          <b>使い方:</b> 履歴で番号をコピー → ホーム画面のアイコンをタップ →
+          連絡先が自動作成される → 連絡先アプリで開いて「着信拒否」。
+        </div>
+      </div>
     </div>
 
-    <div class="info-box">
-      <b>完成後:</b> ホーム画面のアイコンを1タップ → 設定の着信拒否リストが開く → 「+」で番号追加。
-      電話アプリの(i)ボタンを経由しないので、SE3のバグに影響されません。
-    </div>
-
-    <!-- === Solution C: SE3 Classic View workaround === -->
+    <!-- === Classic View fallback === -->
     <div class="section-head" style="margin-top:20px;">
-      <span class="s-jp">方法C: Classic表示で(i)ボタン復活</span>
-      <span class="s-en">Workaround</span>
+      <span class="s-jp">別の方法: Classic表示ワークアラウンド</span>
+      <span class="s-en">Fallback</span>
     </div>
 
     <div class="card">
-      <p style="font-size:13px;color:var(--ink-soft);margin-bottom:10px;">
-        電話アプリの表示を「クラシック」に切り替えると(i)ボタンが復活する場合があります。
-        ただしSE3では追加のステップが必要です。
-      </p>
-      <ol class="steps">
-        <li>
-          電話アプリの<b>履歴</b>タブを開く
-        </li>
-        <li>
-          右上の <b>三本線アイコン</b> をタップ →<b>「クラシック」</b>を選択
-        </li>
-        <li>
-          ブロックしたい番号の<b>(i)</b>をタップ
-        </li>
-        <li>
-          画面が空白のまま → <b>ホームボタンを押して</b>ホーム画面に戻る
-        </li>
-        <li>
-          電話アプリに<b>戻る</b>と、項目が表示される。
-          一番下の<b>「連絡先を着信拒否」</b>をタップ
-        </li>
-      </ol>
-      <div class="info-box" style="margin-top:10px;">
-        <b>注意:</b> この方法はSE3特有のワークアラウンドです。
-        (i)をタップ後に空白になるのはバグで、ホームボタンで一旦離れて戻ると表示が修復されます。
-        手順が多いので、方法A/Bの方が快適です。
+      <button class="collapse-toggle" id="classicToggle">
+        <span>
+          <span class="s-jp" style="font-size:13px;">電話アプリ内で完結する方法（手順多め）</span>
+        </span>
+        <span class="arrow-icon">&#x25B6;</span>
+      </button>
+      <div class="collapse-body" id="classicBody">
+        <ol class="steps">
+          <li>電話アプリ → <b>履歴</b>タブ</li>
+          <li>右上の <b>三本線アイコン</b> →<b>「クラシック」</b>を選択</li>
+          <li>ブロックしたい番号の<b>(i)</b>をタップ</li>
+          <li>画面が空白のまま → <b>ホームボタンを押して</b>ホーム画面に戻る</li>
+          <li>
+            電話アプリに<b>戻る</b>と項目が表示される →<br>
+            一番下の<b>「連絡先を着信拒否」</b>をタップ
+          </li>
+        </ol>
+        <div class="info-box" style="margin-top:10px;">
+          <b>SE3固有:</b> (i)タップ後の空白はバグです。
+          ホームボタンで離れて戻ると表示が修復されます。
+        </div>
       </div>
     </div>
   </div>
@@ -636,7 +632,6 @@ footer a:hover { color: var(--terracotta); }
   'use strict';
 
   var STORAGE_KEY = 'spam-blocker-numbers';
-  var SCHEME_KEY = 'spam-blocker-working-scheme';
 
   // --- DOM refs ---
   var numInput  = document.getElementById('numInput');
@@ -648,8 +643,6 @@ footer a:hover { color: var(--terracotta); }
   var exportBtn = document.getElementById('exportBtn');
   var clearBtn  = document.getElementById('clearBtn');
   var toastEl   = document.getElementById('toast');
-  var copyUrlBtn = document.getElementById('copyUrlBtn');
-
   var numbers = loadNumbers();
 
   // --- Tabs ---
@@ -674,48 +667,75 @@ footer a:hover { color: var(--terracotta); }
     });
   }
 
-  // --- URL Scheme management ---
-  window.markWorking = function (label) {
-    var schemes = { A: 'App-prefs:Privacy&path=BLOCKED', B: 'prefs:root=Privacy', C: 'App-prefs:Phone&path=BLOCKED' };
-    var url = schemes[label];
-    if (url) {
-      localStorage.setItem(SCHEME_KEY, url);
-      document.getElementById('shortcutUrl').textContent = url;
-      var resultBox = document.getElementById('schemeResult');
-      resultBox.innerHTML = '<b>リンク ' + label + ' が動作しました?</b> ショートカットのURLにはこれを使ってください: <span class="path">' + url + '</span>';
-      resultBox.style.display = '';
-    }
-  };
+  // --- Quick Block (Tab 1) ---
+  var quickInput = document.getElementById('quickInput');
+  var quickBlock = document.getElementById('quickBlock');
+  var quickPaste = document.getElementById('quickPaste');
 
-  var savedScheme = localStorage.getItem(SCHEME_KEY);
-  if (savedScheme) {
-    document.getElementById('shortcutUrl').textContent = savedScheme;
-  }
+  quickInput.addEventListener('input', function () {
+    quickBlock.disabled = !quickInput.value.trim();
+  });
 
-  // Copy URL for shortcut
-  copyUrlBtn.addEventListener('click', function () {
-    var url = document.getElementById('shortcutUrl').textContent;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(url).then(function () {
-        showToast('URLをコピーしました');
+  quickPaste.addEventListener('click', function () {
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      navigator.clipboard.readText().then(function (text) {
+        var cleaned = text.trim();
+        if (cleaned) {
+          quickInput.value = cleaned;
+          quickBlock.disabled = false;
+          showToast('貼り付けました');
+        } else {
+          showToast('クリップボードが空です');
+        }
       }).catch(function () {
-        fallbackCopy(url);
+        quickInput.focus();
+        showToast('入力欄を長押しして貼り付けてください');
       });
     } else {
-      fallbackCopy(url);
+      quickInput.focus();
+      showToast('入力欄を長押しして貼り付けてください');
     }
   });
 
-  function fallbackCopy(text) {
-    var ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.cssText = 'position:fixed;opacity:0;';
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    showToast('URLをコピーしました');
-  }
+  quickBlock.addEventListener('click', function () {
+    var raw = quickInput.value.trim();
+    var n = normalizeNumber(raw);
+    if (!n || n.length < 6) {
+      showToast('有効な電話番号を入力してください');
+      return;
+    }
+    var tel = n;
+    if (/^0/.test(tel)) tel = '+81' + tel.slice(1);
+    var displayNum = formatDisplay(n);
+    var lines = [
+      'BEGIN:VCARD',
+      'VERSION:3.0',
+      'FN:SPAM ' + displayNum,
+      'N:' + displayNum + ';SPAM;;;',
+      'TEL;TYPE=CELL:' + tel,
+      'NOTE:Spam blocker - ya-jirushi',
+      'END:VCARD'
+    ];
+    var blob = new Blob([lines.join('\r\n')], { type: 'text/vcard;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'spam-' + n + '.vcf';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () {
+      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }, 1000);
+    quickInput.value = '';
+    quickBlock.disabled = true;
+    showToast('VCFを作成しました - ダウンロードから開いてください');
+  });
+
+  // --- Collapsibles ---
+  setupCollapse('shortcutToggle', 'shortcutBody');
+  setupCollapse('classicToggle', 'classicBody');
 
   // --- Number Management ---
   function loadNumbers() {
