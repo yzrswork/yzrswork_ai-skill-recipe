@@ -427,6 +427,12 @@ footer a:hover { color: var(--terracotta); }
         </div>
         <div class="shortcut-recipe" style="margin-bottom:0;margin-top:10px;">
           <div class="sr-title">ショートカットの作り方（vCard方式）</div>
+          <div class="info-box" style="margin-bottom:12px;border-left:3px solid var(--red);">
+            <b>注意:</b> 「テキスト」→「名前を設定」→「共有」だけでは
+            iOS 26で共有シートが表示されない場合があります。
+            下記の手順4-5の<b>Base64エンコード/デコード</b>を必ず入れてください。
+            テキストをバイナリデータに変換することで、iOSが.vcfファイルとして正しく認識します。
+          </div>
           <ol class="steps">
             <li>
               <b>ショートカット</b>アプリ → 右上<b>「+」</b>で新規作成
@@ -449,6 +455,22 @@ END:VCARD</div>
               </span>
             </li>
             <li>
+              <span class="badge-red">重要</span>
+              続けて<b>「Base64エンコード」</b>アクションを追加<br>
+              <span style="font-size:12px;color:var(--ink-soft);">
+                検索で「Base64」と入力すると出てきます。
+                入力が「テキスト」になっていることを確認
+              </span>
+            </li>
+            <li>
+              <span class="badge-red">重要</span>
+              続けて<b>「Base64デコード」</b>アクションを追加<br>
+              <span style="font-size:12px;color:var(--ink-soft);">
+                同じく「Base64」で検索。<b>「デコード」</b>を選択。
+                入力が「Base64エンコード済みテキスト」になっていることを確認
+              </span>
+            </li>
+            <li>
               続けて<b>「名前を設定」</b>アクションを追加。<br>
               名前を<b>「spam.vcf」</b>に変更
             </li>
@@ -465,15 +487,28 @@ END:VCARD</div>
               <b>「V」→「ホーム画面に追加」</b>
             </li>
           </ol>
+          <div style="background:#fff;border:1px solid rgba(100,60,180,0.2);border-radius:8px;padding:12px;margin-top:12px;font-size:12px;line-height:1.8;">
+            <b>完成形（上から順に8アクション）:</b><br>
+            1. クリップボードを取得<br>
+            2. テキスト（vCard内容）<br>
+            3. Base64エンコード<br>
+            4. Base64デコード<br>
+            5. テキストの名前をspam.vcfに設定<br>
+            6. 名称変更された項目を共有
+          </div>
         </div>
         <div class="info-box" style="margin-top:10px;">
-          <b>使い方:</b> 履歴で番号をコピー - ホーム画面のアイコンをタップ -
-          共有シートが開く - <b>「連絡先」</b>アイコンをタップ -
+          <b>使い方:</b> 履歴で番号をコピー → ホーム画面のアイコンをタップ →
+          共有シートが開く → <b>「連絡先」</b>アイコンをタップ →
           <b>「既存の連絡先に追加」から「SPAM」を選択</b>で完了。
           ブロック済みの連絡先に番号が追加されるので、自動的にブロックされます。
           <br><br>
           <b>共有シートに「連絡先」が出ない場合:</b>
           共有シートの下段を左にスワイプし<b>「その他」</b>から連絡先を有効にしてください。
+          <br><br>
+          <b>「クリップボードから貼り付けますか?」と聞かれたら:</b>
+          <b>「貼り付ける」</b>を選んでください。ホーム画面から起動した場合、
+          iOSがクリップボードの読み取り許可を求めることがあります。
         </div>
       </div>
     </div>
