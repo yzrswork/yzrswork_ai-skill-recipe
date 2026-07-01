@@ -426,12 +426,12 @@ footer a:hover { color: var(--terracotta); }
           </p>
         </div>
         <div class="shortcut-recipe" style="margin-bottom:0;margin-top:10px;">
-          <div class="sr-title">ショートカットの作り方（vCard方式）</div>
-          <div class="info-box" style="margin-bottom:12px;border-left:3px solid var(--red);">
-            <b>注意:</b> 「テキスト」→「名前を設定」→「共有」だけでは
-            iOS 26で共有シートが表示されない場合があります。
-            下記の手順4-5の<b>Base64エンコード/デコード</b>を必ず入れてください。
-            テキストをバイナリデータに変換することで、iOSが.vcfファイルとして正しく認識します。
+          <div class="sr-title">ショートカットの作り方（URL方式）</div>
+          <div class="info-box" style="margin-bottom:12px;border-left:3px solid var(--green);">
+            <b>仕組み:</b> ショートカットはクリップボードの番号を
+            このページのURLに付けてSafariで開くだけ。
+            ページ側がVCFダウンロードを自動実行します。
+            iOS 26の共有シート問題を完全に回避できます。
           </div>
           <ol class="steps">
             <li>
@@ -441,45 +441,18 @@ footer a:hover { color: var(--terracotta); }
               <b>「アクションを追加」</b> → 検索で<b>「クリップボードを取得」</b>を追加
             </li>
             <li>
-              続けて<b>「テキスト」</b>アクションを追加。<br>
-              テキスト欄に以下をそのまま入力:
-              <div style="background:#fff;border:1px solid rgba(100,60,180,0.2);border-radius:6px;padding:10px;margin:8px 0;font-family:var(--mono);font-size:12px;line-height:1.8;white-space:pre;overflow-x:auto;">BEGIN:VCARD
-VERSION:3.0
-FN:SPAM
-N:;SPAM;;;
-TEL;TYPE=CELL:<span style="background:#e0d4f5;padding:1px 4px;border-radius:3px;color:#4a2d8a;">クリップボード</span>
-END:VCARD</div>
+              続けて<b>「URL」</b>アクションを追加。<br>
+              URL欄に以下を入力:
+              <div style="background:#fff;border:1px solid rgba(100,60,180,0.2);border-radius:6px;padding:10px;margin:8px 0;font-family:var(--mono);font-size:11px;line-height:1.8;word-break:break-all;">https://yzrswork.github.io/yzrswork_ai-skill-recipe/spam-blocker/?num=<span style="background:#e0d4f5;padding:1px 4px;border-radius:3px;color:#4a2d8a;">クリップボード</span></div>
               <span style="font-size:12px;color:var(--ink-soft);">
-                <b>TEL:</b>の右側は手入力せず、キーボード上部の変数候補から
+                <b>?num=</b> の右側は手入力せず、キーボード上部の変数候補から
                 <b>「クリップボード」</b>をタップして挿入してください
               </span>
             </li>
             <li>
-              <span class="badge-red">重要</span>
-              続けて<b>「Base64エンコード」</b>アクションを追加<br>
+              続けて<b>「URLを開く」</b>アクションを追加<br>
               <span style="font-size:12px;color:var(--ink-soft);">
-                検索で「Base64」と入力すると出てきます。
-                入力が「テキスト」になっていることを確認
-              </span>
-            </li>
-            <li>
-              <span class="badge-red">重要</span>
-              続けて<b>「Base64デコード」</b>アクションを追加<br>
-              <span style="font-size:12px;color:var(--ink-soft);">
-                同じく「Base64」で検索。<b>「デコード」</b>を選択。
-                入力が「Base64エンコード済みテキスト」になっていることを確認
-              </span>
-            </li>
-            <li>
-              続けて<b>「名前を設定」</b>アクションを追加。<br>
-              名前を<b>「spam.vcf」</b>に変更
-            </li>
-            <li>
-              続けて<b>「共有」</b>アクションを追加<br>
-              <span style="font-size:12px;color:var(--ink-soft);">
-                ※「クイックルック」ではなく<b>「共有」</b>を使ってください。
-                クイックルックはプレビュー表示のみで、連絡先への追加ボタンが
-                表示されない場合があります
+                入力が「URL」になっていることを確認
               </span>
             </li>
             <li>
@@ -488,23 +461,18 @@ END:VCARD</div>
             </li>
           </ol>
           <div style="background:#fff;border:1px solid rgba(100,60,180,0.2);border-radius:8px;padding:12px;margin-top:12px;font-size:12px;line-height:1.8;">
-            <b>完成形（上から順に8アクション）:</b><br>
+            <b>完成形（上から順に3アクション）:</b><br>
             1. クリップボードを取得<br>
-            2. テキスト（vCard内容）<br>
-            3. Base64エンコード<br>
-            4. Base64デコード<br>
-            5. テキストの名前をspam.vcfに設定<br>
-            6. 名称変更された項目を共有
+            2. URL（このページのアドレス + ?num=クリップボード）<br>
+            3. URLを開く
           </div>
         </div>
         <div class="info-box" style="margin-top:10px;">
           <b>使い方:</b> 履歴で番号をコピー → ホーム画面のアイコンをタップ →
-          共有シートが開く → <b>「連絡先」</b>アイコンをタップ →
+          Safariでこのページが開き、VCFが自動ダウンロードされる →
+          Safari下部のダウンロードボタンからファイルを開く →
           <b>「既存の連絡先に追加」から「SPAM」を選択</b>で完了。
           ブロック済みの連絡先に番号が追加されるので、自動的にブロックされます。
-          <br><br>
-          <b>共有シートに「連絡先」が出ない場合:</b>
-          共有シートの下段を左にスワイプし<b>「その他」</b>から連絡先を有効にしてください。
           <br><br>
           <b>「クリップボードから貼り付けますか?」と聞かれたら:</b>
           <b>「貼り付ける」</b>を選んでください。ホーム画面から起動した場合、
@@ -785,6 +753,44 @@ END:VCARD</div>
     });
   }
 
+  // --- Auto-download from URL param (?num=) ---
+  function autoBlockFromParam() {
+    var params = new URLSearchParams(window.location.search);
+    var raw = params.get('num');
+    if (!raw) return;
+    var n = normalizeNumber(raw.trim());
+    if (!n || n.length < 6) {
+      showToast('URLの番号が不正です');
+      return;
+    }
+    var tel = n;
+    if (/^0/.test(tel)) tel = '+81' + tel.slice(1);
+    var displayNum = formatDisplay(n);
+    var lines = [
+      'BEGIN:VCARD',
+      'VERSION:3.0',
+      'FN:SPAM ' + displayNum,
+      'N:' + displayNum + ';SPAM;;;',
+      'TEL;TYPE=CELL:' + tel,
+      'NOTE:Spam blocker - ya-jirushi',
+      'END:VCARD'
+    ];
+    var blob = new Blob([lines.join('\r\n')], { type: 'text/vcard;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'spam-' + n + '.vcf';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () {
+      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }, 500);
+    showToast(displayNum + ' のVCFを自動作成しました');
+    history.replaceState(null, '', window.location.pathname);
+  }
+
   // --- Quick Block (Tab 1) ---
   var quickInput = document.getElementById('quickInput');
   var quickBlock = document.getElementById('quickBlock');
@@ -1022,6 +1028,7 @@ END:VCARD</div>
   }
 
   renderList();
+  autoBlockFromParam();
 })();
 </script>
 </body>
