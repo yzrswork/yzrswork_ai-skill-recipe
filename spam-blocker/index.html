@@ -152,6 +152,10 @@ body::before {
   margin-bottom: 10px;
 }
 .big-action:active { transform: scale(0.97); opacity: 0.9; }
+@keyframes pulse {
+  0%, 100% { box-shadow: none; }
+  50% { box-shadow: 0 0 0 6px rgba(181,69,27,0.35); }
+}
 .big-action-sub {
   font-size: 12px; font-weight: 400; opacity: 0.85;
   display: block; margin-top: 4px;
@@ -430,7 +434,7 @@ footer a:hover { color: var(--terracotta); }
           <div class="info-box" style="margin-bottom:12px;border-left:3px solid var(--green);">
             <b>仕組み:</b> ショートカットはクリップボードの番号を
             このページのURLに付けてSafariで開くだけ。
-            ページ側がVCFダウンロードを自動実行します。
+            番号が自動入力されるので、ボタンを1タップでVCFダウンロード。
             iOS 26の共有シート問題を完全に回避できます。
           </div>
           <ol class="steps">
@@ -469,7 +473,8 @@ footer a:hover { color: var(--terracotta); }
         </div>
         <div class="info-box" style="margin-top:10px;">
           <b>使い方:</b> 履歴で番号をコピー → ホーム画面のアイコンをタップ →
-          Safariでこのページが開き、VCFが自動ダウンロードされる →
+          Safariでこのページが開き、番号が自動入力される →
+          光っている<b>「連絡先を作成」ボタンをタップ</b> →
           Safari下部のダウンロードボタンからファイルを開く →
           <b>「既存の連絡先に追加」から「SPAM」を選択</b>で完了。
           ブロック済みの連絡先に番号が追加されるので、自動的にブロックされます。
@@ -753,8 +758,8 @@ footer a:hover { color: var(--terracotta); }
     });
   }
 
-  // --- Auto-download from URL param (?num=) ---
-  function autoBlockFromParam() {
+  // --- Auto-fill from URL param (?num=) ---
+  function autoFillFromParam() {
     var params = new URLSearchParams(window.location.search);
     var raw = params.get('num');
     if (!raw) return;
@@ -763,31 +768,11 @@ footer a:hover { color: var(--terracotta); }
       showToast('URLの番号が不正です');
       return;
     }
-    var tel = n;
-    if (/^0/.test(tel)) tel = '+81' + tel.slice(1);
-    var displayNum = formatDisplay(n);
-    var lines = [
-      'BEGIN:VCARD',
-      'VERSION:3.0',
-      'FN:SPAM ' + displayNum,
-      'N:' + displayNum + ';SPAM;;;',
-      'TEL;TYPE=CELL:' + tel,
-      'NOTE:Spam blocker - ya-jirushi',
-      'END:VCARD'
-    ];
-    var blob = new Blob([lines.join('\r\n')], { type: 'text/vcard;charset=utf-8' });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = 'spam-' + n + '.vcf';
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(function () {
-      URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    }, 500);
-    showToast(displayNum + ' のVCFを自動作成しました');
+    var quickInput = document.getElementById('quickInput');
+    var quickBlock = document.getElementById('quickBlock');
+    quickInput.value = formatDisplay(n);
+    quickBlock.disabled = false;
+    quickBlock.style.animation = 'pulse 1s ease-in-out 2';
     history.replaceState(null, '', window.location.pathname);
   }
 
@@ -1028,7 +1013,7 @@ footer a:hover { color: var(--terracotta); }
   }
 
   renderList();
-  autoBlockFromParam();
+  autoFillFromParam();
 })();
 </script>
 </body>
