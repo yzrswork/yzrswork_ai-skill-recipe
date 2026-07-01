@@ -327,14 +327,15 @@ footer a:hover { color: var(--terracotta); }
   <div id="panel-onetap" class="tab-panel active">
 
     <div class="card card-accent">
-      <span class="badge-red">SE3 既知バグ対応</span>
+      <span class="badge-red">SE3 既知バグ対応（iOS 26.5でも未修正）</span>
       <p style="font-size:14px;font-weight:700;margin-bottom:6px;">
-        iOS 26で(i)ボタン/左スワイプから着信拒否できない問題
+        電話アプリの(i)ボタンから着信拒否できない問題
       </p>
       <p style="font-size:13px;color:var(--ink-soft);">
-        SE3ではPhone appの履歴画面のブロック機能にバグがありますが、
-        <b>連絡先アプリからのブロックは正常に動作します</b>。
-        番号を連絡先として即作成し、そこからブロックする方式で回避します。
+        SE2/SE3では電話アプリ履歴の(i)をタップすると画面が空白になり、
+        ブロック等の操作が表示されないバグがあります（iOS 26.0-26.5で継続中）。
+        <b>連絡先アプリ</b>や<b>設定アプリ</b>からのブロックは正常に動作するため、
+        このツールではそれらの経路を使って回避します。
       </p>
     </div>
 
@@ -386,9 +387,10 @@ footer a:hover { color: var(--terracotta); }
     </ol>
 
     <div class="info-box">
-      <b>ポイント:</b> Phone appの履歴画面のブロック機能にバグがあるだけで、
-      連絡先アプリの「この発信者を着信拒否」は正常に動作します。
-      連絡先を経由することでバグを完全に回避できます。
+      <b>ポイント:</b> 電話アプリ履歴画面の描画バグはSE2/SE3固有で、
+      連絡先アプリの「この発信者を着信拒否」と設定アプリの
+      「着信拒否した連絡先」はどちらも正常に動作します。
+      連絡先を先に作り、上記いずれかの経路でブロックしてください。
     </div>
 
     <!-- === Shortcut automation === -->
@@ -451,7 +453,12 @@ END:VCARD</div>
               名前を<b>「spam.vcf」</b>に変更
             </li>
             <li>
-              続けて<b>「クイックルック」</b>アクションを追加
+              続けて<b>「共有」</b>アクションを追加<br>
+              <span style="font-size:12px;color:var(--ink-soft);">
+                ※「クイックルック」ではなく<b>「共有」</b>を使ってください。
+                クイックルックはプレビュー表示のみで、連絡先への追加ボタンが
+                表示されない場合があります
+              </span>
             </li>
             <li>
               ショートカット名を<b>「迷惑電話ブロック」</b>に変更 →<br>
@@ -460,9 +467,13 @@ END:VCARD</div>
           </ol>
         </div>
         <div class="info-box" style="margin-top:10px;">
-          <b>使い方:</b> 履歴で番号をコピー → ホーム画面のアイコンをタップ →
-          連絡先プレビューが表示 → <b>「既存の連絡先に追加」→「SPAM」を選択</b> → 完了。
+          <b>使い方:</b> 履歴で番号をコピー - ホーム画面のアイコンをタップ -
+          共有シートが開く - <b>「連絡先」</b>アイコンをタップ -
+          <b>「既存の連絡先に追加」から「SPAM」を選択</b>で完了。
           ブロック済みの連絡先に番号が追加されるので、自動的にブロックされます。
+          <br><br>
+          <b>共有シートに「連絡先」が出ない場合:</b>
+          共有シートの下段を左にスワイプし<b>「その他」</b>から連絡先を有効にしてください。
         </div>
       </div>
     </div>
@@ -482,19 +493,60 @@ END:VCARD</div>
       </button>
       <div class="collapse-body" id="classicBody">
         <ol class="steps">
-          <li>電話アプリ → <b>履歴</b>タブ</li>
-          <li>右上の <b>三本線アイコン</b> →<b>「クラシック」</b>を選択</li>
+          <li>電話アプリの<b>履歴</b>タブを開く</li>
+          <li>右上の <b>三本線アイコン</b>から<b>「クラシック」</b>を選択</li>
           <li>ブロックしたい番号の<b>(i)</b>をタップ</li>
-          <li>画面が空白のまま → <b>ホームボタンを押して</b>ホーム画面に戻る</li>
+          <li>画面が空白のまま表示される（SE3固有バグ）</li>
           <li>
-            電話アプリに<b>戻る</b>と項目が表示される →<br>
-            一番下の<b>「連絡先を着信拒否」</b>をタップ
+            <b>ホームボタンを押して</b>ホーム画面に戻り、再度電話アプリに戻る。
+            それでも空白なら<b>上方向に数回スクロール</b>すると
+            描画が走る場合がある
+          </li>
+          <li>
+            項目が表示されたら、一番下の<b>「連絡先を着信拒否」</b>をタップ
           </li>
         </ol>
         <div class="info-box" style="margin-top:10px;">
-          <b>SE3固有:</b> (i)タップ後の空白はバグです。
-          ホームボタンで離れて戻ると表示が修復されます。
+          <b>注意:</b> この方法はiOS 26.xのバージョンにより
+          成功率が変わります（26.5以降のGUI変更で動かない報告あり）。
+          確実にブロックしたい場合は上の<b>ワンタップ方式</b>か
+          <b>設定アプリ経由</b>（下記）を使ってください。
         </div>
+      </div>
+    </div>
+
+    <!-- === Settings path === -->
+    <div class="section-head" style="margin-top:20px;">
+      <span class="s-jp">最も確実: 設定アプリから直接ブロック</span>
+      <span class="s-en">Settings</span>
+    </div>
+
+    <div class="card card-accent">
+      <span class="recommend">SE3で最も確実</span>
+      <p style="font-size:13px;color:var(--ink-soft);margin-bottom:10px;">
+        電話アプリのバグを完全に回避できます。連絡先を先に作成しておく必要があります。
+      </p>
+      <ol class="steps">
+        <li>
+          まず上の<b>「即ブロック」</b>でVCFをダウンロードし、
+          連絡先アプリで保存しておく（ブロックはまだしない）
+        </li>
+        <li>
+          <b>設定</b>アプリを開く
+        </li>
+        <li>
+          <span class="path">プライバシーとセキュリティ</span>をタップ
+        </li>
+        <li>
+          <span class="path">着信拒否した連絡先</span>をタップ
+        </li>
+        <li>
+          <b>「新規追加...」</b>から先ほど保存した連絡先を選択
+        </li>
+      </ol>
+      <div class="info-box" style="margin-top:10px;">
+        <b>補足:</b> この経路は電話アプリを経由しないため、
+        SE3の描画バグの影響を受けません。
       </div>
     </div>
   </div>
