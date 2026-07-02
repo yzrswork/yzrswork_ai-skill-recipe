@@ -147,3 +147,4 @@ index.html
 
 - 2026-07-02 初版（Fable 5 による開発計画。実装は Sonnet 5 が担当）
 - 2026-07-02 v2計画追記（縦画面対応、坂道と坂中の穴、スライド速度操作。計画: Fable 5 / 実装: Sonnet 5）
+- 2026-07-02 v2実装完了（縦画面ファースト: VH540固定 + VW動的300-960、rotate撤去、safe-area対応。地形: flat/hillセグメント + cos補間、groundY相対アンカー、坂中の穴。速度操作: speedFactor 0.6-1.5 タッチスライド / 矢印キー、HUD速度メーター。Playwright検証20/20通過。実装: Sonnet 5）
