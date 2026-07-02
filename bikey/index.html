@@ -1,0 +1,1261 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>bikey — チャリ通勤アクション</title>
+<style>
+  :root{
+    --paper:#f0ebe3; --paper-2:#e8e1d4; --ink:#1c1a16; --ink-soft:#2b2823;
+    --muted:#6f675b; --terracotta:#b5451b; --terracotta-deep:#8e3514;
+    --terracotta-lite:#d98a5c; --gold:#e0a85a; --sky:#e9dcc3;
+    --jp:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#1a120c;}
+  body{
+    font-family:var(--jp); color:var(--ink);
+    touch-action:none; user-select:none; -webkit-user-select:none;
+    display:flex; align-items:center; justify-content:center;
+    width:100vw; height:100vh; height:100dvh;
+  }
+  #stage-wrap{
+    position:relative; width:100%; height:100%;
+    max-width:100vw; max-height:100dvh;
+    aspect-ratio:16/9;
+    background:#0d0a07;
+    box-shadow:0 0 40px rgba(0,0,0,.6);
+    margin:auto;
+  }
+  /* keep 16:9 letterbox: constrain by the shorter axis */
+  @media (min-aspect-ratio: 16/9){
+    #stage-wrap{ height:100%; width:auto; }
+  }
+  @media (max-aspect-ratio: 16/9){
+    #stage-wrap{ width:100%; height:auto; }
+  }
+  canvas{
+    display:block; width:100%; height:100%; touch-action:none;
+  }
+  .screen{
+    position:absolute; inset:0; display:none;
+    flex-direction:column; align-items:center; justify-content:center;
+    padding:3% 6%; color:var(--paper); z-index:20;
+    background:rgba(20,14,9,0);
+  }
+  .screen.dim{ background:rgba(18,12,8,.55); }
+  .screen.on{display:flex;}
+  .panel{
+    background:linear-gradient(180deg,#3a2417,#2a1810);
+    border:3px solid var(--terracotta); border-radius:12px;
+    padding:18px 26px; margin-bottom:10px; max-width:520px; width:100%;
+    box-shadow:0 4px 0 rgba(0,0,0,.4), inset 0 0 0 2px rgba(224,168,90,.15);
+  }
+  h1.title{
+    font-size:clamp(28px,6vw,52px); margin:0; line-height:1.05;
+    color:var(--gold); text-shadow:3px 3px 0 var(--terracotta-deep), 5px 5px 0 rgba(0,0,0,.5);
+    letter-spacing:.03em; text-align:center;
+  }
+  .subtitle{ text-align:center; color:var(--terracotta-lite); letter-spacing:.15em; font-size:13px; margin-top:6px;}
+  .btn{
+    display:inline-block; padding:11px 20px; margin:6px 4px;
+    background:linear-gradient(180deg,var(--terracotta),var(--terracotta-deep));
+    color:#fff; border:2px solid var(--gold); border-radius:8px;
+    font-family:var(--jp); font-weight:700; font-size:15px; cursor:pointer;
+    box-shadow:0 3px 0 rgba(0,0,0,.4); text-align:center;
+  }
+  .btn:active{ transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,.4); }
+  .btn.sec{ background:linear-gradient(180deg,#5a4030,#3a2417); border-color:var(--terracotta-lite); }
+  .btn.sm{ font-size:12px; padding:6px 10px; }
+  .muted{ color:#cfc3ab; font-size:12px; line-height:1.7; }
+  .center{ text-align:center; }
+  .row{ display:flex; gap:6px; flex-wrap:wrap; justify-content:center; }
+  .score-line{ color:var(--gold); font-weight:700; font-size:16px; margin:3px 0; }
+  #topbar{
+    position:absolute; top:8px; right:10px; z-index:15; display:none; gap:6px;
+  }
+  #topbar.show{ display:flex; }
+  #topbar button{
+    width:34px; height:34px; border-radius:50%; border:2px solid var(--gold);
+    background:rgba(20,14,9,.55); color:var(--gold); font-size:15px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; line-height:1; padding:0;
+  }
+  #hint-bar{
+    position:absolute; left:0; right:0; bottom:6px; z-index:15;
+    text-align:center; color:rgba(240,235,227,.75); font-size:11px;
+    letter-spacing:.06em; pointer-events:none; text-shadow:0 1px 2px rgba(0,0,0,.8);
+    display:none;
+  }
+  #hint-bar.show{ display:block; }
+  #rotate{
+    position:absolute; inset:0; z-index:60; display:none;
+    align-items:center; justify-content:center; text-align:center;
+    background:#1a120c; color:var(--gold); font-size:16px; line-height:1.8; padding:20px;
+  }
+  #rotate.show{ display:flex; }
+</style>
+</head>
+<body>
+<div id="stage-wrap">
+  <canvas id="game"></canvas>
+
+  <div id="topbar">
+    <button id="btn-mute" title="ミュート">🔊</button>
+    <button id="btn-pause" title="ポーズ">⏸</button>
+  </div>
+
+  <div id="hint-bar">スペース／↑／画面右タップ：ジャンプ（長押しで高く）　　↓／画面左長押し：ウィリー　　P：ポーズ</div>
+
+  <!-- TITLE -->
+  <div class="screen on" id="scr-title">
+    <div style="flex:1"></div>
+    <h1 class="title">bikey</h1>
+    <div class="subtitle">チャリ通勤アクション</div>
+    <div style="height:14px"></div>
+    <div class="panel center">
+      <div class="muted">
+        毎朝の通学路を自転車で駆け抜けろ。<br>
+        ジャンプとウィリーで障害物をかわし、遅刻せず学校を目指せ。<br>
+        日を追うごとに道は険しくなる。
+      </div>
+      <div style="height:10px"></div>
+      <button class="btn" id="btn-start">▶ 走り出す（Spaceでも可）</button>
+      <div style="height:6px"></div>
+      <div class="muted" id="highscore-line">ハイスコア：--</div>
+    </div>
+    <div style="flex:1"></div>
+    <div class="muted center">Space/↑ ジャンプ　　↓ ウィリー　　P ポーズ　　画面タップでも操作可</div>
+  </div>
+
+  <!-- PAUSE -->
+  <div class="screen dim" id="scr-pause">
+    <div class="panel center">
+      <h1 class="title" style="font-size:28px">ポーズ</h1>
+      <div style="height:10px"></div>
+      <button class="btn" id="btn-resume">▶ 再開</button>
+      <button class="btn sec" id="btn-pause-retry">はじめから</button>
+      <button class="btn sec" id="btn-pause-title">タイトルへ</button>
+    </div>
+  </div>
+
+  <!-- RESULT (day clear / gameover) -->
+  <div class="screen dim" id="scr-result">
+    <div class="panel center">
+      <h1 class="title" id="res-title" style="font-size:30px"></h1>
+      <div style="height:8px"></div>
+      <div id="res-body"></div>
+      <div style="height:10px"></div>
+      <button class="btn" id="btn-res-next"></button>
+      <button class="btn sec" id="btn-res-title">タイトルへ</button>
+    </div>
+  </div>
+
+  <div id="rotate">📱<br>画面を横向きにしてプレイしてください</div>
+</div>
+
+<script>
+"use strict";
+//=================================================================
+// bikey — 横スクロール自転車アクション（single-file / no deps）
+//=================================================================
+
+//---------------- CONFIG: すべてのチューニング値をここに集約 ----------------
+const CONFIG = {
+  VW: 960, VH: 540,          // 論理解像度
+  ROAD_Y: 430,                // 路面（車輪接地）のy座標
+  ROAD_THICKNESS: 60,
+
+  PLAYER_X: 190,               // 画面上のプレイヤーx固定位置
+  PLAYER_W: 48,
+  PLAYER_H: 58,
+  WHEELIE_SHRINK: 20,          // ウィリー時に当たり判定の下部をどれだけ甘くするか(見た目用)
+
+  GRAVITY: 0.85,               // px/step^2 (60Hz固定ステップ基準)
+  JUMP_VELOCITY: -14.6,        // px/step
+  JUMP_CUT_MULT: 0.45,         // ボタンを早離しした時の上昇打ち切り係数
+  MAX_FALL_SPEED: 19,
+  COYOTE_MS: 80,
+  JUMP_BUFFER_MS: 100,
+
+  BASE_SCROLL_SPEED: 5.0,      // 1日目のスクロール速度(px/step)
+  MAX_SCROLL_SPEED: 9.0,
+  SCROLL_SPEED_PER_DAY: 0.45,
+  TITLE_SCROLL_SPEED: 2.4,     // タイトル画面の背景演出用
+
+  DAY_BASE_GOAL: 5000,         // 1日目のゴール距離(px)
+  DAY_GOAL_STEP: 900,          // 日数ごとの追加距離
+
+  LIVES_START: 3,
+  PIXELS_PER_METER: 12,
+  SCORE_PER_METER: 10,
+  COIN_SCORE: 100,
+  COINS_PER_LIFE: 100,
+  DAY_CLEAR_BONUS: 1000,
+
+  CRASH_DURATION_MS: 950,
+  CRASH_PULLBACK: 90,          // 転倒時に今日の進捗距離から差し引く量(px)
+  INVULN_MS: 1400,
+
+  MIN_REACTION_FRAMES: 46,     // 障害物間の最低反応猶予(フレーム数、速度から逆算)
+  SPAWN_JITTER: 0.6,
+  COMBO_GAP_FRAMES: 26,        // コンボ内の2個目までの間隔(フレーム数)
+  COMBO_CHANCE: 0.35,          // day3以降でコンボが選ばれる確率
+
+  COIN_ROW_MIN_INTERVAL_FRAMES: 90,
+  COIN_ROW_MAX_INTERVAL_FRAMES: 220,
+  COIN_ROW_LEN_MIN: 3,
+  COIN_ROW_LEN_MAX: 6,
+  COIN_SPACING: 34,
+  COIN_RADIUS: 11,
+
+  FIXED_DT: 1000 / 60,
+  SAVE_KEY: "bikey-highscore-v1",
+};
+
+// 障害物の当たり判定は CONFIG.ROAD_Y / PLAYER_H から逆算して定義する
+const GROUND_HEAD_Y = CONFIG.ROAD_Y - CONFIG.PLAYER_H; // 通常時のプレイヤー頭頂
+
+const OBSTACLE_DEFS = {
+  curb:       { size: "small",    w: 26,  h: 16, extraSpeed: 0,   color: "#8a7a63", label: "縁石" },
+  manhole:    { size: "small",    w: 36,  h: 10, extraSpeed: 0,   color: "#4a4237", label: "段差" },
+  pedestrian: { size: "medium",   w: 22,  h: 52, extraSpeed: 1.2, color: "#3b6ea5", label: "歩行者" },
+  dog:        { size: "medium",   w: 34,  h: 28, extraSpeed: 2.6, color: "#8a5a33", label: "犬" },
+  car:        { size: "large",    w: 112, h: 78, extraSpeed: 0,   color: "#b5451b", label: "車" },
+  hole:       { size: "gap",      w: 90,  h: 30, extraSpeed: 0,   color: "#150f0a", label: "穴" },
+  sign:       { size: "overhead", w: 60,  h: 30, extraSpeed: 0,   color: "#e0a85a", label: "看板" },
+};
+// 看板の帯は「通常姿勢の頭頂より少し高い位置」に固定し、
+// くぐるだけなら当たらず、ジャンプすると当たる高さにする
+const SIGN_BOTTOM = GROUND_HEAD_Y - 22;
+const SIGN_TOP = SIGN_BOTTOM - OBSTACLE_DEFS.sign.h;
+// 穴は路面よりわずかに上から判定を始める(ジャンプで飛び越えた足は判定に触れない)
+const HOLE_TOP = CONFIG.ROAD_Y - 4;
+
+//=================================================================
+// Canvas / 高DPI対応
+//=================================================================
+const cv = document.getElementById("game");
+const ctx = cv.getContext("2d");
+const stageWrap = document.getElementById("stage-wrap");
+
+function resizeCanvas() {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = stageWrap.getBoundingClientRect();
+  const w = Math.max(1, Math.round(rect.width * dpr));
+  const h = Math.max(1, Math.round(rect.height * dpr));
+  if (cv.width !== w) cv.width = w;
+  if (cv.height !== h) cv.height = h;
+  const scaleX = cv.width / CONFIG.VW;
+  const scaleY = cv.height / CONFIG.VH;
+  ctx.setTransform(scaleX, 0, 0, scaleY, 0, 0);
+  checkOrientation();
+}
+window.addEventListener("resize", resizeCanvas);
+window.addEventListener("orientationchange", resizeCanvas);
+
+const isCoarsePointer = () => {
+  try { return window.matchMedia("(pointer: coarse)").matches; } catch (e) { return false; }
+};
+const rotateEl = document.getElementById("rotate");
+function checkOrientation() {
+  const portrait = window.innerHeight > window.innerWidth;
+  const show = portrait && isCoarsePointer();
+  rotateEl.classList.toggle("show", show);
+}
+
+//=================================================================
+// Input: keyboard / touch を統一した仮想ボタン
+//=================================================================
+const Input = {
+  jumpHeld: false,
+  jumpPressed: false,   // エッジ(1フレームで消費)
+  wheelieHeld: false,
+  pausePressed: false,
+  restartPressed: false,
+  _pointerSide: new Map(), // pointerId -> 'left' | 'right'
+
+  consumeJumpPressed() {
+    const v = this.jumpPressed;
+    this.jumpPressed = false;
+    return v;
+  },
+  consumePausePressed() {
+    const v = this.pausePressed;
+    this.pausePressed = false;
+    return v;
+  },
+  consumeRestartPressed() {
+    const v = this.restartPressed;
+    this.restartPressed = false;
+    return v;
+  },
+};
+
+function setupInput() {
+  window.addEventListener("keydown", (e) => {
+    if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) {
+      e.preventDefault();
+    }
+    if (e.code === "Space" || e.code === "ArrowUp") {
+      if (!Input.jumpHeld) Input.jumpPressed = true;
+      Input.jumpHeld = true;
+    } else if (e.code === "ArrowDown" || e.code === "KeyB") {
+      Input.wheelieHeld = true;
+    } else if ((e.code === "KeyP" || e.code === "Escape") && !e.repeat) {
+      Input.pausePressed = true;
+    } else if (e.code === "KeyR" && !e.repeat) {
+      Input.restartPressed = true;
+    }
+    AudioFX.resume();
+  }, { passive: false });
+
+  window.addEventListener("keyup", (e) => {
+    if (e.code === "Space" || e.code === "ArrowUp") {
+      Input.jumpHeld = false;
+    } else if (e.code === "ArrowDown" || e.code === "KeyB") {
+      Input.wheelieHeld = false;
+    }
+  });
+
+  const releaseSide = (side) => {
+    if (side === "right") Input.jumpHeld = false;
+    else if (side === "left") Input.wheelieHeld = false;
+  };
+
+  cv.addEventListener("pointerdown", (e) => {
+    AudioFX.resume();
+    const rect = cv.getBoundingClientRect();
+    const relX = e.clientX - rect.left;
+    const side = relX < rect.width / 2 ? "left" : "right";
+    Input._pointerSide.set(e.pointerId, side);
+    if (side === "right") {
+      if (!Input.jumpHeld) Input.jumpPressed = true;
+      Input.jumpHeld = true;
+    } else {
+      Input.wheelieHeld = true;
+    }
+  });
+  const endPointer = (e) => {
+    const side = Input._pointerSide.get(e.pointerId);
+    if (side) releaseSide(side);
+    Input._pointerSide.delete(e.pointerId);
+  };
+  cv.addEventListener("pointerup", endPointer);
+  cv.addEventListener("pointercancel", endPointer);
+  cv.addEventListener("pointerleave", endPointer);
+}
+
+//=================================================================
+// Audio: WebAudio オシレータ合成のみ
+//=================================================================
+const AudioFX = {
+  ctx: null,
+  muted: false,
+  ensure() {
+    if (!this.ctx) {
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AC();
+      } catch (e) { this.ctx = null; }
+    }
+    return this.ctx;
+  },
+  resume() {
+    const c = this.ensure();
+    if (c && c.state === "suspended") c.resume().catch(() => {});
+  },
+  tone(freq, dur, type, gain, delay, glideTo) {
+    if (this.muted) return;
+    const c = this.ensure();
+    if (!c) return;
+    const t0 = c.currentTime + (delay || 0);
+    const osc = c.createOscillator();
+    const g = c.createGain();
+    osc.type = type || "square";
+    osc.frequency.setValueAtTime(freq, t0);
+    if (glideTo) osc.frequency.linearRampToValueAtTime(glideTo, t0 + dur);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.linearRampToValueAtTime(gain != null ? gain : 0.18, t0 + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    osc.connect(g).connect(c.destination);
+    osc.start(t0);
+    osc.stop(t0 + dur + 0.02);
+  },
+  jump() { this.tone(420, 0.14, "square", 0.16, 0, 760); },
+  land() { this.tone(160, 0.09, "triangle", 0.14, 0, 90); },
+  coin() { this.tone(880, 0.08, "square", 0.14, 0, 1180); this.tone(1180, 0.09, "square", 0.12, 0.06); },
+  crash() { this.tone(220, 0.35, "sawtooth", 0.2, 0, 40); },
+  dayClear() {
+    [523, 659, 784, 1046].forEach((f, i) => this.tone(f, 0.16, "square", 0.15, i * 0.1));
+  },
+  gameover() { this.tone(300, 0.4, "sawtooth", 0.18, 0, 80); this.tone(200, 0.5, "sawtooth", 0.14, 0.15, 60); },
+};
+
+//=================================================================
+// Player: 状態機械(ground/air/wheelie/crash)
+//=================================================================
+class Player {
+  constructor() { this.reset(); }
+
+  reset() {
+    this.footY = CONFIG.ROAD_Y;
+    this.vy = 0;
+    this.state = "ground";     // ground | air | wheelie | crash
+    this.coyoteTimer = 0;
+    this.jumpBufferTimer = 0;
+    this.jumpCutApplied = true;
+    this.crashTimer = 0;
+    this.crashSpin = 0;
+    this.invulnTimer = 0;
+    this.wheelRotation = 0;
+    this.lives = CONFIG.LIVES_START;
+  }
+
+  get wheelie() { return this.state === "wheelie"; }
+  get grounded() { return this.state === "ground" || this.state === "wheelie"; }
+
+  hitbox() {
+    const w = CONFIG.PLAYER_W;
+    let h = CONFIG.PLAYER_H;
+    if (this.state === "wheelie") h = CONFIG.PLAYER_H - CONFIG.WHEELIE_SHRINK;
+    return { x: CONFIG.PLAYER_X - w / 2, y: this.footY - h, w, h };
+  }
+
+  requestJump() { this.jumpBufferTimer = CONFIG.JUMP_BUFFER_MS; }
+
+  crash() {
+    if (this.state === "crash" || this.invulnTimer > 0) return false;
+    this.state = "crash";
+    this.crashTimer = CONFIG.CRASH_DURATION_MS;
+    this.crashSpin = 0;
+    this.lives -= 1;
+    AudioFX.crash();
+    return true;
+  }
+
+  update(dtMs, input, moving) {
+    if (this.invulnTimer > 0) this.invulnTimer -= dtMs;
+
+    if (this.state === "crash") {
+      this.crashTimer -= dtMs;
+      this.crashSpin += dtMs * 0.022;
+      if (this.crashTimer <= 0) {
+        this.state = "ground";
+        this.footY = CONFIG.ROAD_Y;
+        this.vy = 0;
+        this.invulnTimer = CONFIG.INVULN_MS;
+      }
+      return;
+    }
+
+    if (!moving) return; // ポーズ/タイトル演出時は物理を進めない(見た目静止)
+
+    // タイマー更新
+    if (this.grounded) this.coyoteTimer = CONFIG.COYOTE_MS;
+    else this.coyoteTimer -= dtMs;
+    if (this.jumpBufferTimer > 0) this.jumpBufferTimer -= dtMs;
+    if (input.consumeJumpPressed()) this.requestJump();
+
+    // ジャンプ判定(コヨーテ + 先行入力バッファ)
+    if (this.jumpBufferTimer > 0 && this.coyoteTimer > 0 && this.state !== "air") {
+      this.vy = CONFIG.JUMP_VELOCITY;
+      this.state = "air";
+      this.jumpCutApplied = false;
+      this.jumpBufferTimer = 0;
+      this.coyoteTimer = 0;
+      AudioFX.jump();
+    }
+
+    // 可変ジャンプ(早離しで上昇打ち切り)
+    if (this.state === "air" && !input.jumpHeld && !this.jumpCutApplied && this.vy < -2) {
+      this.vy *= CONFIG.JUMP_CUT_MULT;
+      this.jumpCutApplied = true;
+    }
+
+    // 重力 + 積分
+    this.vy = Math.min(this.vy + CONFIG.GRAVITY, CONFIG.MAX_FALL_SPEED);
+    this.footY += this.vy;
+
+    if (this.footY >= CONFIG.ROAD_Y) {
+      const wasAir = this.state === "air";
+      this.footY = CONFIG.ROAD_Y;
+      this.vy = 0;
+      this.state = input.wheelieHeld ? "wheelie" : "ground";
+      if (wasAir) AudioFX.land();
+    } else {
+      this.state = "air";
+    }
+
+    // ウィリーのオン/オフ(接地中のみ)
+    if (this.grounded) {
+      this.state = input.wheelieHeld ? "wheelie" : "ground";
+    }
+
+    this.wheelRotation += 0.14 + (moving ? 0.02 : 0);
+  }
+
+  draw(ctx, moving) {
+    const cx = CONFIG.PLAYER_X;
+    const footY = this.footY;
+    ctx.save();
+    if (this.state === "crash") {
+      ctx.translate(cx, footY - CONFIG.PLAYER_H / 2);
+      ctx.rotate(this.crashSpin);
+      ctx.translate(-cx, -(footY - CONFIG.PLAYER_H / 2));
+    }
+    if (this.invulnTimer > 0 && this.state !== "crash") {
+      ctx.globalAlpha = (Math.floor(this.invulnTimer / 90) % 2 === 0) ? 1 : 0.35;
+    }
+
+    const lean = this.state === "wheelie" ? -0.30 : 0;
+    ctx.save();
+    ctx.translate(cx, footY);
+    ctx.rotate(lean);
+    ctx.translate(-cx, -footY);
+
+    const wheelR = 15;
+    const rearX = cx - 20, frontX = cx + 20;
+    let rearY = footY - wheelR, frontY = footY - wheelR;
+    if (this.state === "wheelie") frontY -= 16; // 前輪が浮く
+
+    // 影
+    ctx.fillStyle = "rgba(20,15,10,0.28)";
+    ctx.beginPath();
+    ctx.ellipse(cx, CONFIG.ROAD_Y + 6, 34, 7, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // フレーム
+    ctx.strokeStyle = "#2b2823";
+    ctx.lineWidth = 4;
+    ctx.lineCap = "round";
+    const seatX = cx - 6, seatY = footY - 46;
+    const pedalX = cx, pedalY = footY - 24;
+    const barX = frontX - 4, barY = frontY - 18;
+    ctx.beginPath();
+    ctx.moveTo(rearX, rearY); ctx.lineTo(pedalX, pedalY);
+    ctx.lineTo(seatX, seatY); ctx.lineTo(rearX, rearY);
+    ctx.moveTo(pedalX, pedalY); ctx.lineTo(frontX, frontY);
+    ctx.moveTo(pedalX, pedalY); ctx.lineTo(barX, barY);
+    ctx.stroke();
+    ctx.strokeStyle = "#b5451b";
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(seatX, seatY); ctx.lineTo(seatX - 4, seatY - 6); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(barX, barY); ctx.lineTo(barX + 2, barY - 10); ctx.stroke();
+
+    // 車輪
+    this.drawWheel(ctx, rearX, rearY, wheelR);
+    this.drawWheel(ctx, frontX, frontY, wheelR);
+
+    // ペダル + 脚
+    const pedalAngle = this.wheelRotation;
+    const p1x = pedalX + Math.cos(pedalAngle) * 9, p1y = pedalY + Math.sin(pedalAngle) * 9;
+    const p2x = pedalX + Math.cos(pedalAngle + Math.PI) * 9, p2y = pedalY + Math.sin(pedalAngle + Math.PI) * 9;
+    ctx.strokeStyle = "#e0a85a"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(seatX, seatY - 6); ctx.lineTo(p1x, p1y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(seatX, seatY - 6); ctx.lineTo(p2x, p2y); ctx.stroke();
+
+    // 胴体
+    ctx.fillStyle = "#3b6ea5";
+    ctx.beginPath();
+    ctx.moveTo(seatX - 4, seatY - 6);
+    ctx.lineTo(barX + 2, barY - 10 + 6);
+    ctx.lineTo(barX - 4, barY + 2);
+    ctx.lineTo(seatX - 8, seatY + 4);
+    ctx.closePath();
+    ctx.fill();
+
+    // 腕
+    ctx.strokeStyle = "#3b6ea5"; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(seatX - 2, seatY - 4); ctx.lineTo(barX, barY - 8); ctx.stroke();
+
+    // 頭 + ヘルメット
+    const headX = barX + 6, headY = barY - 22;
+    ctx.fillStyle = "#f0ebe3";
+    ctx.beginPath(); ctx.arc(headX, headY, 9, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#b5451b";
+    ctx.beginPath(); ctx.arc(headX, headY - 1, 9, Math.PI, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#e0a85a";
+    ctx.beginPath(); ctx.arc(headX + 2, headY - 3, 2, 0, Math.PI * 2); ctx.fill();
+
+    ctx.restore();
+    ctx.restore();
+  }
+
+  drawWheel(ctx, x, y, r) {
+    ctx.strokeStyle = "#1c1a16";
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = "#6f675b";
+    ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill();
+    for (let i = 0; i < 5; i++) {
+      const a = this.wheelRotation + (i * Math.PI * 2) / 5;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+      ctx.strokeStyle = "#8a7a63"; ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+  }
+}
+
+//=================================================================
+// World: パララックス背景 + 路面
+//=================================================================
+class World {
+  constructor() {
+    this.farOffset = 0;
+    this.midOffset = 0;
+    this.roadOffset = 0;
+    this.clouds = [];
+    for (let i = 0; i < 5; i++) {
+      this.clouds.push({ x: Math.random() * CONFIG.VW, y: 40 + Math.random() * 90, s: 0.6 + Math.random() * 0.8 });
+    }
+  }
+
+  update(speed) {
+    this.farOffset = (this.farOffset + speed * 0.25) % 480;
+    this.midOffset = (this.midOffset + speed * 0.55) % 240;
+    this.roadOffset = (this.roadOffset + speed) % 60;
+    for (const c of this.clouds) {
+      c.x -= speed * 0.12;
+      if (c.x < -60) c.x = CONFIG.VW + 60;
+    }
+  }
+
+  drawBackground(ctx) {
+    const VW = CONFIG.VW, VH = CONFIG.VH;
+    // 空
+    const g = ctx.createLinearGradient(0, 0, 0, CONFIG.ROAD_Y);
+    g.addColorStop(0, "#eadfc4");
+    g.addColorStop(1, "#f3ead8");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, VW, VH);
+
+    // 雲
+    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    for (const c of this.clouds) {
+      ctx.beginPath();
+      ctx.ellipse(c.x, c.y, 26 * c.s, 12 * c.s, 0, 0, Math.PI * 2);
+      ctx.ellipse(c.x + 20 * c.s, c.y + 4 * c.s, 18 * c.s, 10 * c.s, 0, 0, Math.PI * 2);
+      ctx.ellipse(c.x - 18 * c.s, c.y + 5 * c.s, 16 * c.s, 9 * c.s, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // 遠景: 山
+    ctx.fillStyle = "#c9b795";
+    for (let i = -1; i < 3; i++) {
+      const bx = i * 480 - this.farOffset;
+      ctx.beginPath();
+      ctx.moveTo(bx, CONFIG.ROAD_Y - 60);
+      ctx.lineTo(bx + 140, CONFIG.ROAD_Y - 150);
+      ctx.lineTo(bx + 280, CONFIG.ROAD_Y - 60);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // 中景: 家並み
+    for (let i = -1; i < 5; i++) {
+      const hx = i * 240 - this.midOffset;
+      const hh = 70;
+      ctx.fillStyle = "#e8dcc0";
+      ctx.fillRect(hx, CONFIG.ROAD_Y - hh, 90, hh);
+      ctx.fillStyle = "#b5451b";
+      ctx.beginPath();
+      ctx.moveTo(hx - 6, CONFIG.ROAD_Y - hh);
+      ctx.lineTo(hx + 45, CONFIG.ROAD_Y - hh - 26);
+      ctx.lineTo(hx + 96, CONFIG.ROAD_Y - hh);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#8e7452";
+      ctx.fillRect(hx + 14, CONFIG.ROAD_Y - hh + 18, 14, 18);
+      ctx.fillRect(hx + 60, CONFIG.ROAD_Y - hh + 18, 14, 18);
+    }
+
+    // 手前: 電柱
+    ctx.strokeStyle = "#6f675b";
+    ctx.lineWidth = 5;
+    for (let i = -1; i < 6; i++) {
+      const px = i * 240 - this.midOffset * 1.4 + 120;
+      const pxm = ((px % CONFIG.VW) + CONFIG.VW) % CONFIG.VW;
+      ctx.beginPath();
+      ctx.moveTo(pxm, CONFIG.ROAD_Y);
+      ctx.lineTo(pxm, CONFIG.ROAD_Y - 130);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(pxm - 16, CONFIG.ROAD_Y - 118);
+      ctx.lineTo(pxm + 16, CONFIG.ROAD_Y - 118);
+      ctx.stroke();
+    }
+  }
+
+  drawRoad(ctx) {
+    const VW = CONFIG.VW, VH = CONFIG.VH;
+    ctx.fillStyle = "#443c33";
+    ctx.fillRect(0, CONFIG.ROAD_Y, VW, VH - CONFIG.ROAD_Y);
+    // 歩道の縁
+    ctx.fillStyle = "#8a7a63";
+    ctx.fillRect(0, CONFIG.ROAD_Y, VW, 6);
+    // センターライン(破線)
+    ctx.strokeStyle = "#e0a85a";
+    ctx.lineWidth = 4;
+    ctx.setLineDash([26, 22]);
+    ctx.lineDashOffset = -this.roadOffset;
+    ctx.beginPath();
+    ctx.moveTo(0, CONFIG.ROAD_Y + 30);
+    ctx.lineTo(VW, CONFIG.ROAD_Y + 30);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+}
+
+//=================================================================
+// Spawner: 障害物 + コインの生成(距離ベース、最低反応猶予を保証)
+//=================================================================
+class Spawner {
+  constructor() {
+    this.obstacles = [];
+    this.coins = [];
+    this.spawnAcc = 0;
+    this.nextGap = 300;
+    this.coinAcc = 0;
+    this.nextCoinGap = 200;
+    this.pendingCombo = null; // { def, key, framesLeft }
+  }
+
+  reset() {
+    this.obstacles = [];
+    this.coins = [];
+    this.spawnAcc = 0;
+    this.nextGap = 320;
+    this.coinAcc = 0;
+    this.nextCoinGap = 220;
+    this.pendingCombo = null;
+  }
+
+  tableForDay(day) {
+    const table = [["curb", 3], ["manhole", 3]];
+    if (day >= 1) table.push(["pedestrian", 2]);
+    if (day >= 2) table.push(["dog", 2], ["car", 2]);
+    if (day >= 3) table.push(["hole", 2], ["sign", 2]);
+    return table;
+  }
+
+  pickType(day) {
+    const table = this.tableForDay(day);
+    const total = table.reduce((s, t) => s + t[1], 0);
+    let r = Math.random() * total;
+    for (const [key, w] of table) {
+      if (r < w) return key;
+      r -= w;
+    }
+    return table[0][0];
+  }
+
+  spawnOne(key) {
+    const def = OBSTACLE_DEFS[key];
+    let w = def.w, y, h = def.h;
+    if (key === "hole") {
+      w = 60 + Math.random() * 70;
+      y = HOLE_TOP;
+    } else if (key === "sign") {
+      y = SIGN_TOP;
+    } else {
+      y = CONFIG.ROAD_Y - h;
+    }
+    this.obstacles.push({
+      key, x: CONFIG.VW + 20, y, w, h,
+      size: def.size, extraSpeed: def.extraSpeed, color: def.color,
+      walkPhase: Math.random() * Math.PI * 2,
+    });
+  }
+
+  minGapPx(speed) {
+    return CONFIG.MIN_REACTION_FRAMES * speed;
+  }
+
+  update(speed, day, moving) {
+    if (!moving) return;
+
+    // 障害物スポーン(距離ベース)
+    this.spawnAcc += speed;
+    if (this.pendingCombo) {
+      this.pendingCombo.framesLeft -= 1;
+      if (this.pendingCombo.framesLeft <= 0) {
+        this.spawnOne(this.pendingCombo.key);
+        this.pendingCombo = null;
+      }
+    } else if (this.spawnAcc >= this.nextGap) {
+      this.spawnAcc = 0;
+      const key = this.pickType(day);
+      this.spawnOne(key);
+      if (day >= 3 && Math.random() < CONFIG.COMBO_CHANCE) {
+        const comboKey = key === "sign" ? "hole" : (key === "hole" ? "sign" : null);
+        if (comboKey) this.pendingCombo = { key: comboKey, framesLeft: CONFIG.COMBO_GAP_FRAMES };
+      }
+      const base = this.minGapPx(speed);
+      this.nextGap = base * (1 + Math.random() * CONFIG.SPAWN_JITTER);
+    }
+
+    // コインスポーン
+    this.coinAcc += 1;
+    if (this.coinAcc >= this.nextCoinGap) {
+      this.coinAcc = 0;
+      this.nextCoinGap = CONFIG.COIN_ROW_MIN_INTERVAL_FRAMES +
+        Math.random() * (CONFIG.COIN_ROW_MAX_INTERVAL_FRAMES - CONFIG.COIN_ROW_MIN_INTERVAL_FRAMES);
+      const len = CONFIG.COIN_ROW_LEN_MIN + Math.floor(Math.random() * (CONFIG.COIN_ROW_LEN_MAX - CONFIG.COIN_ROW_LEN_MIN + 1));
+      const high = Math.random() < 0.5;
+      const baseY = high ? CONFIG.ROAD_Y - 150 : CONFIG.ROAD_Y - 46;
+      for (let i = 0; i < len; i++) {
+        const arc = high ? -Math.sin((i / (len - 1 || 1)) * Math.PI) * 30 : 0;
+        this.coins.push({
+          x: CONFIG.VW + 40 + i * CONFIG.COIN_SPACING,
+          y: baseY + arc,
+        });
+      }
+    }
+
+    // 移動 + 除去
+    for (const o of this.obstacles) {
+      let extra = o.extraSpeed;
+      o.x -= speed + extra;
+    }
+    this.obstacles = this.obstacles.filter((o) => o.x + o.w > -40);
+    for (const c of this.coins) c.x -= speed;
+    this.coins = this.coins.filter((c) => c.x > -40);
+  }
+
+  drawObstacles(ctx) {
+    for (const o of this.obstacles) {
+      ctx.save();
+      if (o.key === "hole") {
+        ctx.fillStyle = o.color;
+        ctx.beginPath();
+        ctx.moveTo(o.x, CONFIG.ROAD_Y);
+        ctx.lineTo(o.x + o.w, CONFIG.ROAD_Y);
+        ctx.lineTo(o.x + o.w - 10, CONFIG.ROAD_Y + 22);
+        ctx.lineTo(o.x + 10, CONFIG.ROAD_Y + 22);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = "#e0a85a";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      } else if (o.key === "sign") {
+        ctx.strokeStyle = "#6f675b";
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(o.x + o.w / 2, o.y + o.h);
+        ctx.lineTo(o.x + o.w / 2, CONFIG.ROAD_Y);
+        ctx.stroke();
+        ctx.fillStyle = o.color;
+        ctx.strokeStyle = "#2b2823";
+        ctx.lineWidth = 3;
+        ctx.fillRect(o.x, o.y, o.w, o.h);
+        ctx.strokeRect(o.x, o.y, o.w, o.h);
+        ctx.fillStyle = "#2b2823";
+        ctx.font = "bold 13px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("注意", o.x + o.w / 2, o.y + o.h / 2 + 5);
+      } else if (o.key === "curb" || o.key === "manhole") {
+        ctx.fillStyle = o.color;
+        ctx.fillRect(o.x, o.y, o.w, o.h);
+        ctx.strokeStyle = "#2b2823"; ctx.lineWidth = 1.5;
+        ctx.strokeRect(o.x, o.y, o.w, o.h);
+      } else if (o.key === "car") {
+        this.drawCar(ctx, o);
+      } else if (o.key === "pedestrian") {
+        this.drawPerson(ctx, o, "#3b6ea5");
+      } else if (o.key === "dog") {
+        this.drawDog(ctx, o);
+      }
+      ctx.restore();
+    }
+  }
+
+  drawCar(ctx, o) {
+    const x = o.x, y = o.y, w = o.w, h = o.h;
+    ctx.fillStyle = "rgba(20,15,10,0.25)";
+    ctx.beginPath(); ctx.ellipse(x + w / 2, CONFIG.ROAD_Y + 4, w / 2 + 4, 6, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = o.color;
+    ctx.beginPath();
+    ctx.moveTo(x, y + h);
+    ctx.lineTo(x, y + h * 0.45);
+    ctx.lineTo(x + w * 0.2, y + h * 0.15);
+    ctx.lineTo(x + w * 0.75, y + h * 0.15);
+    ctx.lineTo(x + w, y + h * 0.45);
+    ctx.lineTo(x + w, y + h);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = "#2b2823"; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = "#cfe6f2";
+    ctx.fillRect(x + w * 0.25, y + h * 0.2, w * 0.45, h * 0.22);
+    ctx.fillStyle = "#1c1a16";
+    for (const wx of [x + w * 0.22, x + w * 0.78]) {
+      ctx.beginPath(); ctx.arc(wx, y + h, 12, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#6f675b";
+      ctx.beginPath(); ctx.arc(wx, y + h, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#1c1a16";
+    }
+  }
+
+  drawPerson(ctx, o, shirtColor) {
+    const cx = o.x + o.w / 2, footY = o.y + o.h;
+    const swing = Math.sin(o.walkPhase + performance.now() * 0.012) * 8;
+    ctx.strokeStyle = "#e0a85a"; ctx.lineWidth = 4; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(cx - 4, footY - 20); ctx.lineTo(cx - 4 + swing * 0.3, footY); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx + 4, footY - 20); ctx.lineTo(cx + 4 - swing * 0.3, footY); ctx.stroke();
+    ctx.fillStyle = shirtColor;
+    ctx.fillRect(cx - 8, footY - 40, 16, 22);
+    ctx.fillStyle = "#f0ebe3";
+    ctx.beginPath(); ctx.arc(cx, footY - 46, 8, 0, Math.PI * 2); ctx.fill();
+  }
+
+  drawDog(ctx, o) {
+    const x = o.x, y = o.y, w = o.w, h = o.h;
+    ctx.fillStyle = o.color;
+    ctx.beginPath();
+    ctx.ellipse(x + w / 2, y + h / 2, w / 2, h / 2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x + w - 4, y + h / 2 - 6, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#2b2823";
+    const legY = y + h;
+    for (const lx of [x + 6, x + w - 10]) {
+      ctx.fillRect(lx, legY - 6, 4, 8);
+    }
+  }
+
+  drawCoins(ctx) {
+    for (const c of this.coins) this.drawOnigiri(ctx, c.x, c.y, CONFIG.COIN_RADIUS);
+  }
+
+  drawOnigiri(ctx, x, y, size) {
+    const top = { x, y: y - size };
+    const bl = { x: x - size * 0.95, y: y + size * 0.65 };
+    const br = { x: x + size * 0.95, y: y + size * 0.65 };
+    ctx.save();
+    ctx.translate(0, Math.sin((x + performance.now() * 0.006)) * 2);
+    ctx.fillStyle = "#f5f0e6";
+    ctx.strokeStyle = "#2b2823";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(top.x, top.y); ctx.lineTo(br.x, br.y); ctx.lineTo(bl.x, bl.y); ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    // 海苔帯
+    const bandTopL = { x: bl.x + (top.x - bl.x) * 0.62, y: bl.y + (top.y - bl.y) * 0.62 };
+    const bandTopR = { x: br.x + (top.x - br.x) * 0.62, y: br.y + (top.y - br.y) * 0.62 };
+    ctx.fillStyle = "#2b2823";
+    ctx.beginPath();
+    ctx.moveTo(bandTopL.x, bandTopL.y);
+    ctx.lineTo(bandTopR.x, bandTopR.y);
+    ctx.lineTo(br.x, br.y);
+    ctx.lineTo(bl.x, bl.y);
+    ctx.closePath();
+    ctx.fill();
+    // ごま
+    ctx.fillStyle = "#f5f0e6";
+    ctx.beginPath(); ctx.arc(x, y - size * 0.15, 1.4, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+}
+
+//=================================================================
+// Collision: AABB(プレイヤーは状態で判定箱を変形)
+//=================================================================
+const Collision = {
+  aabb(a, b) {
+    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+  },
+  checkObstacles(player, obstacles) {
+    const pbox = player.hitbox();
+    for (const o of obstacles) {
+      if (o.size === "small" && player.wheelie) continue;
+      const obox = { x: o.x, y: o.y, w: o.w, h: o.h };
+      if (this.aabb(pbox, obox)) return o;
+    }
+    return null;
+  },
+  checkCoins(player, coins) {
+    const pbox = player.hitbox();
+    const hit = [];
+    for (const c of coins) {
+      const cbox = { x: c.x - CONFIG.COIN_RADIUS, y: c.y - CONFIG.COIN_RADIUS, w: CONFIG.COIN_RADIUS * 2, h: CONFIG.COIN_RADIUS * 2 };
+      if (this.aabb(pbox, cbox)) hit.push(c);
+    }
+    return hit;
+  },
+};
+
+//=================================================================
+// Game: シーン管理・HUD・セーブ
+//=================================================================
+const Game = {
+  state: "title", // title | play | paused | dayclear | gameover
+  day: 1,
+  distanceToday: 0,
+  distanceTotalM: 0,
+  score: 0,
+  coinCount: 0,
+  noMissToday: true,
+  highscore: { bestDay: 0, bestDistanceM: 0, bestScore: 0 },
+
+  player: null,
+  world: null,
+  spawner: null,
+
+  init() {
+    this.player = new Player();
+    this.world = new World();
+    this.spawner = new Spawner();
+    this.loadHighscore();
+    this.updateHighscoreLine();
+    this.bindUI();
+    resizeCanvas();
+    requestAnimationFrame(this.loop.bind(this));
+  },
+
+  loadHighscore() {
+    try {
+      const raw = localStorage.getItem(CONFIG.SAVE_KEY);
+      if (raw) this.highscore = Object.assign(this.highscore, JSON.parse(raw));
+    } catch (e) { /* localStorage不可: スコア保存だけ無効化 */ }
+  },
+  saveHighscore() {
+    try { localStorage.setItem(CONFIG.SAVE_KEY, JSON.stringify(this.highscore)); } catch (e) { /* noop */ }
+  },
+  updateHighscoreLine() {
+    const el = document.getElementById("highscore-line");
+    const h = this.highscore;
+    el.textContent = (h.bestDay > 0)
+      ? `ハイスコア：${h.bestDay}日目到達／${Math.floor(h.bestDistanceM)}m／${h.bestScore}点`
+      : "ハイスコア：まだ記録なし";
+  },
+
+  scrollSpeed() {
+    return Math.min(CONFIG.MAX_SCROLL_SPEED, CONFIG.BASE_SCROLL_SPEED + (this.day - 1) * CONFIG.SCROLL_SPEED_PER_DAY);
+  },
+  dayGoal() {
+    return CONFIG.DAY_BASE_GOAL + (this.day - 1) * CONFIG.DAY_GOAL_STEP;
+  },
+
+  bindUI() {
+    document.getElementById("btn-start").addEventListener("click", () => { AudioFX.resume(); this.startRun(); });
+    document.getElementById("btn-resume").addEventListener("click", () => this.setState("play"));
+    document.getElementById("btn-pause-retry").addEventListener("click", () => this.startRun());
+    document.getElementById("btn-pause-title").addEventListener("click", () => this.toTitle());
+    document.getElementById("btn-res-title").addEventListener("click", () => this.toTitle());
+    document.getElementById("btn-res-next").addEventListener("click", () => this.onResultNext());
+    document.getElementById("btn-pause").addEventListener("click", () => this.togglePause());
+    document.getElementById("btn-mute").addEventListener("click", () => {
+      AudioFX.muted = !AudioFX.muted;
+      document.getElementById("btn-mute").textContent = AudioFX.muted ? "🔇" : "🔊";
+    });
+  },
+
+  setState(s) {
+    this.state = s;
+    document.getElementById("scr-title").classList.toggle("on", s === "title");
+    document.getElementById("scr-pause").classList.toggle("on", s === "paused");
+    document.getElementById("scr-result").classList.toggle("on", s === "dayclear" || s === "gameover");
+    document.getElementById("topbar").classList.toggle("show", s === "play" || s === "paused");
+    document.getElementById("hint-bar").classList.toggle("show", s === "play");
+  },
+
+  startRun() {
+    this.day = 1;
+    this.distanceToday = 0;
+    this.distanceTotalM = 0;
+    this.score = 0;
+    this.coinCount = 0;
+    this.noMissToday = true;
+    this.player.reset();
+    this.spawner.reset();
+    this.setState("play");
+  },
+
+  toTitle() {
+    this.updateHighscoreLine();
+    this.setState("title");
+  },
+
+  togglePause() {
+    if (this.state === "play") this.setState("paused");
+    else if (this.state === "paused") this.setState("play");
+  },
+
+  onResultNext() {
+    if (this.state === "dayclear") {
+      this.day += 1;
+      this.distanceToday = 0;
+      this.noMissToday = true;
+      this.spawner.reset();
+      this.setState("play");
+    } else {
+      this.startRun();
+    }
+  },
+
+  dayClear() {
+    if (this.noMissToday) this.score += CONFIG.DAY_CLEAR_BONUS;
+    AudioFX.dayClear();
+    document.getElementById("res-title").textContent = `${this.day}日目 登校成功！`;
+    document.getElementById("res-body").innerHTML =
+      `<div class="score-line">スコア：${this.score}</div>` +
+      `<div class="muted">距離：${Math.floor(this.distanceTotalM)}m　おにぎり：${this.coinCount}個</div>` +
+      (this.noMissToday ? `<div class="muted">ノーミスボーナス +${CONFIG.DAY_CLEAR_BONUS}</div>` : "");
+    document.getElementById("btn-res-next").textContent = "つぎの日へ ▶";
+    this.setState("dayclear");
+  },
+
+  gameOver() {
+    AudioFX.gameover();
+    if (this.day > this.highscore.bestDay) this.highscore.bestDay = this.day;
+    if (this.distanceTotalM > this.highscore.bestDistanceM) this.highscore.bestDistanceM = this.distanceTotalM;
+    if (this.score > this.highscore.bestScore) this.highscore.bestScore = this.score;
+    this.saveHighscore();
+    document.getElementById("res-title").textContent = "ゲームオーバー";
+    document.getElementById("res-body").innerHTML =
+      `<div class="score-line">スコア：${this.score}</div>` +
+      `<div class="muted">${this.day}日目／距離：${Math.floor(this.distanceTotalM)}m／おにぎり：${this.coinCount}個</div>`;
+    document.getElementById("btn-res-next").textContent = "もう一度";
+    this.setState("gameover");
+  },
+
+  update(dtMs) {
+    if (Input.consumePausePressed()) {
+      if (this.state === "play" || this.state === "paused") this.togglePause();
+    }
+    if (this.state === "gameover" && Input.consumeRestartPressed()) {
+      this.startRun();
+      return;
+    }
+    Input.consumeRestartPressed();
+    if (this.state === "title" && Input.consumeJumpPressed()) {
+      AudioFX.resume();
+      this.startRun();
+      return;
+    }
+
+    const isTitle = this.state === "title";
+    const isPlaying = this.state === "play";
+    const moving = isPlaying || isTitle;
+    const speed = isTitle ? CONFIG.TITLE_SCROLL_SPEED : this.scrollSpeed();
+    const scrollHalted = this.player.state === "crash";
+
+    this.world.update(moving && !scrollHalted ? speed : 0);
+    this.player.update(dtMs, Input, moving);
+    this.spawner.update(isPlaying && !scrollHalted ? speed : 0, this.day, isPlaying && !scrollHalted);
+
+    if (!isPlaying) return;
+
+    if (!scrollHalted) {
+      this.distanceToday += speed;
+      this.distanceTotalM += speed / CONFIG.PIXELS_PER_METER;
+      this.score = Math.round(this.score + (speed / CONFIG.PIXELS_PER_METER) * CONFIG.SCORE_PER_METER);
+    }
+
+    // 衝突判定
+    const hitObstacle = Collision.checkObstacles(this.player, this.spawner.obstacles);
+    if (hitObstacle && this.player.crash()) {
+      this.noMissToday = false;
+      this.distanceToday = Math.max(0, this.distanceToday - CONFIG.CRASH_PULLBACK);
+      // プレイヤー近傍の障害物を撤去し、復帰直後の連続ヒットを防ぐ
+      const safeMin = CONFIG.PLAYER_X - 150, safeMax = CONFIG.PLAYER_X + 200;
+      this.spawner.obstacles = this.spawner.obstacles.filter((o) => o.x + o.w < safeMin || o.x > safeMax);
+    }
+
+    const gotCoins = Collision.checkCoins(this.player, this.spawner.coins);
+    if (gotCoins.length) {
+      const gotSet = new Set(gotCoins);
+      this.spawner.coins = this.spawner.coins.filter((c) => !gotSet.has(c));
+      for (let i = 0; i < gotCoins.length; i++) {
+        this.coinCount += 1;
+        this.score += CONFIG.COIN_SCORE;
+        if (this.coinCount % CONFIG.COINS_PER_LIFE === 0) this.player.lives += 1;
+      }
+      AudioFX.coin();
+    }
+
+    if (this.player.lives <= 0 && this.player.state !== "crash") {
+      this.gameOver();
+    } else if (this.distanceToday >= this.dayGoal()) {
+      this.dayClear();
+    }
+  },
+
+  drawHUD(ctx) {
+    const VW = CONFIG.VW;
+    ctx.save();
+    ctx.textAlign = "left";
+    ctx.font = "bold 20px sans-serif";
+    ctx.fillStyle = "#2b2823";
+    ctx.fillText(`${this.day}日目`, 18, 34);
+
+    // 距離バー
+    const barX = 18, barY = 42, barW = 180, barH = 10;
+    const pct = Math.min(1, this.distanceToday / this.dayGoal());
+    ctx.fillStyle = "rgba(43,40,35,0.25)";
+    ctx.fillRect(barX, barY, barW, barH);
+    ctx.fillStyle = "#b5451b";
+    ctx.fillRect(barX, barY, barW * pct, barH);
+    ctx.strokeStyle = "#2b2823"; ctx.lineWidth = 1.5;
+    ctx.strokeRect(barX, barY, barW, barH);
+
+    // スコア/おにぎり
+    ctx.textAlign = "right";
+    ctx.font = "bold 20px sans-serif";
+    ctx.fillStyle = "#2b2823";
+    ctx.fillText(`スコア ${this.score}`, VW - 18, 34);
+    ctx.font = "14px sans-serif";
+    ctx.fillText(`おにぎり ${this.coinCount}`, VW - 18, 54);
+
+    // 残機(自転車アイコン)
+    ctx.textAlign = "left";
+    for (let i = 0; i < this.player.lives; i++) {
+      const lx = 18 + i * 26, ly = 66;
+      ctx.strokeStyle = "#2b2823"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(lx, ly, 7, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(lx + 12, ly, 7, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx + 6, ly - 8); ctx.lineTo(lx + 12, ly); ctx.stroke();
+    }
+    ctx.restore();
+  },
+
+  render(ctx) {
+    ctx.clearRect(0, 0, CONFIG.VW, CONFIG.VH);
+    this.world.drawBackground(ctx);
+    this.world.drawRoad(ctx);
+    if (this.state === "play" || this.state === "paused" || this.state === "dayclear" || this.state === "gameover") {
+      this.spawner.drawObstacles(ctx);
+      this.spawner.drawCoins(ctx);
+    }
+    this.player.draw(ctx, this.state === "play"); // タイトルでも背景演出として表示
+    if (this.state === "play") this.drawHUD(ctx);
+  },
+
+  _acc: 0,
+  _lastT: 0,
+  loop(t) {
+    if (!this._lastT) this._lastT = t;
+    let delta = t - this._lastT;
+    this._lastT = t;
+    if (delta > 250) delta = 250; // タブ復帰時などの巨大デルタを丸める
+    this._acc += delta;
+    let steps = 0;
+    while (this._acc >= CONFIG.FIXED_DT && steps < 5) {
+      this.update(CONFIG.FIXED_DT);
+      this._acc -= CONFIG.FIXED_DT;
+      steps++;
+    }
+    this.render(ctx);
+    requestAnimationFrame(this.loop.bind(this));
+  },
+};
+
+setupInput();
+Game.init();
+</script>
+</body>
+</html>
