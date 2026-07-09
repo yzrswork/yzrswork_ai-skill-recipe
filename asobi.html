@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="theme-color" content="#2a1a4a" />
+<meta name="format-detection" content="telephone=no" />
+<title>おにさん ダンス！</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    overflow: hidden; background: #2a1a4a;
+    font-family: "Hiragino Maru Gothic ProN", "Hiragino Kaku Gothic ProN", "Yu Gothic", system-ui, sans-serif;
+    -webkit-user-select: none; user-select: none;
+    -webkit-touch-callout: none; touch-action: none;
+    overscroll-behavior: none; position: fixed; inset: 0;
+  }
+  #stage { position: fixed; inset: 0; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+  /* start overlay */
+  #start {
+    position: absolute; inset: 0; z-index: 30;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 22px;
+    background: radial-gradient(circle at 50% 40%, #5b3aa0, #2a1a4a 70%);
+    color: #fff; text-align: center;
+  }
+  #start .oni { font-size: clamp(90px, 30vw, 180px); animation: wob 1.2s ease-in-out infinite; }
+  @keyframes wob { 0%,100%{transform:rotate(-8deg) translateY(0)} 50%{transform:rotate(8deg) translateY(-12px)} }
+  #start h1 { margin: 0; font-size: clamp(30px, 9vw, 54px); font-weight: 800; text-shadow: 0 3px 0 rgba(0,0,0,.3); }
+  #start .go {
+    margin-top: 6px; padding: 18px 40px; border: none; border-radius: 40px;
+    font-family: inherit; font-size: clamp(22px, 6vw, 30px); font-weight: 800; color: #fff;
+    background: linear-gradient(160deg, #ff7eb3, #ff477e);
+    box-shadow: 0 7px 0 #c62f5f, 0 12px 24px rgba(0,0,0,.35);
+    animation: pulse 1.1s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+
+  /* top-right music toggle */
+  #music {
+    position: absolute; top: max(12px, env(safe-area-inset-top));
+    right: max(12px, env(safe-area-inset-right)); z-index: 20;
+    width: 58px; height: 58px; border-radius: 50%; border: none;
+    background: rgba(255,255,255,.85); box-shadow: 0 4px 0 rgba(0,0,0,.2);
+    font-size: 28px; display: none; align-items: center; justify-content: center;
+    touch-action: manipulation;
+  }
+  #music.on { display: flex; }
+  #music:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,.2); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="c"></canvas>
+  <button id="music" aria-label="おんがく">🔊</button>
+  <div id="start">
+    <div class="oni">👹</div>
+    <h1>おにさん ダンス！</h1>
+    <button class="go">▶ タッチして スタート</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- block iOS zoom / scroll / double-tap ---------- */
+  document.addEventListener("gesturestart", function (e) { e.preventDefault(); }, { passive: false });
+  document.addEventListener("dblclick", function (e) { e.preventDefault(); }, { passive: false });
+  document.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+  document.addEventListener("touchmove", function (e) { e.preventDefault(); }, { passive: false });
+  var lastEnd = 0;
+  document.addEventListener("touchend", function (e) {
+    var n = Date.now(); if (n - lastEnd < 350) e.preventDefault(); lastEnd = n;
+  }, { passive: false });
+
+  /* ---------- canvas ---------- */
+  var canvas = document.getElementById("c");
+  var ctx = canvas.getContext("2d");
+  var W = 0, H = 0, DPR = 1;
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
+    canvas.style.width = W + "px"; canvas.style.height = H + "px";
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    layoutOnis();
+  }
+  window.addEventListener("resize", resize);
+  window.addEventListener("orientationchange", function () { setTimeout(resize, 200); });
+
+  /* ---------- audio ---------- */
+  var AC = window.AudioContext || window.webkitAudioContext;
+  var actx = null, master = null;
+  function ensureAudio() {
+    if (!actx && AC) {
+      actx = new AC();
+      master = actx.createGain();
+      master.gain.value = 0.9;
+      master.connect(actx.destination);
+    }
+    if (actx && actx.state === "suspended") actx.resume();
+    return actx;
+  }
+  function tone(freq, dur, type, vol, when, dest) {
+    if (!actx) return;
+    var t0 = actx.currentTime + (when || 0);
+    var o = actx.createOscillator(), g = actx.createGain();
+    o.type = type || "sine";
+    o.frequency.setValueAtTime(freq, t0);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(vol || 0.25, t0 + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g); g.connect(dest || master);
+    o.start(t0); o.stop(t0 + dur + 0.02);
+  }
+  function kick(when) {
+    if (!actx) return;
+    var t0 = actx.currentTime + (when || 0);
+    var o = actx.createOscillator(), g = actx.createGain();
+    o.type = "sine";
+    o.frequency.setValueAtTime(140, t0);
+    o.frequency.exponentialRampToValueAtTime(45, t0 + 0.14);
+    g.gain.setValueAtTime(0.7, t0);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.18);
+    o.connect(g); g.connect(master);
+    o.start(t0); o.stop(t0 + 0.2);
+  }
+  function cheer() {
+    // rising happy arpeggio + sparkle
+    var s = [523, 659, 784, 1046];
+    for (var i = 0; i < s.length; i++) tone(s[i], 0.25, "triangle", 0.3, i * 0.06);
+    tone(1568, 0.4, "sine", 0.15, 0.24);
+  }
+  function speak(t) {
+    try {
+      if (!("speechSynthesis" in window)) return;
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(t);
+      u.lang = "ja-JP"; u.rate = 0.9; u.pitch = 1.5;
+      window.speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+
+  /* ---------- music sequencer (original bouncy tune) ---------- */
+  var bpm = 128;
+  var musicOn = true;
+  var musicStart = 0;
+  var C5 = 523.25, D5 = 587.33, E5 = 659.25, F5 = 698.46, G5 = 783.99, A5 = 880, C6 = 1046.5;
+  // 16 eighth-notes (8 beats) cheerful loop
+  var melody = [C5,E5,G5,E5, A5,G5,E5,D5, C5,E5,G5,C6, A5,G5,E5,G5];
+  var bass   = [130.81,0,196,0, 174.61,0,196,0, 130.81,0,196,0, 220,0,196,0]; // C G F G ...
+  var step = 0, nextTime = 0;
+  var timer = null;
+  function scheduler() {
+    if (!actx || !musicOn) return;
+    var ahead = actx.currentTime + 0.12;
+    var eighth = 30 / bpm; // seconds per eighth note
+    while (nextTime < ahead) {
+      var when = nextTime - actx.currentTime;
+      // kick on every beat (every 2 eighths)
+      if (step % 2 === 0) kick(when);
+      // melody
+      var m = melody[step % melody.length];
+      if (m) tone(m, 0.18, "square", 0.16, when);
+      // soft bass
+      var b = bass[step % bass.length];
+      if (b) tone(b, 0.22, "triangle", 0.18, when);
+      nextTime += eighth;
+      step++;
+    }
+  }
+  function startMusic() {
+    if (!actx) return;
+    musicStart = actx.currentTime;
+    step = 0; nextTime = actx.currentTime + 0.06;
+    if (timer) clearInterval(timer);
+    timer = setInterval(scheduler, 25);
+  }
+  function stopMusic() { if (timer) { clearInterval(timer); timer = null; } }
+
+  /* ---------- particles (confetti) ---------- */
+  var parts = [];
+  var CONFETTI = ["#ff477e","#ffd34e","#7ed957","#4db6e6","#b07cff","#ff9f45","#ffffff"];
+  function confetti(x, y, n, power) {
+    n = n || 26; power = power || 8;
+    for (var i = 0; i < n; i++) {
+      var a = Math.random() * Math.PI * 2, sp = power * (0.4 + Math.random());
+      parts.push({
+        x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 3,
+        life: 1, decay: 0.010 + Math.random() * 0.015,
+        size: 6 + Math.random() * 8, color: CONFETTI[(Math.random() * CONFETTI.length) | 0],
+        rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.5,
+        rect: Math.random() < 0.6
+      });
+    }
+  }
+  function updateParts() {
+    for (var i = parts.length - 1; i >= 0; i--) {
+      var p = parts[i];
+      p.vy += 0.16; p.vx *= 0.99; p.x += p.vx; p.y += p.vy;
+      p.rot += p.vr; p.life -= p.decay;
+      if (p.life <= 0 || p.y > H + 50) parts.splice(i, 1);
+    }
+  }
+  function drawParts() {
+    for (var i = 0; i < parts.length; i++) {
+      var p = parts[i];
+      ctx.save(); ctx.globalAlpha = Math.max(p.life, 0);
+      ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = p.color;
+      if (p.rect) ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size*0.55);
+      else { ctx.beginPath(); ctx.arc(0,0,p.size/2,0,Math.PI*2); ctx.fill(); }
+      ctx.restore();
+    }
+  }
+
+  /* ---------- ONIS ---------- */
+  // color themes
+  var RED  = { body:"#e8412e", dark:"#bd2f1f", horn:"#ffe6ad" };
+  var BLUE = { body:"#3f78e0", dark:"#2b57ad", horn:"#ffe6ad" };
+  var GREEN= { body:"#3fb46b", dark:"#2c8a50", horn:"#ffe6ad" };
+
+  var onis = [];
+  function layoutOnis() {
+    if (onis.length === 0) {
+      // main (red) + two friends
+      onis.push({ x: W*0.5, y: H*0.58, scale: 1, theme: RED, phase: 0, main: true, trick: -10 });
+      onis.push({ x: W*0.22, y: H*0.72, scale: 0.6, theme: BLUE, phase: 0.5, main: false, trick: -10 });
+      onis.push({ x: W*0.80, y: H*0.72, scale: 0.6, theme: GREEN, phase: 1.0, main: false, trick: -10 });
+    } else {
+      // keep main where user left it if on-screen, reposition friends
+      var m = onis[0];
+      m.x = Math.max(90, Math.min(W-90, m.x));
+      m.y = Math.max(120, Math.min(H-60, m.y));
+      onis[1].x = W*0.20; onis[1].y = H*0.74;
+      onis[2].x = W*0.80; onis[2].y = H*0.74;
+    }
+  }
+
+  function nowClock() {
+    return (actx ? actx.currentTime - musicStart : performance.now()/1000);
+  }
+
+  // thick rounded stroke through points
+  function limb(pts, w, color) {
+    ctx.strokeStyle = color; ctx.lineWidth = w; ctx.lineCap = "round"; ctx.lineJoin = "round";
+    ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+    for (var i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.stroke();
+  }
+  // crab-claw / scissors hand (エビカニ チョキチョキ)
+  function claw(hx, hy, dir, open, color, dark) {
+    var spread = 0.25 + open * 0.55;
+    for (var s = -1; s <= 1; s += 2) {
+      var a = dir + s * spread;
+      var ex = hx + Math.cos(a) * 26, ey = hy + Math.sin(a) * 26;
+      limb([[hx, hy], [ex, ey]], 13, color);
+      ctx.fillStyle = dark;
+      ctx.beginPath(); ctx.arc(ex, ey, 6, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(hx, hy, 10, 0, Math.PI*2); ctx.fill();
+  }
+
+  function drawOni(o, t) {
+    var th = o.theme;
+    var beat = t * bpm / 60 + o.phase; // beats elapsed
+    var hop = Math.abs(Math.sin(beat * Math.PI));         // 0..1 bounce
+    var sway = Math.sin(beat * Math.PI * 2);              // -1..1
+    var pinch = (Math.sin(beat * Math.PI * 4) + 1) / 2;   // claw open/close
+    var legK = Math.sin(beat * Math.PI * 2);
+
+    // trick (jump + spin) when tapped
+    var spin = 0, jump = 0, pop = 1;
+    var tp = (t - o.trick) / 0.7;
+    if (tp >= 0 && tp <= 1) {
+      spin = tp * Math.PI * 2;
+      jump = Math.sin(tp * Math.PI) * 90 * o.scale;
+      pop = 1 + Math.sin(tp * Math.PI) * 0.12;
+    }
+
+    var cx = o.x, cy = o.y - hop * 16 * o.scale - jump;
+    var sc = o.scale * pop;
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(spin + sway * 0.05);
+    ctx.scale(sc, sc * (1 + hop * 0.05));
+
+    // shadow on floor
+    ctx.save();
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.globalAlpha = 0.18;
+    ctx.fillStyle = "#000";
+    ctx.beginPath();
+    ctx.ellipse(o.x, o.y + 92 * o.scale, 60 * o.scale, 14 * o.scale, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // ----- legs -----
+    var hipY = 62;
+    for (var L = -1; L <= 1; L += 2) {
+      var hx = L * 24, kx = L * 30 + L * legK * 8, ky = hipY + 34;
+      var fx = kx + L * 6, fy = hipY + 66 - Math.max(0, L * legK) * 10;
+      limb([[hx, hipY], [kx, ky], [fx, fy]], 24, th.body);
+      ctx.fillStyle = th.dark; // foot
+      ctx.beginPath(); ctx.ellipse(fx + L * 6, fy + 4, 20, 12, 0, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // ----- body -----
+    ctx.fillStyle = th.body;
+    ctx.beginPath();
+    ctx.ellipse(0, 8, 62, 70, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // belly highlight
+    ctx.fillStyle = "rgba(255,255,255,.12)";
+    ctx.beginPath(); ctx.ellipse(-16, -4, 26, 34, 0, 0, Math.PI * 2); ctx.fill();
+
+    // ----- tiger-stripe pants (エビカニ気分の腰みの) -----
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(-58, 40); ctx.lineTo(58, 40);
+    ctx.quadraticCurveTo(64, 74, 44, 86);
+    ctx.lineTo(-44, 86); ctx.quadraticCurveTo(-64, 74, -58, 40);
+    ctx.closePath();
+    ctx.clip();
+    ctx.fillStyle = "#ffcf3f"; ctx.fillRect(-70, 36, 140, 60);
+    ctx.strokeStyle = "#2a2a2a"; ctx.lineWidth = 7;
+    for (var sx = -60; sx < 70; sx += 20) {
+      ctx.beginPath(); ctx.moveTo(sx, 34); ctx.lineTo(sx - 14, 92); ctx.stroke();
+    }
+    ctx.restore();
+
+    // ----- arms with crab claws -----
+    var armBeat = Math.sin(beat * Math.PI * 2);
+    for (var A = -1; A <= 1; A += 2) {
+      var sxs = A * 52, sys = -14;
+      var up = A === 1 ? armBeat : -armBeat;         // alternate raise
+      var elbowAng = A * (0.5) - up * 0.5;
+      var ex = sxs + Math.cos(elbowAng) * A * 34;
+      var ey = sys + 20 + Math.sin(Math.abs(elbowAng)) * -20 - up * 14;
+      var handAng = elbowAng - up * 0.6;
+      var hx = ex + A * 30, hy = ey - up * 18 + 6;
+      limb([[sxs, sys], [ex, ey], [hx, hy]], 22, th.body);
+      claw(hx, hy, (A > 0 ? -0.4 : Math.PI + 0.4) - up * 0.3, pinch, th.body, th.dark);
+    }
+
+    // ----- head -----
+    var hy2 = -104;
+    // wild hair
+    ctx.fillStyle = "#241a12";
+    for (var hgi = 0; hgi < 9; hgi++) {
+      var ha = -Math.PI + hgi / 8 * Math.PI;
+      var hrx = Math.cos(ha) * 52, hry = hy2 + Math.sin(ha) * 48;
+      ctx.beginPath();
+      ctx.moveTo(hrx * 0.7, hry);
+      ctx.lineTo(hrx * 1.35, hry - 10);
+      ctx.lineTo(hrx * 0.9, hry + 8);
+      ctx.closePath(); ctx.fill();
+    }
+    // horns
+    ctx.fillStyle = th.horn;
+    for (var Hn = -1; Hn <= 1; Hn += 2) {
+      ctx.beginPath();
+      ctx.moveTo(Hn * 20, hy2 - 40);
+      ctx.quadraticCurveTo(Hn * 44, hy2 - 78, Hn * 30, hy2 - 82);
+      ctx.quadraticCurveTo(Hn * 22, hy2 - 70, Hn * 10, hy2 - 44);
+      ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = "rgba(0,0,0,.15)"; ctx.lineWidth = 2; ctx.stroke();
+    }
+    // face
+    ctx.fillStyle = th.body;
+    ctx.beginPath(); ctx.arc(0, hy2, 54, 0, Math.PI * 2); ctx.fill();
+    // cheeks
+    ctx.fillStyle = "rgba(255,120,120,.5)";
+    ctx.beginPath(); ctx.arc(-30, hy2 + 14, 12, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(30, hy2 + 14, 12, 0, Math.PI * 2); ctx.fill();
+    // eyes (big cute)
+    for (var E = -1; E <= 1; E += 2) {
+      ctx.fillStyle = "#fff";
+      ctx.beginPath(); ctx.ellipse(E * 20, hy2 - 6, 15, 18, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#221";
+      ctx.beginPath(); ctx.arc(E * 20 + sway * 3, hy2 - 2, 8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#fff";
+      ctx.beginPath(); ctx.arc(E * 20 + sway * 3 - 3, hy2 - 5, 3, 0, Math.PI * 2); ctx.fill();
+    }
+    // eyebrows (friendly)
+    ctx.strokeStyle = "#241a12"; ctx.lineWidth = 5; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(-32, hy2 - 26); ctx.lineTo(-8, hy2 - 22); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(32, hy2 - 26); ctx.lineTo(8, hy2 - 22); ctx.stroke();
+    // smiling mouth with fangs
+    ctx.fillStyle = "#7a1f1f";
+    ctx.beginPath(); ctx.arc(0, hy2 + 22, 16, 0, Math.PI); ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.beginPath(); ctx.moveTo(-12, hy2 + 22); ctx.lineTo(-6, hy2 + 22); ctx.lineTo(-9, hy2 + 30); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(12, hy2 + 22); ctx.lineTo(6, hy2 + 22); ctx.lineTo(9, hy2 + 30); ctx.closePath(); ctx.fill();
+
+    ctx.restore();
+  }
+
+  /* ---------- background ---------- */
+  function drawBg(t) {
+    var g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, "#3a2270"); g.addColorStop(1, "#160e33");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    // spinning spotlights
+    var beat = t * bpm / 60;
+    for (var i = 0; i < 3; i++) {
+      var ang = t * (0.3 + i * 0.15) + i * 2.1;
+      var cx = W * (0.2 + 0.3 * i);
+      ctx.save();
+      ctx.globalAlpha = 0.10 + 0.04 * Math.abs(Math.sin(beat * Math.PI));
+      ctx.fillStyle = ["#ff7ad9","#7ad9ff","#ffe27a"][i];
+      ctx.translate(cx, -40); ctx.rotate(Math.sin(ang) * 0.5);
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-120, H + 80); ctx.lineTo(120, H + 80); ctx.closePath(); ctx.fill();
+      ctx.restore();
+    }
+    // floor
+    ctx.fillStyle = "rgba(255,255,255,.05)";
+    ctx.fillRect(0, H * 0.82, W, H * 0.18);
+    // floating notes on the beat
+    ctx.globalAlpha = 0.5;
+    ctx.font = "24px sans-serif";
+    for (var m = 0; m < 5; m++) {
+      var yy = (H - ((t * 40 + m * 90) % (H + 60)));
+      var xx = W * (0.1 + 0.2 * m) + Math.sin(t + m) * 20;
+      ctx.fillText(m % 2 ? "♪" : "♫", xx, yy);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* ---------- main loop ---------- */
+  var running = false;
+  function loop() {
+    var t = nowClock();
+    ctx.clearRect(0, 0, W, H);
+    drawBg(t);
+    // draw friends first (behind), main last (front) — but main is index 0, so sort by y & main
+    var order = onis.slice().sort(function (a, b) {
+      if (a.main !== b.main) return a.main ? 1 : -1;
+      return a.y - b.y;
+    });
+    for (var i = 0; i < order.length; i++) drawOni(order[i], t);
+    updateParts(); drawParts();
+    requestAnimationFrame(loop);
+  }
+
+  /* ---------- interaction ---------- */
+  var drag = null; // {oni, moved}
+  function getPts(e) {
+    var out = [];
+    var list = e.touches && e.touches.length ? e.touches : (e.changedTouches || [e]);
+    for (var i = 0; i < list.length; i++) out.push({ x: list[i].clientX, y: list[i].clientY, id: list[i].identifier });
+    return out;
+  }
+  function hitOni(x, y) {
+    // check main first, then friends; generous radius
+    for (var i = 0; i < onis.length; i++) {
+      var o = onis[i];
+      var dx = x - o.x, dy = y - (o.y - 40 * o.scale);
+      var r = 100 * o.scale;
+      if (dx * dx + dy * dy <= r * r) return o;
+    }
+    return null;
+  }
+  function doTrick(o, x, y) {
+    o.trick = nowClock();
+    confetti(x, y, 26, 9);
+    cheer();
+    if (Math.random() < 0.5) speak("わーい");
+  }
+
+  function onDown(e) {
+    if (!running) return;
+    e.preventDefault();
+    var p = getPts(e)[0];
+    var o = hitOni(p.x, p.y);
+    if (o) {
+      drag = { oni: o, moved: false, offx: p.x - o.x, offy: p.y - o.y };
+    } else {
+      // tap empty space: everyone jumps!
+      confetti(p.x, p.y, 22, 8);
+      for (var i = 0; i < onis.length; i++) doTrick(onis[i], onis[i].x, onis[i].y - 30);
+    }
+  }
+  function onMove(e) {
+    if (!running || !drag) return;
+    e.preventDefault();
+    var p = getPts(e)[0];
+    var nx = p.x - drag.offx, ny = p.y - drag.offy;
+    if (Math.abs(nx - drag.oni.x) > 3 || Math.abs(ny - drag.oni.y) > 3) drag.moved = true;
+    drag.oni.x = Math.max(80, Math.min(W - 80, nx));
+    drag.oni.y = Math.max(140, Math.min(H - 40, ny));
+  }
+  function onUp(e) {
+    if (!running) return;
+    if (drag && !drag.moved) doTrick(drag.oni, drag.oni.x, drag.oni.y - 40);
+    drag = null;
+  }
+  canvas.addEventListener("touchstart", onDown, { passive: false });
+  canvas.addEventListener("touchmove", onMove, { passive: false });
+  canvas.addEventListener("touchend", onUp, { passive: false });
+  canvas.addEventListener("touchcancel", onUp, { passive: false });
+  canvas.addEventListener("mousedown", function (e) { onDown(e); });
+  canvas.addEventListener("mousemove", function (e) { if (e.buttons & 1) onMove(e); });
+  canvas.addEventListener("mouseup", onUp);
+
+  /* ---------- start / music button ---------- */
+  var startEl = document.getElementById("start");
+  var musicBtn = document.getElementById("music");
+  function begin() {
+    ensureAudio();
+    startMusic();
+    startEl.style.display = "none";
+    musicBtn.classList.add("on");
+    if (!running) { running = true; loop(); }
+    // welcome burst
+    confetti(W / 2, H / 2, 40, 10);
+    for (var i = 0; i < onis.length; i++) onis[i].trick = nowClock() + i * 0.12;
+  }
+  startEl.addEventListener("touchstart", function (e) { e.preventDefault(); begin(); }, { passive: false });
+  startEl.addEventListener("click", begin);
+
+  var mGo = function (e) {
+    e.preventDefault();
+    musicOn = !musicOn;
+    musicBtn.textContent = musicOn ? "🔊" : "🔇";
+    if (musicOn) { musicStart = actx.currentTime; startMusic(); } else stopMusic();
+  };
+  musicBtn.addEventListener("touchstart", mGo, { passive: false });
+  musicBtn.addEventListener("click", mGo);
+
+  resize();
+})();
+</script>
+</body>
+</html>
