@@ -362,81 +362,108 @@
     for (var i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
     ctx.stroke();
   }
-  // muscular shaded limb: base + top rim-light + bottom shadow
-  function bone(pts, w, th) {
-    stroke2(pts, w, th.body);
-    var up = [], dn = [];
-    for (var i = 0; i < pts.length; i++) { up.push([pts[i][0]-2, pts[i][1]-3]); dn.push([pts[i][0]+2, pts[i][1]+3]); }
-    ctx.globalAlpha = 0.5;  stroke2(up, w * 0.36, th.light);
-    ctx.globalAlpha = 0.32; stroke2(dn, w * 0.42, th.dark);
+  // 3D-shaded capsule limb: core-shadow underside + rim highlight + specular streak
+  function limb3d(pts, w, th) {
+    var dn = [], up = [], up2 = [];
+    for (var i = 0; i < pts.length; i++) {
+      dn.push([pts[i][0] + 2.5, pts[i][1] + 3]);
+      up.push([pts[i][0] - w * 0.18, pts[i][1] - w * 0.22]);
+      up2.push([pts[i][0] - w * 0.24, pts[i][1] - w * 0.30]);
+    }
+    stroke2(dn, w, th.dark);            // shadow underside
+    stroke2(pts, w * 0.92, th.body);    // body
+    ctx.globalAlpha = 0.55; stroke2(up, w * 0.34, th.light);   // rim light
+    ctx.globalAlpha = 0.45; stroke2(up2, w * 0.12, "#ffffff"); // specular
     ctx.globalAlpha = 1;
   }
-  // crab-claw pincer hand (エビカニ) — two chunky curved jaws that open/close
+  // shaded sphere (top-left key light)
+  function ball(cx, cy, r, th) {
+    var g = ctx.createRadialGradient(cx - r * 0.36, cy - r * 0.42, r * 0.1, cx + r * 0.12, cy + r * 0.14, r * 1.1);
+    g.addColorStop(0, th.light); g.addColorStop(0.5, th.body); g.addColorStop(1, th.dark);
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.fill();
+  }
+  // crab-claw pincer hand (エビカニ) — two shaded jaws that open/close
   function claw(hx, hy, dir, open, th) {
     ctx.save();
     ctx.translate(hx, hy); ctx.rotate(dir);
-    ctx.fillStyle = th.dark; ctx.beginPath(); ctx.arc(-3, 0, 8, 0, TAU); ctx.fill(); // wrist joint
     var sp = 0.14 + open * 0.5;
     for (var s = -1; s <= 1; s += 2) {
       ctx.save(); ctx.rotate(s * sp);
-      ctx.fillStyle = th.body;
+      var g = ctx.createLinearGradient(0, s * 9, 34, 0);
+      g.addColorStop(0, th.dark); g.addColorStop(0.5, th.body); g.addColorStop(1, th.light);
+      ctx.fillStyle = g;
       ctx.beginPath();
-      ctx.moveTo(2, s * 7);
-      ctx.quadraticCurveTo(28, s * 11, 33, 0);
-      ctx.quadraticCurveTo(22, s * 2, 4, s * 2);
+      ctx.moveTo(2, s * 8); ctx.quadraticCurveTo(30, s * 12, 35, 0); ctx.quadraticCurveTo(22, s * 3, 4, s * 3);
       ctx.closePath(); ctx.fill();
-      ctx.strokeStyle = th.dark; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.5; ctx.stroke(); ctx.globalAlpha = 1;
-      ctx.fillStyle = th.light; ctx.globalAlpha = 0.4;
-      ctx.beginPath(); ctx.moveTo(4, s * 4); ctx.quadraticCurveTo(22, s * 7, 28, s * 1); ctx.quadraticCurveTo(18, s * 2, 6, s * 2); ctx.closePath(); ctx.fill();
-      ctx.globalAlpha = 1;
+      ctx.fillStyle = "rgba(255,255,255,.35)";
+      ctx.beginPath(); ctx.moveTo(6, s * 5); ctx.quadraticCurveTo(22, s * 7, 27, s * 1); ctx.quadraticCurveTo(18, s * 3, 8, s * 3); ctx.closePath(); ctx.fill();
       ctx.restore();
     }
+    ball(-2, 0, 10, th); // wrist knuckle
     ctx.restore();
   }
-
-  // slim, shaded arm from shoulder to hand with a natural elbow bend
+  // shaded arm shoulder→hand with a natural elbow bend
   function drawArm(S, sh, hand, bend, th) {
     var mx = (sh[0] + hand[0]) / 2 + S * bend;
     var my = (sh[1] + hand[1]) / 2 + Math.abs(bend) * 0.3 + 6;
-    bone([sh, [mx, my]], 17, th);       // upper arm (bicep)
-    bone([[mx, my], hand], 12.5, th);   // forearm (tapered slim)
-    ctx.fillStyle = th.body; ctx.beginPath(); ctx.arc(sh[0], sh[1], 9, 0, TAU); ctx.fill(); // deltoid cap
+    limb3d([sh, [mx, my]], 16, th);
+    limb3d([[mx, my], hand], 12, th);
+    ball(sh[0], sh[1], 10, th); // deltoid
+  }
+
+  // breakdance specials
+  var SPECIALS = ["spin", "windmill", "headspin", "freeze"];
+  function setSpecial(o, t, type) {
+    var ty = type || SPECIALS[(Math.random() * SPECIALS.length) | 0];
+    o.special = { type: ty, t0: t, dur: ty === "spin" ? 0.72 : ty === "freeze" ? 0.95 : 1.15 };
   }
 
   function drawOni(o, t, dt) {
     var th = o.theme;
+    if (o.showT == null) o.showT = t + 4 + Math.random() * 6;
     var beat = t * bpm / 60 + o.phase;
-    var ph = beat - Math.floor(beat);                 // 0..1 within beat
-    var air = Math.sin(ph * Math.PI);                 // 0 on beat, 1 mid-beat
-    var comp = Math.pow(Math.cos(ph * Math.PI), 6);   // squash at landings
-    var sway = Math.sin(beat * Math.PI);              // -1..1 over 2 beats (weight shift)
+    var ph = beat - Math.floor(beat);
+    var air = Math.sin(ph * Math.PI);
+    var comp = Math.pow(Math.cos(ph * Math.PI), 6);
+    var sway = Math.sin(beat * Math.PI);
     var floatY = Math.sin(t * 1.5 + o.phase) * 3;
 
-    /* ---- trick: springy jump + spin ---- */
-    var spin = 0, jumpH = 0, pop = 1, tricking = false;
-    var tp = (t - o.trick) / 0.72;
-    if (tp >= 0 && tp <= 1) {
-      tricking = true;
-      var sp = tp * tp * (3 - 2 * tp);                // smoothstep spin easing
-      spin = sp * TAU;
-      jumpH = Math.sin(tp * Math.PI) * 96 * o.scale;
-      pop = 1 + Math.sin(tp * Math.PI) * 0.14;
+    /* ---- auto breakdance show-off (dance mode / friends) ---- */
+    var canAuto = (mode === "dance") || (!o.main);
+    if (canAuto && !o.special && t > o.showT) {
+      setSpecial(o, t);
+      o.showT = t + (o.main ? 5 + Math.random() * 5 : 7 + Math.random() * 8);
+      sparkle(o.x, o.y + 90 * o.scale, 6, 4, "rgba(255,220,150,1)");
     }
 
-    /* ---- squash & stretch ---- */
-    var stretch = air * 0.05 - comp * 0.16;
-    var sy = 1 + stretch;
-    var sx = 1 - stretch * 0.9;
+    /* ---- breakdance special pose ---- */
+    var spin = 0, jumpH = 0, pop = 1, poseTag = null, baseRot = 0, downY = 0, pivotY = 0, legSplay = 0, armOut = 0;
+    if (o.special) {
+      var pp = (t - o.special.t0) / o.special.dur;
+      if (pp < 0 || pp > 1) { o.special = null; }
+      else {
+        poseTag = o.special.type;
+        var e = pp * pp * (3 - 2 * pp), s1 = Math.sin(pp * Math.PI);
+        if (poseTag === "spin") { spin = e * TAU * 2; jumpH = s1 * 104 * o.scale; pop = 1 + s1 * 0.12; }
+        else if (poseTag === "windmill") { spin = e * TAU * 2.5; baseRot = s1 * 1.25; downY = s1 * 52 * o.scale; legSplay = s1; armOut = s1; }
+        else if (poseTag === "headspin") { spin = e * TAU * 3; var inv = Math.min(1, pp / 0.18) * (pp > 0.82 ? 1 - (pp - 0.82) / 0.18 : 1); baseRot = Math.PI * inv; pivotY = -58 * o.scale; legSplay = 0.6 * inv; armOut = inv; }
+        else if (poseTag === "freeze") { var fz = pp < 0.25 ? pp / 0.25 : (pp > 0.8 ? 1 - (pp - 0.8) / 0.2 : 1); baseRot = fz * 0.5; jumpH = fz * 8 * o.scale; legSplay = fz * 0.8; armOut = fz; }
+      }
+    }
 
-    /* ---- choreography: 4 moves, switch each bar (4 beats) ---- */
-    var move = Math.floor(beat / 4) % 4;
+    /* ---- squash & stretch (off during specials) ---- */
+    var stretch = air * 0.05 - comp * 0.16;
+    var sy = poseTag ? 1 : 1 + stretch;
+    var sx = poseTag ? 1 : 1 - stretch * 0.9;
+
+    /* ---- choreography: 6 grooves, switch each bar ---- */
+    var move = Math.floor(beat / 4) % 6;
     var lift = -air * 20 * o.scale - floatY - jumpH;
     var swayX = sway * 11 * o.scale;
-    var lean = sway * 0.09 + spin;
+    var lean = sway * 0.09;
 
-    /* ---- secondary motion springs (head, hair, arms lag the body) ---- */
-    var headTarget = -sway * 0.16 + air * 0.06;
-    var headTilt = spring(o.head, headTarget, 170, 13, dt);
+    /* ---- secondary-motion springs ---- */
+    var headTilt = spring(o.head, -sway * 0.16 + air * 0.06, 170, 13, dt);
     var hairTilt = spring(o.hair, headTilt * 1.6, 120, 7, dt);
     var armLag = spring(o.arm, sway, 150, 11, dt);
 
@@ -448,34 +475,44 @@
 
     var sc = o.scale * pop;
     ctx.save();
-    ctx.translate(o.x + swayX, o.y + lift);
-    ctx.rotate(lean);
+    ctx.translate(o.x + swayX, o.y + lift + downY);
+    ctx.translate(0, pivotY); ctx.rotate(lean + baseRot + spin); ctx.translate(0, -pivotY);
     ctx.scale(sc * sx, sc * sy);
 
-    /* ---------- legs (slim, muscular, stepping with weight shift) ---------- */
-    var stepPh = beat * Math.PI * 2;
-    for (var Lg = -1; Lg <= 1; Lg += 2) {
-      var planted = (Lg === (sway >= 0 ? 1 : -1));
-      var legLift = planted ? 0 : Math.max(0, Math.sin(stepPh) * (Lg > 0 ? 1 : -1)) * 16 + 4;
-      var hipX = Lg * 15, hipY = 48;
-      var footX = Lg * 19 + swayX * 0.25;
-      var footY = 102 - legLift;
-      var kneeX = (hipX + footX) / 2 + Lg * 7;
-      var kneeY = (hipY + footY) / 2 + 8;
-      bone([[hipX, hipY], [kneeX, kneeY]], 20, th);   // thigh
-      bone([[kneeX, kneeY], [footX, footY]], 14, th); // calf (slim)
-      ctx.fillStyle = th.dark;                        // foot
-      ctx.beginPath(); ctx.ellipse(footX + Lg * 5, footY + 2, 15, 9, 0, 0, TAU); ctx.fill();
-      ctx.fillStyle = th.body;
-      ctx.beginPath(); ctx.ellipse(footX + Lg * 3, footY - 1, 12, 6, 0, 0, TAU); ctx.fill();
+    /* ---------- legs ---------- */
+    if (poseTag === "windmill" || poseTag === "headspin") {           // splayed straight
+      for (var Ls = -1; Ls <= 1; Ls += 2) {
+        var out = 22 + legSplay * 44;
+        limb3d([[Ls * 14, 46], [Ls * (out * 0.5 + 8), 60], [Ls * out, 66]], 18, th);
+        ball(Ls * out, 66, 10, th);
+      }
+    } else if (poseTag === "freeze") {                                 // tucked angular
+      for (var Lf = -1; Lf <= 1; Lf += 2) {
+        var fx = Lf * 12 - 10, fy = 66 - Lf * 8;
+        limb3d([[Lf * 14, 46], [Lf * 24, 52], [fx, fy]], 18, th);
+        ball(fx, fy, 9, th);
+      }
+    } else {                                                           // stepping groove
+      var stepPh = beat * Math.PI * 2, stance = (move >= 4 ? 1.35 : 1);
+      for (var Lg = -1; Lg <= 1; Lg += 2) {
+        var planted = (Lg === (sway >= 0 ? 1 : -1));
+        var legLift = planted ? 0 : Math.max(0, Math.sin(stepPh) * (Lg > 0 ? 1 : -1)) * 16 + 4;
+        var hipX = Lg * 15, hipY = 48;
+        var footX = Lg * 19 * stance + swayX * 0.25;
+        var footY = 102 - legLift;
+        var kneeX = (hipX + footX) / 2 + Lg * 7, kneeY = (hipY + footY) / 2 + 8;
+        limb3d([[hipX, hipY], [kneeX, kneeY], [footX, footY]], 19, th);
+        ctx.fillStyle = th.dark; ctx.beginPath(); ctx.ellipse(footX + Lg * 5, footY + 2, 15, 9, 0, 0, TAU); ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,.18)"; ctx.beginPath(); ctx.ellipse(footX + Lg * 2, footY - 2, 9, 4, 0, 0, TAU); ctx.fill();
+      }
     }
 
-    /* ---------- torso: shoulders → cinched waist (muscular) ---------- */
+    /* ---------- torso: smooth sculpted volume ---------- */
     ctx.beginPath();
     ctx.moveTo(-15, -46);
-    ctx.quadraticCurveTo(-42, -44, -46, -26);   // left deltoid
-    ctx.quadraticCurveTo(-49, -8, -38, 8);      // lat / ribs
-    ctx.quadraticCurveTo(-32, 28, -26, 44);     // waist (slim)
+    ctx.quadraticCurveTo(-42, -44, -46, -26);
+    ctx.quadraticCurveTo(-49, -8, -38, 8);
+    ctx.quadraticCurveTo(-32, 28, -26, 44);
     ctx.quadraticCurveTo(-20, 58, 0, 60);
     ctx.quadraticCurveTo(20, 58, 26, 44);
     ctx.quadraticCurveTo(32, 28, 38, 8);
@@ -483,21 +520,19 @@
     ctx.quadraticCurveTo(42, -44, 15, -46);
     ctx.quadraticCurveTo(0, -50, -15, -46);
     ctx.closePath();
-    var bgd = ctx.createLinearGradient(-20, -46, 20, 60);
-    bgd.addColorStop(0, th.light); bgd.addColorStop(0.4, th.body); bgd.addColorStop(1, th.dark);
+    var bgd = ctx.createRadialGradient(-16, -22, 8, 6, 12, 80);
+    bgd.addColorStop(0, th.light); bgd.addColorStop(0.5, th.body); bgd.addColorStop(1, th.dark);
     ctx.fillStyle = bgd; ctx.fill();
-    // muscle definition
-    ctx.strokeStyle = "rgba(0,0,0,.13)"; ctx.lineWidth = 2.5; ctx.lineCap = "round";
-    ctx.beginPath(); ctx.moveTo(0, -30); ctx.lineTo(0, 28); ctx.stroke();            // center line
-    ctx.beginPath(); ctx.moveTo(-28, -8); ctx.quadraticCurveTo(-14, 2, 0, -3); ctx.stroke(); // pec
-    ctx.beginPath(); ctx.moveTo(28, -8);  ctx.quadraticCurveTo(14, 2, 0, -3); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(-16, 12); ctx.lineTo(16, 12); ctx.stroke();          // abs
-    ctx.beginPath(); ctx.moveTo(-15, 24); ctx.lineTo(15, 24); ctx.stroke();
-    // top-left highlight
-    ctx.fillStyle = "rgba(255,255,255,.14)"; ctx.beginPath();
-    ctx.ellipse(-16, -20, 15, 12, -0.5, 0, TAU); ctx.fill();
+    ctx.save(); ctx.clip();
+    var ao = ctx.createLinearGradient(0, 18, 0, 60);
+    ao.addColorStop(0, "rgba(0,0,0,0)"); ao.addColorStop(1, "rgba(0,0,0,.22)");
+    ctx.fillStyle = ao; ctx.fillRect(-50, -60, 100, 122);
+    ctx.fillStyle = "rgba(255,255,255,.16)"; ctx.beginPath(); ctx.ellipse(-14, -26, 20, 12, -0.4, 0, TAU); ctx.fill();
+    ctx.strokeStyle = "rgba(0,0,0,.07)"; ctx.lineWidth = 6; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(0, 22); ctx.stroke();
+    ctx.restore();
 
-    /* ---------- tiger-fur loincloth (slim waist) ---------- */
+    /* ---------- tiger-fur loincloth ---------- */
     ctx.save();
     ctx.beginPath();
     ctx.moveTo(-30, 34); ctx.quadraticCurveTo(0, 40, 30, 34);
@@ -505,63 +540,70 @@
     ctx.lineTo(-25, 70); ctx.quadraticCurveTo(-35, 58, -30, 34);
     ctx.closePath(); ctx.clip();
     var fgd = ctx.createLinearGradient(0, 34, 0, 70);
-    fgd.addColorStop(0, "#ffd85a"); fgd.addColorStop(1, "#e8ad2c");
+    fgd.addColorStop(0, "#ffd85a"); fgd.addColorStop(1, "#e0a422");
     ctx.fillStyle = fgd; ctx.fillRect(-40, 30, 80, 46);
     ctx.strokeStyle = "#2a2118"; ctx.lineWidth = 6;
     for (var sx2 = -34; sx2 < 40; sx2 += 15) {
       ctx.beginPath(); ctx.moveTo(sx2, 28); ctx.lineTo(sx2 - 11, 76); ctx.stroke();
     }
+    ctx.fillStyle = "rgba(0,0,0,.2)"; ctx.fillRect(-40, 62, 80, 14); // AO under belt
     ctx.restore();
-    // belt line
-    ctx.strokeStyle = "rgba(0,0,0,.18)"; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.moveTo(-30, 35); ctx.quadraticCurveTo(0, 41, 30, 35); ctx.stroke();
 
-    /* ---------- arms + crab claws (choreographed) ---------- */
+    /* ---------- arms + crab claws ---------- */
     var pinch = (Math.sin(beat * Math.PI * 4) + 1) / 2;
     var wig = Math.sin(beat * Math.PI * 2);
     for (var A = -1; A <= 1; A += 2) {
       var sh = [A * 44, -30];
       var hand, dir, open, bend;
-      if (move === 0) {
+      if (poseTag && poseTag !== "freeze") {                 // spin/windmill/headspin: arms out
+        hand = [A * (72 + armOut * 16), poseTag === "windmill" ? -4 : -24];
+        dir = A > 0 ? -0.2 : Math.PI + 0.2; open = 0.4; bend = A * 14;
+      } else if (poseTag === "freeze") {                     // angular freeze
+        if (A < 0) { hand = [-68, -70]; dir = -2.3; open = 0.6; bend = -24; }
+        else { hand = [34, 8]; dir = Math.PI * 0.62; open = 0.1; bend = 20; }
+      } else if (move === 0) {                                // エビカニ crab pinch
         hand = [A * (80 + air * 8), -12 + wig * 10 * A * 0.4];
-        dir = A > 0 ? -0.35 : Math.PI + 0.35;
-        open = pinch; bend = A * 16;
-      } else if (move === 1) {
+        dir = A > 0 ? -0.35 : Math.PI + 0.35; open = pinch; bend = A * 16;
+      } else if (move === 1) {                                // hands up ひらひら
         var wv = Math.sin(beat * Math.PI * 3 + (A > 0 ? 0 : Math.PI));
         hand = [A * (34 + wv * 6), -104 - air * 12 + wv * 6];
-        dir = -Math.PI / 2 + A * 0.3 + wv * 0.4;
-        open = 0.7; bend = A * 26;
-      } else if (move === 2) {
-        var upThis = (A > 0 ? wig : -wig);
-        var upv = (upThis + 1) / 2;
+        dir = -Math.PI / 2 + A * 0.3 + wv * 0.4; open = 0.7; bend = A * 26;
+      } else if (move === 2) {                                // fist pumps
+        var upv = ((A > 0 ? wig : -wig) + 1) / 2;
         hand = [A * (44 - upv * 8), 6 - upv * 108];
-        dir = -Math.PI / 2 + A * 0.2;
-        open = 0.05; bend = A * 20;
-      } else {
+        dir = -Math.PI / 2 + A * 0.2; open = 0.05; bend = A * 20;
+      } else if (move === 3) {                                // clap overhead
         var clapPh = (Math.sin(beat * Math.PI * 2) + 1) / 2;
         hand = [A * (8 + (1 - clapPh) * 62), -96 - air * 8];
-        dir = -Math.PI / 2 - A * 0.2;
-        open = 0.1; bend = A * 22;
+        dir = -Math.PI / 2 - A * 0.2; open = 0.1; bend = A * 22;
+      } else if (move === 4) {                                // side groove sweep
+        var sg = Math.sin(beat * Math.PI * 2 + (A > 0 ? 0 : Math.PI));
+        hand = [A * (58 + sg * 18), -28 + sg * 26];
+        dir = A > 0 ? -0.2 : Math.PI + 0.2; open = 0.35; bend = A * 18;
+      } else {                                                // robot / vogue point
+        var pv = ((A > 0 ? wig : -wig) + 1) / 2;
+        hand = [A * (30 + pv * 34), -18 - pv * 66];
+        dir = -Math.PI / 2 + A * (0.5 - pv * 0.3); open = 0.05; bend = A * 10;
       }
-      hand[0] -= armLag * 4 * A;
+      if (!poseTag) hand[0] -= armLag * 4 * A;
       drawArm(A, sh, hand, bend, th);
       claw(hand[0], hand[1], dir, open, th);
     }
 
     /* ---------- neck ---------- */
-    ctx.fillStyle = th.dark;
-    ctx.beginPath(); ctx.moveTo(-12, -40); ctx.lineTo(12, -40); ctx.lineTo(10, -54); ctx.lineTo(-10, -54); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = "rgba(0,0,0,.18)"; ctx.beginPath(); ctx.ellipse(0, -44, 12, 5, 0, 0, TAU); ctx.fill();
+    var ng = ctx.createLinearGradient(-12, -54, 12, -40);
+    ng.addColorStop(0, th.body); ng.addColorStop(1, th.dark);
+    ctx.fillStyle = ng;
+    ctx.beginPath(); ctx.moveTo(-12, -40); ctx.lineTo(12, -40); ctx.lineTo(10, -55); ctx.lineTo(-10, -55); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "rgba(0,0,0,.22)"; ctx.beginPath(); ctx.ellipse(0, -45, 12, 5, 0, 0, TAU); ctx.fill();
 
-    /* ---------- head group (springy secondary motion) ---------- */
+    /* ---------- head group ---------- */
     ctx.save();
-    ctx.translate(0, -50);         // neck pivot
+    ctx.translate(0, -50);
     ctx.rotate(headTilt);
-    var hc = -34;                  // head center relative to pivot
+    var hc = -34;
 
-    // wild flame hair (behind), jiggles
-    ctx.save();
-    ctx.rotate(hairTilt * 0.5);
+    ctx.save(); ctx.rotate(hairTilt * 0.5);  // flame hair (behind)
     ctx.fillStyle = "#2a1c10";
     for (var hg = 0; hg <= 10; hg++) {
       var ha = -Math.PI * 0.96 + hg / 10 * Math.PI * 0.92;
@@ -575,8 +617,7 @@
     }
     ctx.restore();
 
-    // pointed ears (behind face)
-    ctx.fillStyle = th.dark;
+    ctx.fillStyle = th.dark;   // pointed ears
     for (var Er = -1; Er <= 1; Er += 2) {
       ctx.beginPath();
       ctx.moveTo(Er * 33, hc - 2);
@@ -585,7 +626,7 @@
       ctx.closePath(); ctx.fill();
     }
 
-    // face with defined jaw + chin, form-shaded
+    // face (sculpted jaw), form-shaded + gloss + AO
     ctx.beginPath();
     ctx.moveTo(-38, hc - 8);
     ctx.quadraticCurveTo(-40, hc - 40, 0, hc - 44);
@@ -594,13 +635,15 @@
     ctx.quadraticCurveTo(0, hc + 41, -16, hc + 32);
     ctx.quadraticCurveTo(-36, hc + 16, -38, hc - 8);
     ctx.closePath();
-    var fgr = ctx.createRadialGradient(-12, hc - 14, 6, 0, hc, 56);
-    fgr.addColorStop(0, th.light); fgr.addColorStop(0.62, th.body); fgr.addColorStop(1, th.dark);
+    var fgr = ctx.createRadialGradient(-13, hc - 16, 6, 2, hc + 4, 58);
+    fgr.addColorStop(0, th.light); fgr.addColorStop(0.55, th.body); fgr.addColorStop(1, th.dark);
     ctx.fillStyle = fgr; ctx.fill();
+    ctx.save(); ctx.clip();
+    ctx.fillStyle = "rgba(255,255,255,.2)"; ctx.beginPath(); ctx.ellipse(-12, hc - 20, 18, 11, -0.3, 0, TAU); ctx.fill();
+    ctx.fillStyle = "rgba(0,0,0,.14)"; ctx.beginPath(); ctx.ellipse(0, hc + 30, 20, 9, 0, 0, TAU); ctx.fill();
+    ctx.restore();
 
-    // horns (ridged, shaded) — slight jiggle
-    ctx.save();
-    ctx.rotate(hairTilt * 0.35);
+    ctx.save(); ctx.rotate(hairTilt * 0.35);  // horns (shaded + specular)
     for (var Hn = -1; Hn <= 1; Hn += 2) {
       ctx.beginPath();
       ctx.moveTo(Hn * 13, hc - 34);
@@ -610,25 +653,17 @@
       var hgd = ctx.createLinearGradient(Hn * 5, hc - 37, Hn * 39, hc - 84);
       hgd.addColorStop(0, th.hornDk); hgd.addColorStop(0.5, th.horn); hgd.addColorStop(1, "#fff4dc");
       ctx.fillStyle = hgd; ctx.fill();
-      ctx.strokeStyle = "rgba(120,90,50,.5)"; ctx.lineWidth = 1.5;
-      for (var rg = 1; rg <= 3; rg++) {
-        var f = rg / 4;
-        ctx.beginPath();
-        ctx.moveTo(Hn * (13 + (30 - 13) * f), hc - 34 - (50) * f);
-        ctx.lineTo(Hn * (13 + (26 - 13) * f * 0.7), hc - 34 - (50) * f + 4);
-        ctx.stroke();
-      }
+      ctx.strokeStyle = "rgba(255,255,255,.5)"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(Hn * 16, hc - 40); ctx.quadraticCurveTo(Hn * 28, hc - 58, Hn * 34, hc - 78); ctx.stroke();
     }
     ctx.restore();
 
-    // cheeks (subtle blush)
-    ctx.fillStyle = th.cheek; ctx.globalAlpha = 0.4;
+    ctx.fillStyle = th.cheek; ctx.globalAlpha = 0.38;  // blush
     ctx.beginPath(); ctx.ellipse(-25, hc + 12, 10, 7, 0, 0, TAU); ctx.fill();
     ctx.beginPath(); ctx.ellipse(25, hc + 12, 10, 7, 0, 0, TAU); ctx.fill();
     ctx.globalAlpha = 1;
 
-    // brows (filled, expressive but friendly)
-    ctx.fillStyle = "#2a1c10";
+    ctx.fillStyle = "#2a1c10";  // brows
     for (var Br = -1; Br <= 1; Br += 2) {
       ctx.beginPath();
       ctx.moveTo(Br * 6, hc - 19);
@@ -637,32 +672,29 @@
       ctx.closePath(); ctx.fill();
     }
 
-    // eyes (almond, iris + pupil + highlight)
-    for (var E = -1; E <= 1; E += 2) {
+    for (var E = -1; E <= 1; E += 2) {  // glossy almond eyes
       ctx.save(); ctx.translate(E * 18, hc - 3);
       ctx.fillStyle = "#fff";
       ctx.beginPath(); ctx.ellipse(0, 0, 12, 14 * eyeOpen + 1.5, 0, 0, TAU); ctx.fill();
       if (eyeOpen > 0.5) {
         var ix = sway * 3, iy = 2;
-        ctx.fillStyle = "#6b451e";
-        ctx.beginPath(); ctx.arc(ix, iy, 7.5, 0, TAU); ctx.fill();
-        ctx.fillStyle = "#1c130a";
-        ctx.beginPath(); ctx.arc(ix, iy, 4, 0, TAU); ctx.fill();
-        ctx.fillStyle = "#fff";
-        ctx.beginPath(); ctx.arc(ix - 3, iy - 3, 2.4, 0, TAU); ctx.fill();
+        var ig = ctx.createRadialGradient(ix - 2, iy - 2, 1, ix, iy, 8);
+        ig.addColorStop(0, "#8a5a26"); ig.addColorStop(1, "#4a2f12");
+        ctx.fillStyle = ig; ctx.beginPath(); ctx.arc(ix, iy, 7.5, 0, TAU); ctx.fill();
+        ctx.fillStyle = "#160f08"; ctx.beginPath(); ctx.arc(ix, iy, 3.8, 0, TAU); ctx.fill();
+        ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(ix - 3, iy - 3, 2.6, 0, TAU); ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,.6)"; ctx.beginPath(); ctx.arc(ix + 2, iy + 3, 1.3, 0, TAU); ctx.fill();
       }
       ctx.strokeStyle = "rgba(0,0,0,.28)"; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.ellipse(0, -1, 12, 14 * eyeOpen + 1.5, 0, Math.PI * 1.08, Math.PI * 1.92); ctx.stroke();
       ctx.restore();
     }
 
-    // nose (subtle nostrils)
-    ctx.strokeStyle = "rgba(0,0,0,.22)"; ctx.lineWidth = 2.4; ctx.lineCap = "round";
+    ctx.strokeStyle = "rgba(0,0,0,.22)"; ctx.lineWidth = 2.4; ctx.lineCap = "round";  // nose
     ctx.beginPath(); ctx.moveTo(-5, hc + 8); ctx.quadraticCurveTo(-2, hc + 13, -6, hc + 14); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(5, hc + 8);  ctx.quadraticCurveTo(2, hc + 13, 6, hc + 14);  ctx.stroke();
 
-    // mouth (opens with the beat) + lower lip + tongue + fangs
-    var mo = 5 + air * 9;
+    var mo = 5 + air * 9;  // mouth + tongue + fangs
     ctx.fillStyle = "#6e1a1a";
     ctx.beginPath(); ctx.ellipse(0, hc + 23, 12, mo, 0, 0, Math.PI); ctx.fill();
     ctx.fillStyle = "#e07a7a";
@@ -676,11 +708,11 @@
     ctx.restore(); // head
     ctx.restore(); // oni
 
-    /* ---------- ground shadow (shrinks when airborne = depth) ---------- */
-    var aip = (air * 20 * o.scale + jumpH);
+    /* ---------- ground shadow ---------- */
+    var aip = (air * 20 * o.scale + jumpH - downY);
     var shW = (58 - aip * 0.28) * o.scale;
     ctx.save();
-    ctx.globalAlpha = 0.20 * Math.max(0.3, 1 - aip / 140);
+    ctx.globalAlpha = 0.20 * Math.max(0.3, 1 - Math.abs(aip) / 150);
     ctx.fillStyle = "#000";
     ctx.beginPath();
     ctx.ellipse(o.x + swayX * 0.6, o.y + 96 * o.scale, Math.max(20, shW), 13 * o.scale, 0, 0, TAU);
@@ -913,7 +945,8 @@
     return null;
   }
   function doTrick(o, x, y) {
-    o.trick = nowClock();
+    setSpecial(o, nowClock());
+    o.showT = nowClock() + 5 + Math.random() * 5;
     confetti(x, y, 24, 9); dust(o.x, o.y + 96 * o.scale, 10); cheer();
     if (Math.random() < 0.45) speak("わーい");
   }
@@ -972,7 +1005,7 @@
     } else {
       mode = "dance"; game.over = false; overEl.classList.remove("on");
       confetti(W / 2, H / 2, 40, 10);
-      for (var i = 0; i < onis.length; i++) onis[i].trick = nowClock() + i * 0.12;
+      for (var i = 0; i < onis.length; i++) setSpecial(onis[i], nowClock() + i * 0.12, "spin");
     }
   }
   function goHome() {
