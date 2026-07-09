@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>実務メーター450 — Surveyor Hours Recorder</title>
+<link rel="manifest" href="./manifest.webmanifest" />
+<meta name="theme-color" content="#f0ebe3" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="実務メーター" />
+<link rel="apple-touch-icon" href="../icons/icon-192.png" />
+<meta name="description" content="測量士登録申請（第50条第3号、450日）に向けた実務時間の現場記録PWA。8時間=1日換算の達成メーター、判定ルール準拠、Obsidian実務記録テンプレのMarkdown書き出し。データは端末内のみ。" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --paper:#f0ebe3; --paper-2:#e8e1d4; --card:#f6f2ea; --ink:#1c1a16; --ink-soft:#2b2823;
+  --muted:#6f675b; --rule:#3a342c; --rule-soft:rgba(58,52,44,.28); --border:#c8bfae;
+  --terracotta:#b5451b; --terracotta-deep:#8e3514; --ok:#4f6f3e; --warn:#a4801f; --ng:#8e3514;
+  --mono:"DM Mono",ui-monospace,Menlo,monospace;
+  --serif:"EB Garamond","Times New Roman",serif;
+  --jp:"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--jp);line-height:1.6;
+  padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+.wrap{max-width:640px;margin:0 auto;padding:14px 14px 20px}
+header{border-bottom:3px solid var(--ink);padding:10px 0 10px}
+.hd-strip{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;color:var(--muted)}
+h1{margin:4px 0 0;font-size:1.35rem;letter-spacing:.03em}
+h1 small{display:block;font-family:var(--serif);font-style:italic;font-weight:400;font-size:.8rem;color:var(--muted)}
+.meter{margin-top:12px;background:var(--card);border:1px solid var(--ink);padding:12px 14px}
+.meter-top{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--mono)}
+.meter-top .big{font-size:1.7rem;font-weight:500;color:var(--terracotta)}
+.meter-top .goal{font-size:.78rem;color:var(--muted)}
+.bar{height:16px;background:var(--paper-2);border:1px solid var(--ink);margin:8px 0 6px;position:relative}
+.bar i{display:block;height:100%;background:var(--terracotta)}
+.bar em{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);left:100%}
+.meter-sub{font-size:.72rem;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px}
+.meter-sub b{color:var(--ink-soft)}
+.pend{color:var(--warn)}
+main section{display:none;margin-top:16px}
+main section.on{display:block}
+h2{font-size:.95rem;border-bottom:2px solid var(--ink);padding-bottom:5px;display:flex;align-items:baseline;gap:8px}
+h2 .en{margin-left:auto;font-family:var(--serif);font-style:italic;font-weight:400;font-size:.74rem;color:var(--muted)}
+label{display:block;font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;color:var(--muted);margin:12px 0 4px}
+input,select,textarea{width:100%;font-family:var(--jp);font-size:1rem;padding:9px 10px;border:1px solid var(--rule-soft);background:#fff;color:var(--ink);border-radius:0;appearance:none}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--terracotta)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{font-family:var(--mono);font-size:.82rem;padding:7px 12px;border:1px solid var(--ink);background:var(--card);cursor:pointer}
+.chip:active{background:var(--terracotta);color:#fff}
+.btn{display:block;width:100%;margin-top:16px;padding:13px;border:1px solid var(--ink);background:var(--terracotta);color:#fff;font-family:var(--jp);font-size:1rem;font-weight:700;letter-spacing:.08em;cursor:pointer}
+.btn:active{background:var(--terracotta-deep)}
+.btn.sub{background:var(--card);color:var(--ink);font-weight:500}
+.btn.mini{width:auto;display:inline-block;margin:8px 8px 0 0;padding:8px 14px;font-size:.85rem}
+.hint{font-size:.72rem;color:var(--muted);margin-top:6px}
+.ledger-month{font-family:var(--mono);font-size:.7rem;letter-spacing:.16em;color:var(--terracotta);border-bottom:1px solid var(--border);margin:16px 0 4px;padding-bottom:3px}
+.rec{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px dashed var(--border);cursor:pointer}
+.rec .d{font-family:var(--mono);font-size:.72rem;color:var(--muted);width:44px;flex:none}
+.rec .body{flex:1;min-width:0}
+.rec .t1{font-size:.86rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rec .t2{font-size:.7rem;color:var(--muted)}
+.rec .hrs{font-family:var(--mono);text-align:right;flex:none}
+.rec .hrs b{display:block;font-size:.95rem}
+.rec .hrs span{font-size:.66rem;color:var(--muted)}
+.judge{font-family:var(--mono);font-size:.62rem;border:1px solid;padding:1px 6px;flex:none}
+.judge.OK{color:var(--ok);border-color:var(--ok)}
+.judge.要確認{color:var(--warn);border-color:var(--warn)}
+.judge.NG{color:var(--ng);border-color:var(--ng)}
+textarea.out{font-family:var(--mono);font-size:.72rem;min-height:220px;white-space:pre;line-height:1.5}
+.card{background:var(--card);border:1px solid var(--border);padding:12px 14px;margin-top:12px}
+.card h3{margin:0 0 6px;font-size:.85rem;display:flex;gap:8px;align-items:baseline}
+.card ul{margin:0;padding-left:1.2em;font-size:.82rem}
+.card li{margin:3px 0}
+.tag{font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;padding:1px 7px;border:1px solid}
+.tag.ok{color:var(--ok);border-color:var(--ok)} .tag.ng{color:var(--ng);border-color:var(--ng)} .tag.gr{color:var(--warn);border-color:var(--warn)}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:2px solid var(--ink);display:flex;
+  padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav button{flex:1;padding:11px 0 9px;background:none;border:none;font-family:var(--jp);font-size:.78rem;color:var(--muted);cursor:pointer;border-top:3px solid transparent;margin-top:-2px}
+nav button.on{color:var(--terracotta);font-weight:700;border-top-color:var(--terracotta)}
+.empty{color:var(--muted);font-size:.85rem;padding:18px 0;text-align:center}
+.foot{margin-top:26px;border-top:1px solid var(--border);padding-top:8px;font-family:var(--mono);font-size:.64rem;color:var(--muted);line-height:1.8}
+.danger{color:var(--ng)}
+dialog{border:2px solid var(--ink);background:var(--paper);max-width:420px;width:92%;padding:16px}
+dialog::backdrop{background:rgba(28,26,22,.45)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(86px + env(safe-area-inset-bottom));background:var(--ink);color:var(--paper);font-size:.8rem;padding:8px 18px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:9}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="hd-strip"><span>YZRSWORK FIELD TOOLS</span><span>SURVEYOR LICENSE</span></div>
+  <h1>実務メーター450<small>Surveying Hours Recorder — 測量法第50条第3号ルート</small></h1>
+  <div class="meter">
+    <div class="meter-top"><span class="big" id="mTotal">-</span><span class="goal">/ 450日 目標</span></div>
+    <div class="bar"><i id="mBar" style="width:0%"></i></div>
+    <div class="meter-sub">
+      <span>基準累計 <b id="mBase">-</b>日 + アプリ記録 <b id="mApp">-</b>日</span>
+      <span>残り <b id="mLeft">-</b>日<span id="mPend" class="pend"></span></span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- 記録 -->
+<section id="tab-rec" class="on">
+  <h2>実務時間を記録<span class="en">Record</span></h2>
+  <div class="row">
+    <div><label>日付</label><input type="date" id="fDate"></div>
+    <div><label>案件ID</label><input type="text" id="fCase" placeholder="R8-18" list="caseList" autocapitalize="characters"><datalist id="caseList"></datalist></div>
+  </div>
+  <div class="row">
+    <div><label>作業種類</label><select id="fKind">
+      <option>地積測量</option><option>境界測量</option><option>現況測量</option>
+      <option>基準点測量</option><option>水準測量</option><option>路線測量</option><option>その他</option>
+    </select></div>
+    <div><label>作業場所</label><select id="fPlace">
+      <option>現地</option><option>内業</option><option>現地+内業</option>
+    </select></div>
+  </div>
+  <label>測量実務時間（h）: 立会、移動、打合せ、昼休みは含めない</label>
+  <input type="number" id="fHours" min="0" max="16" step="0.25" inputmode="decimal" placeholder="0">
+  <div class="chips">
+    <button class="chip" data-h="1">1h</button><button class="chip" data-h="2">2h</button>
+    <button class="chip" data-h="4">4h</button><button class="chip" data-h="6">6h</button>
+    <button class="chip" data-h="8">8h</button><button class="chip" data-h="+0.5">+0.5</button>
+    <button class="chip" data-h="-0.5">-0.5</button>
+  </div>
+  <div class="row">
+    <div><label>非実務時間（h）任意</label><input type="number" id="fNon" min="0" max="16" step="0.25" inputmode="decimal" placeholder="0"></div>
+    <div><label>判定</label><select id="fJudge"><option>OK</option><option>要確認</option><option>NG</option></select></div>
+  </div>
+  <label>従事技術、作業内容（申請書ニの2の素材）</label>
+  <input type="text" id="fTech" placeholder="TS観測、地積測量図作成、求積計算 等">
+  <label>備考 任意</label>
+  <input type="text" id="fMemo" placeholder="按分メモ、立会同日 等">
+  <button class="btn" id="btnSave">記録する</button>
+  <div class="hint" id="convHint">換算: 実務時間 ÷ 8（小数第2位切り捨て）。例 6h = 0.75日</div>
+</section>
+
+<!-- 台帳 -->
+<section id="tab-ledger">
+  <h2>記録台帳<span class="en">Ledger</span></h2>
+  <div id="ledger"></div>
+</section>
+
+<!-- 書き出し -->
+<section id="tab-export">
+  <h2>書き出し<span class="en">Export to Vault</span></h2>
+
+  <label>日別Markdown（_templates/測量士実務記録.md 準拠）</label>
+  <select id="expDay"></select>
+  <textarea class="out" id="expMd" readonly placeholder="日付を選ぶとここに生成"></textarea>
+  <button class="btn mini" id="btnCopyMd">Markdownをコピー</button>
+  <div class="hint">Vaultの Finances/測量士申請/ 運用に合わせて保存する。ファイル名例: <span id="expName" style="font-family:var(--mono)">YYYY-MM-DD_実務記録.md</span></div>
+
+  <label style="margin-top:22px">全記録TSV（スプレッドシート貼付用）</label>
+  <button class="btn mini" id="btnCopyTsv">TSVをコピー</button>
+  <button class="btn mini" id="btnDlTsv">TSVをダウンロード</button>
+
+  <label style="margin-top:22px">バックアップ / 復元（JSON）</label>
+  <button class="btn mini" id="btnDlJson">バックアップ保存</button>
+  <button class="btn mini" id="btnImport">復元（読み込み）</button>
+  <input type="file" id="fileImport" accept=".json" style="display:none">
+
+  <label style="margin-top:22px">設定: 基準累計日数（アプリ導入前までの確定分）</label>
+  <div class="row">
+    <div><input type="number" id="fBase" min="0" step="0.25" inputmode="decimal"></div>
+    <div><button class="btn sub" style="margin-top:0" id="btnBase">保存</button></div>
+  </div>
+  <div class="hint">初期値371日は 実務日数集計.md（2026-06-18、厳格判定の粗推定）の値。確定させたらここを更新する。</div>
+  <button class="btn sub danger" id="btnWipe" style="margin-top:26px">全データ削除（端末内）</button>
+</section>
+
+<!-- ルール -->
+<section id="tab-rules">
+  <h2>判定チートシート<span class="en">Rules</span></h2>
+  <div class="card"><h3><span class="tag ok">COUNT OK</span>測量実務</h3><ul>
+    <li>現地測量作業（境界、地積、基準点測量 等）</li>
+    <li>TS観測、水準測量、多角測量</li>
+    <li>データ処理、内業計算（座標、求積）</li>
+    <li>地積測量図、測量図面の作成（CAD含む）</li>
+    <li>測量計画の立案、工程、品質管理</li>
+    <li>公共測量はH17.3.10（士補登録日）以降のみ</li>
+  </ul></div>
+  <div class="card"><h3><span class="tag ng">COUNT NG</span>実務に含めない</h3><ul>
+    <li>境界立会、官民立会（測量作業を伴わない）</li>
+    <li>現場往復、移動時間、休憩、昼食</li>
+    <li>測量と直接関係しない打ち合わせ</li>
+    <li>登記申請、役所協議、請求書、事務作業</li>
+  </ul></div>
+  <div class="card"><h3><span class="tag gr">GRAY</span>要確認</h3><ul>
+    <li>資料調査、法務局調査（測量に直結ならOK）</li>
+    <li>現地確認（測量の予備調査ならOK）</li>
+    <li>写真整理（測量成果の一部ならOK）</li>
+    <li>立会を含む日は立会分を除いて時間按分</li>
+  </ul></div>
+  <div class="card"><h3>鉄則</h3><ul>
+    <li>「図面作成」「TS観測」「求積計算」等の具体語があれば優先カウント</li>
+    <li>立会、打合せ、移動がメインの日はNG</li>
+    <li>混在日は実務時間のみ按分（8h中4h立会なら0.5日）</li>
+    <li>迷ったら「要確認」で記録して後で判断</li>
+    <li>8時間 = 1日。時間÷8、端数は小数第2位切り捨て</li>
+  </ul></div>
+  <div class="hint">正: Vault の _system/rules/測量士実務判定ルール.md。ここは早見表（乖離したら正に合わせて直す）。</div>
+</section>
+
+</main>
+
+<div class="foot">
+  実務メーター450 / や印工務店 field tools。データはこの端末のlocalStorageのみに保存（送信なし）。<br>
+  記録の正はVaultの実務記録ノート。このアプリは現場での下書き帳。書き出したら消えても困らない状態を保つ。
+</div>
+</div>
+
+<nav>
+  <button data-tab="rec" class="on">記録</button>
+  <button data-tab="ledger">台帳</button>
+  <button data-tab="export">書き出し</button>
+  <button data-tab="rules">ルール</button>
+</nav>
+
+<dialog id="dlgEdit">
+  <h2 style="border:none;margin:0 0 4px">記録の操作</h2>
+  <div id="dlgInfo" style="font-size:.85rem;margin-bottom:10px"></div>
+  <button class="btn mini" id="btnEdit">フォームに読み込んで修正</button>
+  <button class="btn mini danger" id="btnDel">削除</button>
+  <button class="btn mini sub" id="btnClose">閉じる</button>
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+const LS_KEY = 'jitsumu450.v1';
+const GOAL = 450;
+const DEFAULT_BASE = 371; // 実務日数集計.md 2026-06-18 厳格判定の粗推定
+
+let db = load();
+let editingId = null;
+let dlgTarget = null;
+
+function load(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw){ const d = JSON.parse(raw); if(Array.isArray(d.records)) return d; }
+  }catch(e){}
+  return { base: DEFAULT_BASE, records: [] };
+}
+function save(){ localStorage.setItem(LS_KEY, JSON.stringify(db)); }
+
+function toDays(h){ return Math.floor((h / 8) * 100) / 100; }
+function fmt(n){ return (Math.round(n * 100) / 100).toLocaleString('ja-JP', {maximumFractionDigits: 2}); }
+function today(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function okDays(){ return db.records.filter(r => r.judge === 'OK').reduce((s,r) => s + toDays(r.h), 0); }
+function pendDays(){ return db.records.filter(r => r.judge === '要確認').reduce((s,r) => s + toDays(r.h), 0); }
+
+function renderMeter(){
+  const app = okDays();
+  const total = (db.base || 0) + app;
+  const pend = pendDays();
+  document.getElementById('mTotal').textContent = fmt(total);
+  document.getElementById('mBase').textContent = fmt(db.base || 0);
+  document.getElementById('mApp').textContent = fmt(app);
+  document.getElementById('mLeft').textContent = fmt(Math.max(GOAL - total, 0));
+  document.getElementById('mPend').textContent = pend > 0 ? '（+要確認 ' + fmt(pend) + '日）' : '';
+  document.getElementById('mBar').style.width = Math.min(total / GOAL * 100, 100).toFixed(1) + '%';
+}
+
+function renderCaseList(){
+  const ids = [...new Set(db.records.map(r => r.case).filter(Boolean))].sort();
+  document.getElementById('caseList').innerHTML = ids.map(i => '<option value="' + esc(i) + '">').join('');
+}
+
+function renderLedger(){
+  const box = document.getElementById('ledger');
+  if(db.records.length === 0){ box.innerHTML = '<div class="empty">まだ記録がありません。「記録」タブから追加。</div>'; return; }
+  const sorted = [...db.records].sort((a,b) => b.d.localeCompare(a.d) || (b.ts||0) - (a.ts||0));
+  let html = '', month = '';
+  for(const r of sorted){
+    const m = r.d.slice(0,7);
+    if(m !== month){
+      month = m;
+      const mrecs = db.records.filter(x => x.d.slice(0,7) === m && x.judge === 'OK');
+      const mdays = mrecs.reduce((s,x) => s + toDays(x.h), 0);
+      html += '<div class="ledger-month">' + m + ' — OK ' + fmt(mdays) + '日</div>';
+    }
+    html += '<div class="rec" data-id="' + r.id + '">'
+      + '<span class="d">' + r.d.slice(5) + '</span>'
+      + '<span class="body"><span class="t1">' + esc(r.case || '案件未記入') + ' ' + esc(r.kind) + '（' + esc(r.place) + '）</span>'
+      + '<span class="t2">' + esc(r.tech || r.memo || '') + '</span></span>'
+      + '<span class="judge ' + r.judge + '">' + r.judge + '</span>'
+      + '<span class="hrs"><b>' + fmt(r.h) + 'h</b><span>' + fmt(toDays(r.h)) + '日</span></span>'
+      + '</div>';
+  }
+  box.innerHTML = html;
+}
+
+function renderExportDays(){
+  const days = [...new Set(db.records.map(r => r.d))].sort().reverse();
+  const sel = document.getElementById('expDay');
+  sel.innerHTML = '<option value="">日付を選ぶ</option>' + days.map(d => '<option>' + d + '</option>').join('');
+  document.getElementById('expMd').value = '';
+}
+
+function buildMd(day){
+  const recs = db.records.filter(r => r.d === day);
+  if(recs.length === 0) return '';
+  const hours = recs.filter(r => r.judge !== 'NG').reduce((s,r) => s + r.h, 0);
+  const non = recs.reduce((s,r) => s + (r.nh || 0), 0);
+  const days = toDays(recs.filter(r => r.judge === 'OK').reduce((s,r) => s + r.h, 0));
+  const judge = recs.some(r => r.judge === '要確認') ? '要確認' : (recs.every(r => r.judge === 'NG') ? 'NG' : 'OK');
+  const kinds = [...new Set(recs.map(r => r.kind))].join('、');
+  const places = [...new Set(recs.map(r => r.place))].join('、');
+  const techs = [...new Set(recs.map(r => r.tech).filter(Boolean))].join('、');
+  const memos = recs.map(r => r.memo).filter(Boolean).join(' / ');
+  const caseLines = recs.map(r => '- 案件ID: #' + (r.case || '') + '（' + r.kind + '、' + r.place + '、実務' + fmt(r.h) + 'h' + (r.judge !== 'OK' ? '、判定' + r.judge : '') + '）').join('\n');
+  return ['---',
+    'date: ' + day,
+    'type: note',
+    'tags: [測量実務]',
+    'sokuryou_hours: ' + fmt(hours),
+    'sokuryou_days: ' + fmt(days),
+    'hanntei: ' + judge,
+    '---',
+    '# ' + day + ' 測量実務記録',
+    '',
+    '## 案件情報',
+    caseLines,
+    '- 業務名:',
+    '- 発注機関（名称）:',
+    '- 発注機関（所在地）:',
+    '',
+    '## 申請書 ニの2 対応項目（従事した主な測量作業）',
+    '- 作業種類: ' + kinds,
+    '- 作業地域:',
+    '- 作業方法:',
+    '- 従事技術: ' + techs,
+    '- 作業場所: ' + places,
+    '- 測量の目的:',
+    '- 使用作業規定:',
+    '- 作業量:',
+    '',
+    '## 時間記録',
+    '- 測量実務時間: ' + fmt(hours) + 'h',
+    '- 非実務時間: ' + fmt(non) + 'h（立会、移動、打合せ等）',
+    '- 換算日数: ' + fmt(days) + '日（実務時間÷8、小数第2位切り捨て）',
+    '',
+    '## 申請用メモ',
+    '- 判定: ' + judge,
+    '- 根拠:（[[測量士実務判定ルール]] 参照）',
+    '- 備考: ' + memos,
+    '',
+    '---',
+    '[[実務日数集計]] | [[案件マスター]]',
+    '',
+    '*実務メーター450（jitsumu450）から書き出し*',
+    ''].join('\n');
+}
+
+function buildTsv(){
+  const head = ['日付','案件ID','作業種類','作業場所','実務時間h','非実務時間h','換算日数','判定','従事技術','備考'].join('\t');
+  const rows = [...db.records].sort((a,b) => a.d.localeCompare(b.d)).map(r =>
+    [r.d, r.case, r.kind, r.place, fmt(r.h), fmt(r.nh || 0), fmt(toDays(r.h)), r.judge, r.tech || '', r.memo || ''].join('\t'));
+  return [head, ...rows].join('\n');
+}
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._h); toast._h = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+async function copyText(text){
+  try{ await navigator.clipboard.writeText(text); toast('コピーしました'); }
+  catch(e){
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); toast('コピーしました'); }catch(e2){ toast('コピーできませんでした'); }
+    ta.remove();
+  }
+}
+
+function download(name, text, mime){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], {type: mime || 'text/plain'}));
+  a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 500);
+}
+
+function clearForm(){
+  editingId = null;
+  document.getElementById('fDate').value = today();
+  document.getElementById('fCase').value = '';
+  document.getElementById('fHours').value = '';
+  document.getElementById('fNon').value = '';
+  document.getElementById('fTech').value = '';
+  document.getElementById('fMemo').value = '';
+  document.getElementById('fJudge').value = 'OK';
+  document.getElementById('btnSave').textContent = '記録する';
+}
+
+function renderAll(){ renderMeter(); renderLedger(); renderCaseList(); renderExportDays(); }
+
+// ---- events
+document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('main section').forEach(s => s.classList.toggle('on', s.id === 'tab-' + b.dataset.tab));
+}));
+
+document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => {
+  const f = document.getElementById('fHours');
+  const v = c.dataset.h;
+  if(v.startsWith('+') || v.startsWith('-')){
+    f.value = Math.max(0, (parseFloat(f.value) || 0) + parseFloat(v)).toFixed(2).replace(/\.?0+$/,'');
+  } else { f.value = v; }
+  f.dispatchEvent(new Event('input'));
+}));
+
+document.getElementById('fHours').addEventListener('input', () => {
+  const h = parseFloat(document.getElementById('fHours').value) || 0;
+  document.getElementById('convHint').textContent = h > 0
+    ? '換算: ' + fmt(h) + 'h ÷ 8 = ' + fmt(toDays(h)) + '日（小数第2位切り捨て）'
+    : '換算: 実務時間 ÷ 8（小数第2位切り捨て）。例 6h = 0.75日';
+});
+
+document.getElementById('btnSave').addEventListener('click', () => {
+  const d = document.getElementById('fDate').value;
+  const h = parseFloat(document.getElementById('fHours').value);
+  const judge = document.getElementById('fJudge').value;
+  if(!d){ toast('日付を入れてください'); return; }
+  if((isNaN(h) || h <= 0) && judge !== 'NG'){ toast('実務時間を入れてください'); return; }
+  const rec = {
+    id: editingId || uid(), ts: Date.now(), d,
+    case: document.getElementById('fCase').value.trim(),
+    kind: document.getElementById('fKind').value,
+    place: document.getElementById('fPlace').value,
+    h: isNaN(h) ? 0 : h,
+    nh: parseFloat(document.getElementById('fNon').value) || 0,
+    judge,
+    tech: document.getElementById('fTech').value.trim(),
+    memo: document.getElementById('fMemo').value.trim()
+  };
+  if(editingId){
+    const i = db.records.findIndex(r => r.id === editingId);
+    if(i >= 0) db.records[i] = rec; else db.records.push(rec);
+  } else {
+    db.records.push(rec);
+  }
+  save(); renderAll(); clearForm();
+  toast('記録しました（' + fmt(toDays(rec.h)) + '日分）');
+});
+
+document.getElementById('ledger').addEventListener('click', e => {
+  const el = e.target.closest('.rec'); if(!el) return;
+  dlgTarget = db.records.find(r => r.id === el.dataset.id); if(!dlgTarget) return;
+  document.getElementById('dlgInfo').textContent =
+    dlgTarget.d + ' ' + (dlgTarget.case || '案件未記入') + ' ' + dlgTarget.kind + ' ' + fmt(dlgTarget.h) + 'h（' + dlgTarget.judge + '）';
+  document.getElementById('dlgEdit').showModal();
+});
+document.getElementById('btnClose').addEventListener('click', () => document.getElementById('dlgEdit').close());
+document.getElementById('btnDel').addEventListener('click', () => {
+  db.records = db.records.filter(r => r.id !== dlgTarget.id);
+  save(); renderAll(); document.getElementById('dlgEdit').close(); toast('削除しました');
+});
+document.getElementById('btnEdit').addEventListener('click', () => {
+  const r = dlgTarget;
+  editingId = r.id;
+  document.getElementById('fDate').value = r.d;
+  document.getElementById('fCase').value = r.case;
+  document.getElementById('fKind').value = r.kind;
+  document.getElementById('fPlace').value = r.place;
+  document.getElementById('fHours').value = r.h;
+  document.getElementById('fNon').value = r.nh || '';
+  document.getElementById('fJudge').value = r.judge;
+  document.getElementById('fTech').value = r.tech || '';
+  document.getElementById('fMemo').value = r.memo || '';
+  document.getElementById('btnSave').textContent = '修正を保存';
+  document.getElementById('dlgEdit').close();
+  document.querySelector('nav button[data-tab="rec"]').click();
+});
+
+document.getElementById('expDay').addEventListener('change', e => {
+  const day = e.target.value;
+  document.getElementById('expMd').value = day ? buildMd(day) : '';
+  document.getElementById('expName').textContent = day ? day + '_実務記録.md' : 'YYYY-MM-DD_実務記録.md';
+});
+document.getElementById('btnCopyMd').addEventListener('click', () => {
+  const v = document.getElementById('expMd').value;
+  if(!v){ toast('先に日付を選んでください'); return; }
+  copyText(v);
+});
+document.getElementById('btnCopyTsv').addEventListener('click', () => {
+  if(db.records.length === 0){ toast('記録がありません'); return; }
+  copyText(buildTsv());
+});
+document.getElementById('btnDlTsv').addEventListener('click', () => {
+  if(db.records.length === 0){ toast('記録がありません'); return; }
+  download('jitsumu450_' + today() + '.tsv', buildTsv(), 'text/tab-separated-values');
+});
+document.getElementById('btnDlJson').addEventListener('click', () =>
+  download('jitsumu450_backup_' + today() + '.json', JSON.stringify(db, null, 1), 'application/json'));
+document.getElementById('btnImport').addEventListener('click', () => document.getElementById('fileImport').click());
+document.getElementById('fileImport').addEventListener('change', e => {
+  const f = e.target.files[0]; if(!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    try{
+      const d = JSON.parse(rd.result);
+      if(!Array.isArray(d.records)) throw 0;
+      db = { base: typeof d.base === 'number' ? d.base : DEFAULT_BASE, records: d.records };
+      save(); renderAll();
+      document.getElementById('fBase').value = db.base;
+      toast('復元しました（' + db.records.length + '件）');
+    }catch(err){ toast('読み込めないファイルです'); }
+  };
+  rd.readAsText(f);
+  e.target.value = '';
+});
+document.getElementById('btnBase').addEventListener('click', () => {
+  const v = parseFloat(document.getElementById('fBase').value);
+  if(isNaN(v) || v < 0){ toast('数値を入れてください'); return; }
+  db.base = v; save(); renderMeter(); toast('基準累計を更新しました');
+});
+document.getElementById('btnWipe').addEventListener('click', () => {
+  if(confirm('端末内の全記録を削除します。バックアップは取りましたか？')){
+    db = { base: DEFAULT_BASE, records: [] };
+    save(); renderAll(); clearForm();
+    document.getElementById('fBase').value = db.base;
+    toast('全データを削除しました');
+  }
+});
+
+// ---- init
+clearForm();
+document.getElementById('fBase').value = db.base;
+renderAll();
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').catch(() => {}); }
+</script>
+</body>
+</html>

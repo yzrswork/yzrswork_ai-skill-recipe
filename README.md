@@ -26,6 +26,8 @@
 | `hdd/index.html` | HDD選びナビ / WD Color & CMR/SMR | Western DigitalのHDDを用途から色（Blue/Red Plus/Red/Purple/Black）で選び、CMR/SMRをシリーズ別早見と型番末尾チェッカー（EFPX/EFZX/EFRX/EFAX/EARZ/EZAZ/EZBX）で判定するPWA。RAID/NASにSMRを避けるための注意つき。note「WDの色の選び方ガイド」＋最新公式情報がベース。オフライン対応・Amazonアフィリエイト対応。 |
 | `build/index.html` | 自作PC 構成プランナー / PC Build Planner | CPUソケット→DDR規格、用途→RAM容量、ストレージ用途、GPUクラス→電源容量の目安を順に選んで構成サマリーと買い物リンクを出すPWA。LGA1700のDDR分岐・RTX50系の新コネクタ注意・組み立て/初回起動チェックリストつき。HDD選び/メモリ選び/起動診断へ相互リンク。オフライン対応・Amazonアフィリエイト対応。 |
 | `mem/index.html` | メモリ選びナビ / DDR Spec & Capacity | 自作PCのメモリを、ソケット（AM5/AM4/LGA1700/LGA1851）からDDR規格を確認し、用途から容量を選び、2枚構成（デュアルチャネル）で組むための選び方PWA。XMP/EXPO・JEDEC定格・ノッチ非互換の注意つき。note「DDR3〜DDR5の話」＋2026年の最新ソケット対応がベース。オフライン対応・Amazonアフィリエイト対応。 |
+| `jitsumu450/index.html` | 実務メーター450 / Surveyor Hours Recorder | 測量士登録申請（測量法第50条第3号、450日）に向けた実務時間の現場記録PWA。案件IDと実務時間をタップ記録、8時間=1日換算の達成メーター、判定チートシート、Obsidian実務記録テンプレ準拠のMarkdown/TSV書き出し。データは端末のlocalStorageのみ。オフライン対応。 |
+| `bousai/index.html` | 家族防災カード / Family Disaster Card | 家族の防災ポケットカードPWA。発災直後の初動3か条、時間帯別タイムライン（0-10分/1時間/24時間/1週間）、持ち出し・停電・断水チェックリスト、171安否確認の手順、避難訓練の実施記録と期限アラート。集合場所などの家族情報は各端末で入力（アプリにデータは含まない）。オフライン対応。 |
 
 ## ローカルで動かす
 
