@@ -6,14 +6,14 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="mobile-web-app-capable" content="yes" />
-<meta name="theme-color" content="#2a1a4a" />
+<meta name="theme-color" content="#241145" />
 <meta name="format-detection" content="telephone=no" />
 <title>おにさん ダンス！</title>
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body {
     margin: 0; padding: 0; width: 100%; height: 100%;
-    overflow: hidden; background: #2a1a4a;
+    overflow: hidden; background: #241145;
     font-family: "Hiragino Maru Gothic ProN", "Hiragino Kaku Gothic ProN", "Yu Gothic", system-ui, sans-serif;
     -webkit-user-select: none; user-select: none;
     -webkit-touch-callout: none; touch-action: none;
@@ -22,27 +22,25 @@
   #stage { position: fixed; inset: 0; }
   canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 
-  /* start overlay */
   #start {
     position: absolute; inset: 0; z-index: 30;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center; gap: 22px;
-    background: radial-gradient(circle at 50% 40%, #5b3aa0, #2a1a4a 70%);
+    background: radial-gradient(circle at 50% 38%, #6a3fb8, #241145 72%);
     color: #fff; text-align: center;
   }
-  #start .oni { font-size: clamp(90px, 30vw, 180px); animation: wob 1.2s ease-in-out infinite; }
-  @keyframes wob { 0%,100%{transform:rotate(-8deg) translateY(0)} 50%{transform:rotate(8deg) translateY(-12px)} }
+  #start .oni { font-size: clamp(90px, 30vw, 180px); animation: wob 1.15s ease-in-out infinite; }
+  @keyframes wob { 0%,100%{transform:rotate(-9deg) translateY(0)} 50%{transform:rotate(9deg) translateY(-14px)} }
   #start h1 { margin: 0; font-size: clamp(30px, 9vw, 54px); font-weight: 800; text-shadow: 0 3px 0 rgba(0,0,0,.3); }
   #start .go {
     margin-top: 6px; padding: 18px 40px; border: none; border-radius: 40px;
     font-family: inherit; font-size: clamp(22px, 6vw, 30px); font-weight: 800; color: #fff;
-    background: linear-gradient(160deg, #ff7eb3, #ff477e);
+    background: linear-gradient(160deg, #ff8fbf, #ff477e);
     box-shadow: 0 7px 0 #c62f5f, 0 12px 24px rgba(0,0,0,.35);
-    animation: pulse 1.1s ease-in-out infinite;
+    animation: pulse 1.05s ease-in-out infinite;
   }
   @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
 
-  /* top-right music toggle */
   #music {
     position: absolute; top: max(12px, env(safe-area-inset-top));
     right: max(12px, env(safe-area-inset-right)); z-index: 20;
@@ -70,7 +68,7 @@
 (function () {
   "use strict";
 
-  /* ---------- block iOS zoom / scroll / double-tap ---------- */
+  /* ================= iOS hardening ================= */
   document.addEventListener("gesturestart", function (e) { e.preventDefault(); }, { passive: false });
   document.addEventListener("dblclick", function (e) { e.preventDefault(); }, { passive: false });
   document.addEventListener("contextmenu", function (e) { e.preventDefault(); });
@@ -80,7 +78,7 @@
     var n = Date.now(); if (n - lastEnd < 350) e.preventDefault(); lastEnd = n;
   }, { passive: false });
 
-  /* ---------- canvas ---------- */
+  /* ================= canvas ================= */
   var canvas = document.getElementById("c");
   var ctx = canvas.getContext("2d");
   var W = 0, H = 0, DPR = 1;
@@ -95,85 +93,93 @@
   window.addEventListener("resize", resize);
   window.addEventListener("orientationchange", function () { setTimeout(resize, 200); });
 
-  /* ---------- audio ---------- */
+  /* ================= audio ================= */
   var AC = window.AudioContext || window.webkitAudioContext;
-  var actx = null, master = null;
+  var actx = null, master = null, noiseBuf = null;
   function ensureAudio() {
     if (!actx && AC) {
       actx = new AC();
-      master = actx.createGain();
-      master.gain.value = 0.9;
+      master = actx.createGain(); master.gain.value = 0.85;
       master.connect(actx.destination);
+      // white-noise buffer for hats / claps
+      var n = actx.sampleRate * 0.4;
+      noiseBuf = actx.createBuffer(1, n, actx.sampleRate);
+      var d = noiseBuf.getChannelData(0);
+      for (var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
     }
     if (actx && actx.state === "suspended") actx.resume();
     return actx;
   }
-  function tone(freq, dur, type, vol, when, dest) {
+  function tone(freq, dur, type, vol, when, glideTo) {
     if (!actx) return;
     var t0 = actx.currentTime + (when || 0);
     var o = actx.createOscillator(), g = actx.createGain();
     o.type = type || "sine";
     o.frequency.setValueAtTime(freq, t0);
+    if (glideTo) o.frequency.exponentialRampToValueAtTime(glideTo, t0 + dur);
     g.gain.setValueAtTime(0.0001, t0);
-    g.gain.exponentialRampToValueAtTime(vol || 0.25, t0 + 0.015);
+    g.gain.exponentialRampToValueAtTime(vol || 0.25, t0 + 0.012);
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-    o.connect(g); g.connect(dest || master);
+    o.connect(g); g.connect(master);
     o.start(t0); o.stop(t0 + dur + 0.02);
+  }
+  function noiseHit(when, hp, dur, vol) {
+    if (!actx || !noiseBuf) return;
+    var t0 = actx.currentTime + (when || 0);
+    var s = actx.createBufferSource(); s.buffer = noiseBuf;
+    var f = actx.createBiquadFilter(); f.type = "highpass"; f.frequency.value = hp;
+    var g = actx.createGain();
+    g.gain.setValueAtTime(vol, t0);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    s.connect(f); f.connect(g); g.connect(master);
+    s.start(t0); s.stop(t0 + dur + 0.02);
   }
   function kick(when) {
     if (!actx) return;
     var t0 = actx.currentTime + (when || 0);
     var o = actx.createOscillator(), g = actx.createGain();
     o.type = "sine";
-    o.frequency.setValueAtTime(140, t0);
-    o.frequency.exponentialRampToValueAtTime(45, t0 + 0.14);
-    g.gain.setValueAtTime(0.7, t0);
-    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.18);
+    o.frequency.setValueAtTime(150, t0);
+    o.frequency.exponentialRampToValueAtTime(46, t0 + 0.13);
+    g.gain.setValueAtTime(0.75, t0);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.17);
     o.connect(g); g.connect(master);
-    o.start(t0); o.stop(t0 + 0.2);
+    o.start(t0); o.stop(t0 + 0.19);
   }
   function cheer() {
-    // rising happy arpeggio + sparkle
-    var s = [523, 659, 784, 1046];
-    for (var i = 0; i < s.length; i++) tone(s[i], 0.25, "triangle", 0.3, i * 0.06);
-    tone(1568, 0.4, "sine", 0.15, 0.24);
+    var s = [523, 659, 784, 1046, 1319];
+    for (var i = 0; i < s.length; i++) tone(s[i], 0.28, "triangle", 0.3, i * 0.05);
+    noiseHit(0.02, 6000, 0.5, 0.25);
   }
   function speak(t) {
     try {
       if (!("speechSynthesis" in window)) return;
       window.speechSynthesis.cancel();
       var u = new SpeechSynthesisUtterance(t);
-      u.lang = "ja-JP"; u.rate = 0.9; u.pitch = 1.5;
+      u.lang = "ja-JP"; u.rate = 0.95; u.pitch = 1.5;
       window.speechSynthesis.speak(u);
     } catch (e) {}
   }
 
-  /* ---------- music sequencer (original bouncy tune) ---------- */
-  var bpm = 128;
-  var musicOn = true;
-  var musicStart = 0;
-  var C5 = 523.25, D5 = 587.33, E5 = 659.25, F5 = 698.46, G5 = 783.99, A5 = 880, C6 = 1046.5;
-  // 16 eighth-notes (8 beats) cheerful loop
-  var melody = [C5,E5,G5,E5, A5,G5,E5,D5, C5,E5,G5,C6, A5,G5,E5,G5];
-  var bass   = [130.81,0,196,0, 174.61,0,196,0, 130.81,0,196,0, 220,0,196,0]; // C G F G ...
-  var step = 0, nextTime = 0;
-  var timer = null;
+  /* ================= music sequencer ================= */
+  var bpm = 126, musicOn = true, musicStart = 0;
+  // 16 eighth-notes (8 beats). Chords: C  Am  F  G (2 beats each)
+  var melody = [659,0,784,1046, 880,0,659,880, 698,0,880,698, 784,0,587,784];
+  var bassR  = [130.81,0,130.81,0, 110,0,110,0, 87.31,0,87.31,0, 98,0,98,0];
+  var step = 0, nextTime = 0, timer = null;
   function scheduler() {
     if (!actx || !musicOn) return;
-    var ahead = actx.currentTime + 0.12;
-    var eighth = 30 / bpm; // seconds per eighth note
+    var ahead = actx.currentTime + 0.14;
+    var eighth = 30 / bpm;
     while (nextTime < ahead) {
-      var when = nextTime - actx.currentTime;
-      // kick on every beat (every 2 eighths)
-      if (step % 2 === 0) kick(when);
-      // melody
-      var m = melody[step % melody.length];
-      if (m) tone(m, 0.18, "square", 0.16, when);
-      // soft bass
-      var b = bass[step % bass.length];
-      if (b) tone(b, 0.22, "triangle", 0.18, when);
-      nextTime += eighth;
-      step++;
+      var w = nextTime - actx.currentTime;
+      var beatIdx = (step / 2) | 0;
+      if (step % 2 === 0) kick(w);                          // four-on-floor
+      if (step % 2 === 0 && beatIdx % 2 === 1) noiseHit(w, 1800, 0.16, 0.35); // backbeat clap
+      noiseHit(w, 9000, 0.03, step % 2 ? 0.10 : 0.05);      // hi-hat / shaker
+      var m = melody[step % melody.length]; if (m) tone(m, 0.17, "square", 0.14, w);
+      var b = bassR[step % bassR.length];   if (b) tone(b, 0.20, "triangle", 0.20, w);
+      nextTime += eighth; step++;
     }
   }
   function startMusic() {
@@ -185,248 +191,395 @@
   }
   function stopMusic() { if (timer) { clearInterval(timer); timer = null; } }
 
-  /* ---------- particles (confetti) ---------- */
+  /* ================= particles ================= */
   var parts = [];
   var CONFETTI = ["#ff477e","#ffd34e","#7ed957","#4db6e6","#b07cff","#ff9f45","#ffffff"];
   function confetti(x, y, n, power) {
     n = n || 26; power = power || 8;
     for (var i = 0; i < n; i++) {
       var a = Math.random() * Math.PI * 2, sp = power * (0.4 + Math.random());
-      parts.push({
-        x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 3,
-        life: 1, decay: 0.010 + Math.random() * 0.015,
-        size: 6 + Math.random() * 8, color: CONFETTI[(Math.random() * CONFETTI.length) | 0],
-        rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.5,
-        rect: Math.random() < 0.6
-      });
+      parts.push({ x:x, y:y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-3, life:1,
+        decay:0.010+Math.random()*0.014, size:6+Math.random()*8,
+        color:CONFETTI[(Math.random()*CONFETTI.length)|0], rot:Math.random()*6,
+        vr:(Math.random()-0.5)*0.5, kind:"confetti", g:0.16 });
     }
   }
-  function updateParts() {
+  function sparkle(x, y, n, spread, color) {
+    n = n || 6;
+    for (var i = 0; i < n; i++) {
+      var a = Math.random() * Math.PI * 2, sp = (spread || 3) * (0.3 + Math.random());
+      parts.push({ x:x, y:y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-1, life:1,
+        decay:0.03+Math.random()*0.03, size:3+Math.random()*4,
+        color:color || "#fff", rot:0, vr:0, kind:"spark", g:0.05 });
+    }
+  }
+  function dust(x, y, n) {
+    for (var i = 0; i < (n||8); i++) {
+      var a = -Math.PI + Math.random()*Math.PI, sp = 2+Math.random()*3;
+      parts.push({ x:x, y:y, vx:Math.cos(a)*sp*1.6, vy:Math.sin(a)*sp*0.5, life:1,
+        decay:0.04+Math.random()*0.03, size:6+Math.random()*8,
+        color:"rgba(255,255,255,.5)", rot:0, vr:0, kind:"dust", g:0.02 });
+    }
+  }
+  function updateParts(dt) {
+    var k = dt * 60;
     for (var i = parts.length - 1; i >= 0; i--) {
       var p = parts[i];
-      p.vy += 0.16; p.vx *= 0.99; p.x += p.vx; p.y += p.vy;
-      p.rot += p.vr; p.life -= p.decay;
-      if (p.life <= 0 || p.y > H + 50) parts.splice(i, 1);
+      p.vy += p.g * k; p.vx *= Math.pow(0.99, k);
+      p.x += p.vx * k; p.y += p.vy * k; p.rot += p.vr * k;
+      p.life -= p.decay * k;
+      if (p.life <= 0 || p.y > H + 60) parts.splice(i, 1);
     }
   }
   function drawParts() {
     for (var i = 0; i < parts.length; i++) {
       var p = parts[i];
       ctx.save(); ctx.globalAlpha = Math.max(p.life, 0);
-      ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = p.color;
-      if (p.rect) ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size*0.55);
-      else { ctx.beginPath(); ctx.arc(0,0,p.size/2,0,Math.PI*2); ctx.fill(); }
+      if (p.kind === "spark") {
+        ctx.globalCompositeOperation = "lighter";
+        ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.size*p.life, 0, Math.PI*2); ctx.fill();
+      } else if (p.kind === "dust") {
+        ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.size*(0.6+p.life*0.6), 0, Math.PI*2); ctx.fill();
+      } else {
+        ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size*0.55);
+      }
       ctx.restore();
     }
   }
 
-  /* ---------- ONIS ---------- */
-  // color themes
-  var RED  = { body:"#e8412e", dark:"#bd2f1f", horn:"#ffe6ad" };
-  var BLUE = { body:"#3f78e0", dark:"#2b57ad", horn:"#ffe6ad" };
-  var GREEN= { body:"#3fb46b", dark:"#2c8a50", horn:"#ffe6ad" };
-
-  var onis = [];
-  function layoutOnis() {
-    if (onis.length === 0) {
-      // main (red) + two friends
-      onis.push({ x: W*0.5, y: H*0.58, scale: 1, theme: RED, phase: 0, main: true, trick: -10 });
-      onis.push({ x: W*0.22, y: H*0.72, scale: 0.6, theme: BLUE, phase: 0.5, main: false, trick: -10 });
-      onis.push({ x: W*0.80, y: H*0.72, scale: 0.6, theme: GREEN, phase: 1.0, main: false, trick: -10 });
-    } else {
-      // keep main where user left it if on-screen, reposition friends
-      var m = onis[0];
-      m.x = Math.max(90, Math.min(W-90, m.x));
-      m.y = Math.max(120, Math.min(H-60, m.y));
-      onis[1].x = W*0.20; onis[1].y = H*0.74;
-      onis[2].x = W*0.80; onis[2].y = H*0.74;
+  /* ================= bokeh lights ================= */
+  var bokeh = [];
+  function initBokeh() {
+    bokeh = [];
+    var cols = ["#ff7ad9","#7ad9ff","#ffe27a","#b07cff","#7ed957"];
+    for (var i = 0; i < 14; i++) {
+      bokeh.push({ x:Math.random()*W, y:Math.random()*H, r:20+Math.random()*60,
+        vy:-(6+Math.random()*14), a:0.05+Math.random()*0.10,
+        col:cols[(Math.random()*cols.length)|0], ph:Math.random()*6 });
     }
   }
-
-  function nowClock() {
-    return (actx ? actx.currentTime - musicStart : performance.now()/1000);
+  function drawBokeh(t, dt) {
+    ctx.globalCompositeOperation = "lighter";
+    for (var i = 0; i < bokeh.length; i++) {
+      var b = bokeh[i];
+      b.y += b.vy * dt; b.x += Math.sin(t*0.5 + b.ph) * 0.3;
+      if (b.y < -b.r) { b.y = H + b.r; b.x = Math.random()*W; }
+      var g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+      g.addColorStop(0, b.col); g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.globalAlpha = b.a * (0.7 + 0.3*Math.sin(t*2 + b.ph));
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = "source-over";
   }
 
-  // thick rounded stroke through points
+  /* ================= onis ================= */
+  var RED  = { body:"#ec4a34", dark:"#c1301f", cheek:"#ff8a7a", horn:"#ffe6ad" };
+  var BLUE = { body:"#4a86ea", dark:"#2f5fb8", cheek:"#8fb6ff", horn:"#ffe6ad" };
+  var GREEN= { body:"#43bd72", dark:"#2c9054", cheek:"#9be3b3", horn:"#ffe6ad" };
+  var onis = [];
+  function newOni(x, y, scale, theme, phase, main) {
+    return { x:x, y:y, scale:scale, theme:theme, phase:phase, main:main, trick:-10,
+      head:{x:0,v:0}, hair:{x:0,v:0}, arm:{x:0,v:0}, blink:1+Math.random()*3, blinking:0 };
+  }
+  function layoutOnis() {
+    if (onis.length === 0) {
+      onis.push(newOni(W*0.5,  H*0.56, 1.0, RED,   0.0, true));
+      onis.push(newOni(W*0.20, H*0.72, 0.62, BLUE,  1.0, false));
+      onis.push(newOni(W*0.80, H*0.72, 0.62, GREEN, 2.0, false));
+    } else {
+      var m = onis[0];
+      m.x = Math.max(90, Math.min(W-90, m.x));
+      m.y = Math.max(150, Math.min(H-60, m.y));
+      onis[1].x = W*0.18; onis[1].y = H*0.74;
+      onis[2].x = W*0.82; onis[2].y = H*0.74;
+    }
+    initBokeh();
+  }
+  function nowClock() { return actx ? actx.currentTime - musicStart : performance.now()/1000; }
+
+  // spring integrator (lag + overshoot = liveliness)
+  function spring(s, target, stiff, damp, dt) {
+    s.v += (target - s.x) * stiff * dt;
+    s.v *= Math.exp(-damp * dt);
+    s.x += s.v * dt;
+    return s.x;
+  }
+  var TAU = Math.PI * 2;
+
   function limb(pts, w, color) {
     ctx.strokeStyle = color; ctx.lineWidth = w; ctx.lineCap = "round"; ctx.lineJoin = "round";
     ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
     for (var i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
     ctx.stroke();
   }
-  // crab-claw / scissors hand (エビカニ チョキチョキ)
+  // crab-claw / scissors hand (エビカニ)
   function claw(hx, hy, dir, open, color, dark) {
-    var spread = 0.25 + open * 0.55;
+    var spread = 0.18 + open * 0.55;
     for (var s = -1; s <= 1; s += 2) {
       var a = dir + s * spread;
-      var ex = hx + Math.cos(a) * 26, ey = hy + Math.sin(a) * 26;
-      limb([[hx, hy], [ex, ey]], 13, color);
-      ctx.fillStyle = dark;
-      ctx.beginPath(); ctx.arc(ex, ey, 6, 0, Math.PI*2); ctx.fill();
+      var ex = hx + Math.cos(a) * 24, ey = hy + Math.sin(a) * 24;
+      limb([[hx, hy], [ex, ey]], 12, color);
+      ctx.fillStyle = dark; ctx.beginPath(); ctx.arc(ex, ey, 5.5, 0, TAU); ctx.fill();
     }
-    ctx.fillStyle = color;
-    ctx.beginPath(); ctx.arc(hx, hy, 10, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = color; ctx.beginPath(); ctx.arc(hx, hy, 9, 0, TAU); ctx.fill();
   }
 
-  function drawOni(o, t) {
+  // arm from shoulder to a target hand position, with a natural elbow bend
+  function drawArm(S, sh, hand, bend, color) {
+    var mx = (sh[0] + hand[0]) / 2 + S * bend;
+    var my = (sh[1] + hand[1]) / 2 + Math.abs(bend) * 0.3 + 6;
+    limb([sh, [mx, my], hand], 20, color);
+  }
+
+  function drawOni(o, t, dt) {
     var th = o.theme;
-    var beat = t * bpm / 60 + o.phase; // beats elapsed
-    var hop = Math.abs(Math.sin(beat * Math.PI));         // 0..1 bounce
-    var sway = Math.sin(beat * Math.PI * 2);              // -1..1
-    var pinch = (Math.sin(beat * Math.PI * 4) + 1) / 2;   // claw open/close
-    var legK = Math.sin(beat * Math.PI * 2);
+    var beat = t * bpm / 60 + o.phase;
+    var ph = beat - Math.floor(beat);                 // 0..1 within beat
+    var air = Math.sin(ph * Math.PI);                 // 0 on beat, 1 mid-beat
+    var comp = Math.pow(Math.cos(ph * Math.PI), 6);   // squash at landings
+    var sway = Math.sin(beat * Math.PI);              // -1..1 over 2 beats (weight shift)
+    var floatY = Math.sin(t * 1.5 + o.phase) * 3;
 
-    // trick (jump + spin) when tapped
-    var spin = 0, jump = 0, pop = 1;
-    var tp = (t - o.trick) / 0.7;
+    /* ---- trick: springy jump + spin ---- */
+    var spin = 0, jumpH = 0, pop = 1, tricking = false;
+    var tp = (t - o.trick) / 0.72;
     if (tp >= 0 && tp <= 1) {
-      spin = tp * Math.PI * 2;
-      jump = Math.sin(tp * Math.PI) * 90 * o.scale;
-      pop = 1 + Math.sin(tp * Math.PI) * 0.12;
+      tricking = true;
+      var sp = tp * tp * (3 - 2 * tp);                // smoothstep spin easing
+      spin = sp * TAU;
+      jumpH = Math.sin(tp * Math.PI) * 96 * o.scale;
+      pop = 1 + Math.sin(tp * Math.PI) * 0.14;
     }
 
-    var cx = o.x, cy = o.y - hop * 16 * o.scale - jump;
+    /* ---- squash & stretch ---- */
+    var stretch = air * 0.05 - comp * 0.16;
+    var sy = 1 + stretch;
+    var sx = 1 - stretch * 0.9;
+
+    /* ---- choreography: 4 moves, switch each bar (4 beats) ---- */
+    var move = Math.floor(beat / 4) % 4;
+    var lift = -air * 20 * o.scale - floatY - jumpH;
+    var swayX = sway * 11 * o.scale;
+    var lean = sway * 0.09 + spin;
+
+    /* ---- secondary motion springs (head, hair, arms lag the body) ---- */
+    var headTarget = -sway * 0.16 + air * 0.06;
+    var headTilt = spring(o.head, headTarget, 170, 13, dt);
+    var hairTilt = spring(o.hair, headTilt * 1.6, 120, 7, dt);
+    var armLag = spring(o.arm, sway, 150, 11, dt);
+
+    /* ---- blink ---- */
+    o.blink -= dt;
+    if (o.blink <= 0) { o.blinking = 0.12; o.blink = 2 + Math.random() * 4; }
+    if (o.blinking > 0) o.blinking -= dt;
+    var eyeOpen = o.blinking > 0 ? 0.15 : 1;
+
     var sc = o.scale * pop;
-
     ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(spin + sway * 0.05);
-    ctx.scale(sc, sc * (1 + hop * 0.05));
+    ctx.translate(o.x + swayX, o.y + lift);
+    ctx.rotate(lean);
+    ctx.scale(sc * sx, sc * sy);
 
-    // shadow on floor
-    ctx.save();
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    ctx.globalAlpha = 0.18;
-    ctx.fillStyle = "#000";
-    ctx.beginPath();
-    ctx.ellipse(o.x, o.y + 92 * o.scale, 60 * o.scale, 14 * o.scale, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-
-    // ----- legs -----
-    var hipY = 62;
-    for (var L = -1; L <= 1; L += 2) {
-      var hx = L * 24, kx = L * 30 + L * legK * 8, ky = hipY + 34;
-      var fx = kx + L * 6, fy = hipY + 66 - Math.max(0, L * legK) * 10;
-      limb([[hx, hipY], [kx, ky], [fx, fy]], 24, th.body);
-      ctx.fillStyle = th.dark; // foot
-      ctx.beginPath(); ctx.ellipse(fx + L * 6, fy + 4, 20, 12, 0, 0, Math.PI * 2); ctx.fill();
+    /* ---------- legs (stepping with weight shift) ---------- */
+    var stepPh = beat * Math.PI * 2;
+    for (var Lg = -1; Lg <= 1; Lg += 2) {
+      var planted = (Lg === (sway >= 0 ? 1 : -1));
+      var legLift = planted ? 0 : Math.max(0, Math.sin(stepPh) * (Lg > 0 ? 1 : -1)) * 16 + 4;
+      var hipX = Lg * 22, hipY = 54;
+      var footX = Lg * 24 + swayX * 0.25;
+      var footY = 96 - legLift;
+      var kneeX = (hipX + footX) / 2 + Lg * 8;
+      var kneeY = (hipY + footY) / 2 + 6;
+      limb([[hipX, hipY], [kneeX, kneeY], [footX, footY]], 22, th.body);
+      ctx.fillStyle = th.dark;
+      ctx.beginPath(); ctx.ellipse(footX + Lg * 5, footY + 3, 18, 11, 0, 0, TAU); ctx.fill();
     }
 
-    // ----- body -----
+    /* ---------- body ---------- */
     ctx.fillStyle = th.body;
-    ctx.beginPath();
-    ctx.ellipse(0, 8, 62, 70, 0, 0, Math.PI * 2);
-    ctx.fill();
-    // belly highlight
+    ctx.beginPath(); ctx.ellipse(0, 6, 60, 68, 0, 0, TAU); ctx.fill();
     ctx.fillStyle = "rgba(255,255,255,.12)";
-    ctx.beginPath(); ctx.ellipse(-16, -4, 26, 34, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(-15, -4, 24, 32, 0, 0, TAU); ctx.fill();
 
-    // ----- tiger-stripe pants (エビカニ気分の腰みの) -----
+    /* ---------- tiger-stripe pants ---------- */
     ctx.save();
     ctx.beginPath();
-    ctx.moveTo(-58, 40); ctx.lineTo(58, 40);
-    ctx.quadraticCurveTo(64, 74, 44, 86);
-    ctx.lineTo(-44, 86); ctx.quadraticCurveTo(-64, 74, -58, 40);
-    ctx.closePath();
-    ctx.clip();
-    ctx.fillStyle = "#ffcf3f"; ctx.fillRect(-70, 36, 140, 60);
+    ctx.moveTo(-56, 38); ctx.lineTo(56, 38);
+    ctx.quadraticCurveTo(62, 72, 42, 84);
+    ctx.lineTo(-42, 84); ctx.quadraticCurveTo(-62, 72, -56, 38);
+    ctx.closePath(); ctx.clip();
+    ctx.fillStyle = "#ffcf3f"; ctx.fillRect(-68, 34, 136, 58);
     ctx.strokeStyle = "#2a2a2a"; ctx.lineWidth = 7;
-    for (var sx = -60; sx < 70; sx += 20) {
-      ctx.beginPath(); ctx.moveTo(sx, 34); ctx.lineTo(sx - 14, 92); ctx.stroke();
+    for (var sx2 = -58; sx2 < 70; sx2 += 19) {
+      ctx.beginPath(); ctx.moveTo(sx2, 32); ctx.lineTo(sx2 - 13, 90); ctx.stroke();
     }
     ctx.restore();
 
-    // ----- arms with crab claws -----
-    var armBeat = Math.sin(beat * Math.PI * 2);
+    /* ---------- arms + crab claws (choreographed) ---------- */
+    var pinch = (Math.sin(beat * Math.PI * 4) + 1) / 2;
+    var wig = Math.sin(beat * Math.PI * 2);
     for (var A = -1; A <= 1; A += 2) {
-      var sxs = A * 52, sys = -14;
-      var up = A === 1 ? armBeat : -armBeat;         // alternate raise
-      var elbowAng = A * (0.5) - up * 0.5;
-      var ex = sxs + Math.cos(elbowAng) * A * 34;
-      var ey = sys + 20 + Math.sin(Math.abs(elbowAng)) * -20 - up * 14;
-      var handAng = elbowAng - up * 0.6;
-      var hx = ex + A * 30, hy = ey - up * 18 + 6;
-      limb([[sxs, sys], [ex, ey], [hx, hy]], 22, th.body);
-      claw(hx, hy, (A > 0 ? -0.4 : Math.PI + 0.4) - up * 0.3, pinch, th.body, th.dark);
+      var sh = [A * 50, -14];
+      var hand, dir, open, bend;
+      if (move === 0) {
+        // エビカニ crab pinch: arms out, claws snapping
+        hand = [A * (80 + air * 8), -12 + wig * 10 * A * 0.4];
+        dir = A > 0 ? -0.35 : Math.PI + 0.35;
+        open = pinch; bend = A * 16;
+      } else if (move === 1) {
+        // hands up, ひらひら wave
+        var wv = Math.sin(beat * Math.PI * 3 + (A > 0 ? 0 : Math.PI));
+        hand = [A * (34 + wv * 6), -104 - air * 12 + wv * 6];
+        dir = -Math.PI / 2 + A * 0.3 + wv * 0.4;
+        open = 0.7; bend = A * 26;
+      } else if (move === 2) {
+        // alternating fist pumps
+        var upThis = (A > 0 ? wig : -wig);
+        var upv = (upThis + 1) / 2;
+        hand = [A * (44 - upv * 8), 6 - upv * 108];
+        dir = -Math.PI / 2 + A * 0.2;
+        open = 0.05; bend = A * 20;
+      } else {
+        // clap overhead
+        var clapPh = (Math.sin(beat * Math.PI * 2) + 1) / 2; // 0=apart 1=together
+        hand = [A * (8 + (1 - clapPh) * 62), -96 - air * 8];
+        dir = -Math.PI / 2 - A * 0.2;
+        open = 0.1; bend = A * 22;
+      }
+      // arm lag: nudge hand slightly opposite to sway for follow-through
+      hand[0] -= armLag * 4 * A;
+      drawArm(A, sh, hand, bend, th.body);
+      claw(hand[0], hand[1], dir, open, th.body, th.dark);
     }
 
-    // ----- head -----
-    var hy2 = -104;
-    // wild hair
+    /* ---------- head group (springy secondary motion) ---------- */
+    ctx.save();
+    ctx.translate(0, -46);         // neck pivot
+    ctx.rotate(headTilt);
+    var hc = -58;                  // head center relative to pivot
+
+    // hair + horns (extra jiggle)
+    ctx.save();
+    ctx.rotate(hairTilt * 0.5);
     ctx.fillStyle = "#241a12";
-    for (var hgi = 0; hgi < 9; hgi++) {
-      var ha = -Math.PI + hgi / 8 * Math.PI;
-      var hrx = Math.cos(ha) * 52, hry = hy2 + Math.sin(ha) * 48;
+    for (var hg = 0; hg < 9; hg++) {
+      var ha = -Math.PI + hg / 8 * Math.PI;
+      var hx = Math.cos(ha) * 50, hy = hc + Math.sin(ha) * 46;
       ctx.beginPath();
-      ctx.moveTo(hrx * 0.7, hry);
-      ctx.lineTo(hrx * 1.35, hry - 10);
-      ctx.lineTo(hrx * 0.9, hry + 8);
+      ctx.moveTo(hx * 0.7, hy); ctx.lineTo(hx * 1.35, hy - 10); ctx.lineTo(hx * 0.9, hy + 8);
       ctx.closePath(); ctx.fill();
     }
-    // horns
     ctx.fillStyle = th.horn;
     for (var Hn = -1; Hn <= 1; Hn += 2) {
       ctx.beginPath();
-      ctx.moveTo(Hn * 20, hy2 - 40);
-      ctx.quadraticCurveTo(Hn * 44, hy2 - 78, Hn * 30, hy2 - 82);
-      ctx.quadraticCurveTo(Hn * 22, hy2 - 70, Hn * 10, hy2 - 44);
+      ctx.moveTo(Hn * 18, hc - 38);
+      ctx.quadraticCurveTo(Hn * 42, hc - 74, Hn * 28, hc - 78);
+      ctx.quadraticCurveTo(Hn * 20, hc - 66, Hn * 9, hc - 42);
       ctx.closePath(); ctx.fill();
       ctx.strokeStyle = "rgba(0,0,0,.15)"; ctx.lineWidth = 2; ctx.stroke();
     }
+    ctx.restore();
+
     // face
     ctx.fillStyle = th.body;
-    ctx.beginPath(); ctx.arc(0, hy2, 54, 0, Math.PI * 2); ctx.fill();
-    // cheeks
-    ctx.fillStyle = "rgba(255,120,120,.5)";
-    ctx.beginPath(); ctx.arc(-30, hy2 + 14, 12, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(30, hy2 + 14, 12, 0, Math.PI * 2); ctx.fill();
-    // eyes (big cute)
+    ctx.beginPath(); ctx.arc(0, hc, 52, 0, TAU); ctx.fill();
+    ctx.fillStyle = th.cheek; ctx.globalAlpha = 0.55;
+    ctx.beginPath(); ctx.arc(-29, hc + 14, 12, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(29, hc + 14, 12, 0, TAU); ctx.fill();
+    ctx.globalAlpha = 1;
+    // eyes
     for (var E = -1; E <= 1; E += 2) {
       ctx.fillStyle = "#fff";
-      ctx.beginPath(); ctx.ellipse(E * 20, hy2 - 6, 15, 18, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#221";
-      ctx.beginPath(); ctx.arc(E * 20 + sway * 3, hy2 - 2, 8, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#fff";
-      ctx.beginPath(); ctx.arc(E * 20 + sway * 3 - 3, hy2 - 5, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(E * 19, hc - 6, 14, 17 * eyeOpen + 2, 0, 0, TAU); ctx.fill();
+      if (eyeOpen > 0.5) {
+        ctx.fillStyle = "#221";
+        ctx.beginPath(); ctx.arc(E * 19 + sway * 3, hc - 2, 7.5, 0, TAU); ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.beginPath(); ctx.arc(E * 19 + sway * 3 - 3, hc - 5, 3, 0, TAU); ctx.fill();
+      }
     }
-    // eyebrows (friendly)
+    // eyebrows
     ctx.strokeStyle = "#241a12"; ctx.lineWidth = 5; ctx.lineCap = "round";
-    ctx.beginPath(); ctx.moveTo(-32, hy2 - 26); ctx.lineTo(-8, hy2 - 22); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(32, hy2 - 26); ctx.lineTo(8, hy2 - 22); ctx.stroke();
-    // smiling mouth with fangs
+    ctx.beginPath(); ctx.moveTo(-30, hc - 25); ctx.lineTo(-8, hc - 21); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(30, hc - 25); ctx.lineTo(8, hc - 21); ctx.stroke();
+    // mouth (opens with the beat, like singing)
+    var mo = 8 + air * 10;
     ctx.fillStyle = "#7a1f1f";
-    ctx.beginPath(); ctx.arc(0, hy2 + 22, 16, 0, Math.PI); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0, hc + 22, 14, mo, 0, 0, Math.PI); ctx.fill();
+    ctx.fillStyle = "#ff8f8f";
+    ctx.beginPath(); ctx.ellipse(0, hc + 22 + mo * 0.35, 7, mo * 0.4, 0, 0, Math.PI); ctx.fill();
+    // fangs
     ctx.fillStyle = "#fff";
-    ctx.beginPath(); ctx.moveTo(-12, hy2 + 22); ctx.lineTo(-6, hy2 + 22); ctx.lineTo(-9, hy2 + 30); ctx.closePath(); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(12, hy2 + 22); ctx.lineTo(6, hy2 + 22); ctx.lineTo(9, hy2 + 30); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-11, hc+16); ctx.lineTo(-5, hc+16); ctx.lineTo(-8, hc+24); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(11, hc+16); ctx.lineTo(5, hc+16); ctx.lineTo(8, hc+24); ctx.closePath(); ctx.fill();
 
+    ctx.restore(); // head
+    ctx.restore(); // oni
+
+    /* ---------- ground shadow (shrinks when airborne = depth) ---------- */
+    var aip = (air * 20 * o.scale + jumpH);
+    var shW = (58 - aip * 0.28) * o.scale;
+    ctx.save();
+    ctx.globalAlpha = 0.20 * Math.max(0.3, 1 - aip / 140);
+    ctx.fillStyle = "#000";
+    ctx.beginPath();
+    ctx.ellipse(o.x + swayX * 0.6, o.y + 96 * o.scale, Math.max(20, shW), 13 * o.scale, 0, 0, TAU);
+    ctx.fill();
     ctx.restore();
   }
 
-  /* ---------- background ---------- */
-  function drawBg(t) {
+  /* ================= background ================= */
+  var floorPulse = 0;
+  function drawBg(t, dt) {
+    var hue = (t * 6) % 360;
     var g = ctx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, "#3a2270"); g.addColorStop(1, "#160e33");
+    g.addColorStop(0, "hsl(" + (262 + Math.sin(t*0.3)*10) + ",55%,26%)");
+    g.addColorStop(1, "#140a2e");
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-    // spinning spotlights
+
+    // rotating spotlights
     var beat = t * bpm / 60;
+    var glow = 0.10 + 0.05 * Math.abs(Math.sin(beat * Math.PI));
     for (var i = 0; i < 3; i++) {
-      var ang = t * (0.3 + i * 0.15) + i * 2.1;
+      var ang = t * (0.28 + i * 0.13) + i * 2.1;
       var cx = W * (0.2 + 0.3 * i);
       ctx.save();
-      ctx.globalAlpha = 0.10 + 0.04 * Math.abs(Math.sin(beat * Math.PI));
+      ctx.globalCompositeOperation = "lighter";
+      ctx.globalAlpha = glow;
       ctx.fillStyle = ["#ff7ad9","#7ad9ff","#ffe27a"][i];
-      ctx.translate(cx, -40); ctx.rotate(Math.sin(ang) * 0.5);
-      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-120, H + 80); ctx.lineTo(120, H + 80); ctx.closePath(); ctx.fill();
+      ctx.translate(cx, -50); ctx.rotate(Math.sin(ang) * 0.55);
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-130, H + 90); ctx.lineTo(130, H + 90); ctx.closePath(); ctx.fill();
       ctx.restore();
     }
-    // floor
-    ctx.fillStyle = "rgba(255,255,255,.05)";
-    ctx.fillRect(0, H * 0.82, W, H * 0.18);
-    // floating notes on the beat
-    ctx.globalAlpha = 0.5;
-    ctx.font = "24px sans-serif";
+
+    // disco floor (perspective grid that pulses on the beat)
+    var horizon = H * 0.80;
+    ctx.save();
+    ctx.strokeStyle = "rgba(150,120,255," + (0.10 + floorPulse * 0.25) + ")";
+    ctx.lineWidth = 1.5;
+    for (var r = 0; r < 9; r++) {
+      var f = r / 9;
+      var y = horizon + (H - horizon) * f * f;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+    for (var cxi = -6; cxi <= 6; cxi++) {
+      var vx = W/2 + cxi * (W * 0.09);
+      ctx.beginPath(); ctx.moveTo(W/2 + cxi * 24, horizon); ctx.lineTo(vx, H); ctx.stroke();
+    }
+    // floor glow line on the beat
+    ctx.fillStyle = "rgba(180,150,255," + floorPulse * 0.20 + ")";
+    ctx.fillRect(0, horizon, W, H - horizon);
+    ctx.restore();
+
+    drawBokeh(t, dt);
+
+    // floating music notes
+    ctx.globalAlpha = 0.5; ctx.fillStyle = "#fff"; ctx.font = "24px sans-serif";
     for (var m = 0; m < 5; m++) {
       var yy = (H - ((t * 40 + m * 90) % (H + 60)));
       var xx = W * (0.1 + 0.2 * m) + Math.sin(t + m) * 20;
@@ -435,70 +588,73 @@
     ctx.globalAlpha = 1;
   }
 
-  /* ---------- main loop ---------- */
-  var running = false;
+  /* ================= main loop ================= */
+  var running = false, lastT = 0, lastBeat = 0;
   function loop() {
     var t = nowClock();
+    var dt = Math.min(0.05, Math.max(0.001, t - lastT)); lastT = t;
+
+    // beat crossing → floor pulse + foot sparkles (visual sync to kick)
+    var bt = t * bpm / 60;
+    if (Math.floor(bt) > Math.floor(lastBeat)) {
+      floorPulse = 1;
+      for (var i = 0; i < onis.length; i++) {
+        var o = onis[i];
+        sparkle(o.x, o.y + 96 * o.scale, 4, 3, "rgba(255,220,150,1)");
+      }
+    }
+    lastBeat = bt;
+    floorPulse = Math.max(0, floorPulse - dt * 3.5);
+
     ctx.clearRect(0, 0, W, H);
-    drawBg(t);
-    // draw friends first (behind), main last (front) — but main is index 0, so sort by y & main
+    drawBg(t, dt);
+
     var order = onis.slice().sort(function (a, b) {
       if (a.main !== b.main) return a.main ? 1 : -1;
       return a.y - b.y;
     });
-    for (var i = 0; i < order.length; i++) drawOni(order[i], t);
-    updateParts(); drawParts();
+    for (var j = 0; j < order.length; j++) drawOni(order[j], t, dt);
+
+    updateParts(dt); drawParts();
     requestAnimationFrame(loop);
   }
 
-  /* ---------- interaction ---------- */
-  var drag = null; // {oni, moved}
+  /* ================= interaction ================= */
+  var drag = null;
   function getPts(e) {
     var out = [];
     var list = e.touches && e.touches.length ? e.touches : (e.changedTouches || [e]);
-    for (var i = 0; i < list.length; i++) out.push({ x: list[i].clientX, y: list[i].clientY, id: list[i].identifier });
+    for (var i = 0; i < list.length; i++) out.push({ x: list[i].clientX, y: list[i].clientY });
     return out;
   }
   function hitOni(x, y) {
-    // check main first, then friends; generous radius
     for (var i = 0; i < onis.length; i++) {
       var o = onis[i];
-      var dx = x - o.x, dy = y - (o.y - 40 * o.scale);
-      var r = 100 * o.scale;
+      var dx = x - o.x, dy = y - (o.y - 40 * o.scale), r = 100 * o.scale;
       if (dx * dx + dy * dy <= r * r) return o;
     }
     return null;
   }
   function doTrick(o, x, y) {
     o.trick = nowClock();
-    confetti(x, y, 26, 9);
-    cheer();
-    if (Math.random() < 0.5) speak("わーい");
+    confetti(x, y, 24, 9); dust(o.x, o.y + 96 * o.scale, 10); cheer();
+    if (Math.random() < 0.45) speak("わーい");
   }
-
   function onDown(e) {
-    if (!running) return;
-    e.preventDefault();
-    var p = getPts(e)[0];
-    var o = hitOni(p.x, p.y);
-    if (o) {
-      drag = { oni: o, moved: false, offx: p.x - o.x, offy: p.y - o.y };
-    } else {
-      // tap empty space: everyone jumps!
-      confetti(p.x, p.y, 22, 8);
-      for (var i = 0; i < onis.length; i++) doTrick(onis[i], onis[i].x, onis[i].y - 30);
-    }
+    if (!running) return; e.preventDefault();
+    var p = getPts(e)[0], o = hitOni(p.x, p.y);
+    if (o) drag = { oni:o, moved:false, offx:p.x - o.x, offy:p.y - o.y };
+    else { confetti(p.x, p.y, 20, 8); for (var i=0;i<onis.length;i++) doTrick(onis[i], onis[i].x, onis[i].y-30); }
   }
   function onMove(e) {
-    if (!running || !drag) return;
-    e.preventDefault();
-    var p = getPts(e)[0];
-    var nx = p.x - drag.offx, ny = p.y - drag.offy;
+    if (!running || !drag) return; e.preventDefault();
+    var p = getPts(e)[0], nx = p.x - drag.offx, ny = p.y - drag.offy;
     if (Math.abs(nx - drag.oni.x) > 3 || Math.abs(ny - drag.oni.y) > 3) drag.moved = true;
     drag.oni.x = Math.max(80, Math.min(W - 80, nx));
-    drag.oni.y = Math.max(140, Math.min(H - 40, ny));
+    drag.oni.y = Math.max(150, Math.min(H - 40, ny));
+    if (Math.random() < 0.3) sparkle(p.x, p.y, 2, 2, "#fff");
   }
-  function onUp(e) {
+  function onUp() {
     if (!running) return;
     if (drag && !drag.moved) doTrick(drag.oni, drag.oni.x, drag.oni.y - 40);
     drag = null;
@@ -511,25 +667,20 @@
   canvas.addEventListener("mousemove", function (e) { if (e.buttons & 1) onMove(e); });
   canvas.addEventListener("mouseup", onUp);
 
-  /* ---------- start / music button ---------- */
+  /* ================= start / music ================= */
   var startEl = document.getElementById("start");
   var musicBtn = document.getElementById("music");
   function begin() {
-    ensureAudio();
-    startMusic();
-    startEl.style.display = "none";
-    musicBtn.classList.add("on");
-    if (!running) { running = true; loop(); }
-    // welcome burst
+    ensureAudio(); startMusic();
+    startEl.style.display = "none"; musicBtn.classList.add("on");
+    if (!running) { running = true; lastT = nowClock(); lastBeat = lastT * bpm / 60; loop(); }
     confetti(W / 2, H / 2, 40, 10);
     for (var i = 0; i < onis.length; i++) onis[i].trick = nowClock() + i * 0.12;
   }
   startEl.addEventListener("touchstart", function (e) { e.preventDefault(); begin(); }, { passive: false });
   startEl.addEventListener("click", begin);
-
   var mGo = function (e) {
-    e.preventDefault();
-    musicOn = !musicOn;
+    e.preventDefault(); musicOn = !musicOn;
     musicBtn.textContent = musicOn ? "🔊" : "🔇";
     if (musicOn) { musicStart = actx.currentTime; startMusic(); } else stopMusic();
   };
