@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>家族防災カード — Family Disaster Card</title>
+<link rel="manifest" href="./manifest.webmanifest" />
+<meta name="theme-color" content="#f0ebe3" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="防災カード" />
+<link rel="apple-touch-icon" href="../icons/icon-192.png" />
+<meta name="description" content="家族の防災ポケットカード。発災直後の初動、タイムライン、持ち出しチェックリスト、171安否確認の手順、避難訓練の記録。オフライン動作、家族情報は端末内にのみ保存。" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --paper:#f0ebe3; --paper-2:#e8e1d4; --card:#f6f2ea; --ink:#1c1a16; --ink-soft:#2b2823;
+  --muted:#6f675b; --rule:#3a342c; --rule-soft:rgba(58,52,44,.28); --border:#c8bfae;
+  --terracotta:#b5451b; --terracotta-deep:#8e3514; --ok:#4f6f3e; --warn:#a4801f;
+  --mono:"DM Mono",ui-monospace,Menlo,monospace;
+  --serif:"EB Garamond","Times New Roman",serif;
+  --jp:"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--jp);line-height:1.6;
+  padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+.wrap{max-width:640px;margin:0 auto;padding:14px 14px 20px}
+header{border-bottom:3px solid var(--ink);padding:10px 0 12px}
+.hd-strip{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;color:var(--muted)}
+h1{margin:4px 0 0;font-size:1.35rem;letter-spacing:.03em}
+h1 small{display:block;font-family:var(--serif);font-style:italic;font-weight:400;font-size:.8rem;color:var(--muted)}
+main section{display:none;margin-top:16px}
+main section.on{display:block}
+h2{font-size:.95rem;border-bottom:2px solid var(--ink);padding-bottom:5px;display:flex;align-items:baseline;gap:8px}
+h2 .en{margin-left:auto;font-family:var(--serif);font-style:italic;font-weight:400;font-size:.74rem;color:var(--muted)}
+.first{border:2px solid var(--terracotta);background:#f6ede6;padding:12px 16px;margin-top:12px}
+.first .lbl{font-family:var(--mono);font-size:.68rem;letter-spacing:.2em;color:var(--terracotta-deep);margin-bottom:6px}
+.first ol{margin:0;padding-left:1.3em;font-size:.95rem;font-weight:500}
+.first li{margin:6px 0}
+details{border:1px solid var(--border);background:var(--card);margin-top:10px}
+summary{cursor:pointer;padding:11px 14px;font-weight:700;font-size:.9rem;display:flex;align-items:baseline;gap:10px;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary .tm{font-family:var(--mono);font-size:.7rem;color:var(--terracotta);letter-spacing:.1em;flex:none}
+summary .st{margin-left:auto;font-family:var(--mono);font-size:.68rem;color:var(--muted);flex:none}
+details[open] summary{border-bottom:1px solid var(--border)}
+.dbody{padding:10px 14px 12px}
+.dbody .pri{font-size:.74rem;color:var(--muted);margin:0 0 6px}
+.chk{display:flex;align-items:flex-start;gap:10px;padding:7px 2px;border-bottom:1px dashed var(--border);cursor:pointer;font-size:.88rem}
+.chk:last-child{border-bottom:none}
+.chk input{width:auto;margin-top:5px;transform:scale(1.25);accent-color:var(--terracotta);flex:none}
+.chk.done{color:var(--muted);text-decoration:line-through}
+.chk .sub{display:block;font-size:.72rem;color:var(--muted);text-decoration:none}
+.grp{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;color:var(--terracotta);margin:12px 0 2px}
+.prog{font-family:var(--mono);font-size:.7rem;color:var(--muted)}
+label{display:block;font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;color:var(--muted);margin:12px 0 4px}
+input,textarea{width:100%;font-family:var(--jp);font-size:1rem;padding:9px 10px;border:1px solid var(--rule-soft);background:#fff;color:var(--ink);border-radius:0;appearance:none}
+input:focus,textarea:focus{outline:2px solid var(--terracotta)}
+.btn{display:block;width:100%;margin-top:16px;padding:13px;border:1px solid var(--ink);background:var(--terracotta);color:#fff;font-family:var(--jp);font-size:1rem;font-weight:700;letter-spacing:.08em;cursor:pointer}
+.btn:active{background:var(--terracotta-deep)}
+.btn.sub{background:var(--card);color:var(--ink);font-weight:500}
+.btn.mini{width:auto;display:inline-block;margin:8px 8px 0 0;padding:8px 14px;font-size:.85rem}
+.hint{font-size:.72rem;color:var(--muted);margin-top:6px}
+.card-box{background:var(--card);border:1px solid var(--border);padding:12px 14px;margin-top:12px}
+.card-box h3{margin:0 0 6px;font-size:.85rem}
+.card-box .fixed{font-family:var(--mono);font-size:.85rem}
+.tel{font-family:var(--mono);font-size:1.5rem;font-weight:500;color:var(--terracotta)}
+.steps{margin:6px 0 0;padding-left:1.3em;font-size:.84rem}
+.steps li{margin:3px 0}
+.drill{border:1px solid var(--border);background:var(--card);padding:12px 14px;margin-top:10px}
+.drill h3{margin:0;font-size:.9rem;display:flex;align-items:baseline;gap:8px}
+.drill .freq{margin-left:auto;font-family:var(--mono);font-size:.66rem;color:var(--terracotta);letter-spacing:.08em;flex:none}
+.drill ul{margin:6px 0;padding-left:1.2em;font-size:.8rem;color:var(--ink-soft)}
+.drill .last{display:flex;gap:8px;align-items:center;margin-top:8px}
+.drill .last input{flex:1}
+.drill .last button{flex:none;padding:9px 14px;border:1px solid var(--ink);background:var(--card);font-family:var(--jp);font-size:.82rem;cursor:pointer}
+.due{font-family:var(--mono);font-size:.7rem;margin-top:4px}
+.due.late{color:var(--terracotta);font-weight:700}
+.due.ok{color:var(--ok)}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:2px solid var(--ink);display:flex;
+  padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav button{flex:1;padding:11px 0 9px;background:none;border:none;font-family:var(--jp);font-size:.78rem;color:var(--muted);cursor:pointer;border-top:3px solid transparent;margin-top:-2px}
+nav button.on{color:var(--terracotta);font-weight:700;border-top-color:var(--terracotta)}
+.foot{margin-top:26px;border-top:1px solid var(--border);padding-top:8px;font-family:var(--mono);font-size:.64rem;color:var(--muted);line-height:1.8}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(86px + env(safe-area-inset-bottom));background:var(--ink);color:var(--paper);font-size:.8rem;padding:8px 18px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:9}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="hd-strip"><span>YZRSWORK FAMILY TOOLS</span><span>OFFLINE READY</span></div>
+  <h1>家族防災カード<small>Family Disaster Card — 発災時はこの画面から</small></h1>
+</header>
+
+<main>
+
+<!-- いま -->
+<section id="tab-now" class="on">
+  <div class="first">
+    <div class="lbl">! 地震が起きたらまずこれ</div>
+    <ol>
+      <li>テーブルの下へ。動かない。頭を守る。</li>
+      <li>揺れが止まったらドアを開ける。家族を確認。</li>
+      <li>火の確認。ガス臭がしたら窓を開けて電気スイッチを触らない。</li>
+    </ol>
+  </div>
+
+  <h2 style="margin-top:20px">タイムライン<span class="en">What to do now</span></h2>
+  <div class="hint" style="margin-bottom:4px">状況が落ち着いたら、今の時間帯を開いて上から確認していく。チェックは端末に残る（訓練後はリセット）。</div>
+
+  <details data-list="t0">
+    <summary><span class="tm">0-10分</span>命を守る<span class="st"></span></summary>
+    <div class="dbody">
+      <div class="chk-list"></div>
+    </div>
+  </details>
+  <details data-list="t1">
+    <summary><span class="tm">1時間</span>生活と情報の初動<span class="st"></span></summary>
+    <div class="dbody">
+      <p class="pri">優先順位: ガス元栓 - 情報収集 - 建物確認 - 在宅か避難所かの判断 - 備蓄確認</p>
+      <div class="chk-list"></div>
+    </div>
+  </details>
+  <details data-list="t24">
+    <summary><span class="tm">24時間</span>生活体制をつくる<span class="st"></span></summary>
+    <div class="dbody">
+      <p class="pri">優先順位: ライフライン把握 - 食料と水の計画使用 - 情報収集 - 子供のケア - 睡眠</p>
+      <div class="chk-list"></div>
+    </div>
+  </details>
+  <details data-list="t1w">
+    <summary><span class="tm">1週間</span>再建へ向かう<span class="st"></span></summary>
+    <div class="dbody">
+      <p class="pri">優先順位: 復旧見込みの把握 - 生活再建の方向決め - 精神的な回復 - 公的支援の確認</p>
+      <div class="chk-list"></div>
+    </div>
+  </details>
+
+  <div class="card-box">
+    <h3>在宅避難か、避難所か</h3>
+    <div style="font-size:.84rem">
+      <b style="color:var(--ok)">在宅避難でよい（すべて満たす）:</b> 建物に大きなヒビ、傾きがない / 火災、浸水リスクがない / 食料、水、薬が7日分ある<br>
+      <b style="color:var(--terracotta)">避難所に行く（1つでも該当）:</b> 建物が損傷 / 近隣で火災 / 浸水リスクが高い（ハザードマップ）
+    </div>
+  </div>
+
+  <div class="card-box">
+    <h3>情報収集</h3>
+    <div class="fixed">NHK第一ラジオ: 594kHz / 693kHz<br>自治体の公式サイト、防災無線</div>
+  </div>
+</section>
+
+<!-- カード -->
+<section id="tab-card">
+  <h2>家族カード<span class="en">Family Card</span></h2>
+  <div class="hint">この内容は端末のlocalStorageにのみ保存される（どこにも送信しない）。家族全員のスマホで同じ内容を入力しておく。</div>
+
+  <div class="card-box">
+    <h3>災害用伝言ダイヤル</h3>
+    <div class="tel">171</div>
+    <b style="font-size:.82rem">録音（自分の安否を残す）</b>
+    <ol class="steps">
+      <li>171に電話、「1」を押す</li>
+      <li>自宅か携帯の電話番号を市外局番から入力</li>
+      <li>30秒以内で録音。例:「家族全員無事、自宅にいます。次の連絡は18時」</li>
+    </ol>
+    <b style="font-size:.82rem">再生（家族の安否を聞く）</b>
+    <ol class="steps">
+      <li>171に電話、「2」を押す</li>
+      <li>確認したい電話番号を入力して聞く</li>
+    </ol>
+    <div class="hint">web171（ブラウザ版）も同じ番号ルール。毎月1日と15日は体験利用日。</div>
+  </div>
+
+  <label>家族メンバー（名前と生年など）</label>
+  <textarea id="cMembers" rows="3" placeholder="例: 父 / 母 / 長女 (2018) / 長男 (2024)"></textarea>
+  <label>第1集合場所</label>
+  <input type="text" id="cMeet1" placeholder="例: 自宅。倒壊時は下の第2へ">
+  <label>第2集合場所（避難所）</label>
+  <input type="text" id="cMeet2" placeholder="例: 某小学校 体育館前">
+  <label>学校、園の連絡先</label>
+  <input type="text" id="cSchool" placeholder="名称と電話番号">
+  <label>かかりつけ医</label>
+  <input type="text" id="cDoctor" placeholder="名称と電話番号">
+  <label>親族の連絡先</label>
+  <textarea id="cKin" rows="2" placeholder="名前と電話番号"></textarea>
+  <label>定時連絡ルール</label>
+  <input type="text" id="cRule" placeholder="例: 171に毎日9時と18時に録音する">
+  <button class="btn" id="btnCard">カードを保存</button>
+</section>
+
+<!-- 持ち出し -->
+<section id="tab-pack">
+  <h2>チェックリスト<span class="en">Checklists</span></h2>
+
+  <details data-list="pack" open>
+    <summary>持ち出し品（避難所へ行くとき）<span class="st"></span></summary>
+    <div class="dbody">
+      <p class="pri">リュック1-2個、大人1人20kg以下。年1回中身を見直す。</p>
+      <div class="chk-list"></div>
+      <button class="btn mini sub reset">このリストをリセット</button>
+    </div>
+  </details>
+  <details data-list="teiden">
+    <summary>停電が起きたら<span class="st"></span></summary>
+    <div class="dbody">
+      <p class="pri">優先順位: スマホ充電の確保 - 照明 - 冷蔵庫の食品 - 情報収集</p>
+      <div class="chk-list"></div>
+      <button class="btn mini sub reset">このリストをリセット</button>
+    </div>
+  </details>
+  <details data-list="dansui">
+    <summary>断水の気配がしたら<span class="st"></span></summary>
+    <div class="dbody">
+      <p class="pri">水圧低下やニュースの時点で動く。確認してからでは手遅れ。</p>
+      <div class="chk-list"></div>
+      <button class="btn mini sub reset">このリストをリセット</button>
+    </div>
+  </details>
+</section>
+
+<!-- 訓練 -->
+<section id="tab-drill">
+  <h2>訓練の記録<span class="en">Drills</span></h2>
+  <div class="hint">実施したら日付を記録する。期限を過ぎるとここが赤くなる。詳しい手順はVaultの disaster/drills/ が正。</div>
+  <div id="drills"></div>
+</section>
+
+</main>
+
+<div class="foot">
+  家族防災カード / や印工務店 family tools。データはこの端末のlocalStorageのみに保存（送信なし）。<br>
+  内容の正はObsidian Vaultの disaster/ フォルダ。このアプリはそのポケット版。年1回、正と突き合わせて見直す。
+</div>
+</div>
+
+<nav>
+  <button data-tab="now" class="on">いま</button>
+  <button data-tab="card">カード</button>
+  <button data-tab="pack">持ち出し</button>
+  <button data-tab="drill">訓練</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+const LS_KEY = 'bousai.v1';
+
+// ---- 静的コンテンツ（正: Vault disaster/。年1回見直し）
+const LISTS = {
+  t0: [
+    ['テーブルの下で頭を守った（揺れの間は動かない）'],
+    ['揺れが止まってからドアを開けた（出口確保）'],
+    ['家族全員の無事を確認した'],
+    ['火元を確認した', 'ガス臭があれば窓を開ける。電気スイッチ、コンセントは触らない'],
+    ['足元を確認した', 'ガラス片。靴かスリッパを履く']
+  ],
+  t1: [
+    ['ガスの元栓を閉めた', '臭いがなくても閉める。余震で配管が傷む'],
+    ['ラジオかテレビで情報収集した', 'NHK第一 594kHz / 693kHz'],
+    ['建物の安全を確認した', '壁や柱の大きなヒビ、床の傾き、窓の開閉'],
+    ['在宅避難か避難所かを判断した'],
+    ['備蓄を確認した', '飲料水、非常食、モバイルバッテリー残量'],
+    ['171に安否を録音した', '手順は「カード」タブ']
+  ],
+  t24: [
+    ['電気、ガス、水道の状況を把握した'],
+    ['食料と水の使用計画を立てた', '最初の3日は備蓄でしのぐ前提'],
+    ['スマホの電源計画を決めた', '省電力モード、連絡時間を決めて使う'],
+    ['子供の様子をケアした', '不安がる時はそばに。おやつ、遊び'],
+    ['交代で睡眠を取った']
+  ],
+  t1w: [
+    ['ライフライン復旧の見込みを確認した'],
+    ['住まいの安全を再確認した', '応急危険度判定の結果など'],
+    ['公的支援、給付金の情報を確認した', '罹災証明の申請を検討'],
+    ['家族の心身の疲れを確認した'],
+    ['備蓄の補充計画を立てた']
+  ],
+  pack: [
+    ['飲料水（500ml x 人数 x 3日分）', null, '水、食料'],
+    ['非常食（アルファ米、栄養補助食品）', null, '水、食料'],
+    ['子供の好きな食品', '精神安定のため', '水、食料'],
+    ['常備薬、処方薬', null, '薬、医療'],
+    ['お薬手帳（コピー可）', null, '薬、医療'],
+    ['応急セット（絆創膏、消毒液）と体温計', null, '薬、医療'],
+    ['現金（千円札中心、小銭も）', null, '貴重品'],
+    ['保険証、免許証、通帳（コピー可）', null, '貴重品'],
+    ['母子健康手帳（コピー可）', null, '貴重品'],
+    ['スマホ全台とモバイルバッテリー（充電済み）', null, '通信、情報'],
+    ['充電ケーブル', null, '通信、情報'],
+    ['電池式ラジオ', null, '通信、情報'],
+    ['マスク、ウェットシート', null, '衛生、生活'],
+    ['歯ブラシ、タオル、着替え2日分', null, '衛生、生活'],
+    ['おむつ、お尻ふき（乳幼児がいる場合）', null, '子供用品'],
+    ['子供の着替え（多め）', null, '子供用品'],
+    ['小さいおもちゃ、絵本、おやつ', null, '子供用品'],
+    ['懐中電灯（電池確認済み）', null, '照明、工具'],
+    ['軍手、ホイッスル', null, '照明、工具']
+  ],
+  teiden: [
+    ['スマホを省電力モードにした'],
+    ['モバイルバッテリーを確保した', '1台に集中させず分散して使う'],
+    ['照明を確保した', 'ろうそくは子供のそばに置かない'],
+    ['冷蔵庫の開閉を最小限にすると家族で決めた'],
+    ['ブレーカーの状態を確認した', '通電火災防止。避難するなら落とす'],
+    ['ラジオで復旧情報を確認した']
+  ],
+  dansui: [
+    ['浴槽に水を張った', '最優先。まず蛇口をひねる'],
+    ['飲料水の残量を確認した'],
+    ['鍋、ポリタンクにも水を確保した'],
+    ['トイレ対策を開始した', '風呂の残り湯、非常用トイレ'],
+    ['給水所の場所を確認した', '自治体サイト、防災無線']
+  ]
+};
+
+const DRILLS = [
+  { id: 'hinan', name: '家族避難訓練', freq: '年2回', months: 6,
+    steps: ['持ち出し袋を実際に背負う（大人で分担）', '避難所まで家族で歩き所要時間を記録', '帰宅後に重さとルートの改善点を話す'] },
+  { id: 'anpi', name: '安否確認訓練（171）', freq: '毎月1日、15日', months: 1,
+    steps: ['171に録音、家族の端末で再生してみる', 'web171もブラウザで試す'] },
+  { id: 'shoku', name: '非常食実食訓練', freq: '年2回', months: 6,
+    steps: ['備蓄の非常食を家族で実際に食べる', '子供が食べられるか確認し、減った分を買い足す（ローリングストック）'] },
+  { id: 'teiden', name: '停電生活訓練', freq: '年1回', months: 12,
+    steps: ['夜にブレーカーを落として数時間過ごす', '照明、暖房、暇つぶしの不足を洗い出す'] },
+  { id: 'tsushin', name: '通信断訓練', freq: '年1回', months: 12,
+    steps: ['スマホを機内モードにして集合場所ルールだけで合流できるか試す'] },
+  { id: 'kyusui', name: '給水訓練', freq: '年1回', months: 12,
+    steps: ['ポリタンクに水を入れて給水所想定の距離を運ぶ', '運搬手段（カート等）の要否を判断'] }
+];
+
+let db = load();
+function load(){
+  try{ const d = JSON.parse(localStorage.getItem(LS_KEY)); if(d && typeof d === 'object') return Object.assign({card:{},checks:{},drills:{}}, d); }catch(e){}
+  return { card:{}, checks:{}, drills:{} };
+}
+function save(){ localStorage.setItem(LS_KEY, JSON.stringify(db)); }
+function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._h); toast._h = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// ---- checklists
+function renderList(box){
+  const id = box.dataset.list;
+  const items = LISTS[id];
+  const state = db.checks[id] || {};
+  const holder = box.querySelector('.chk-list');
+  let html = '', grp = '';
+  items.forEach((it, i) => {
+    if(it[2] && it[2] !== grp){ grp = it[2]; html += '<div class="grp">' + esc(grp) + '</div>'; }
+    const on = !!state[i];
+    html += '<label class="chk' + (on ? ' done' : '') + '"><input type="checkbox" data-i="' + i + '"' + (on ? ' checked' : '') + '>'
+      + '<span>' + esc(it[0]) + (it[1] ? '<span class="sub">' + esc(it[1]) + '</span>' : '') + '</span></label>';
+  });
+  holder.innerHTML = html;
+  const doneN = items.reduce((s, _, i) => s + (state[i] ? 1 : 0), 0);
+  box.querySelector('.st').textContent = doneN + '/' + items.length;
+}
+document.querySelectorAll('details[data-list]').forEach(box => {
+  renderList(box);
+  box.addEventListener('change', e => {
+    if(e.target.type !== 'checkbox') return;
+    const id = box.dataset.list;
+    db.checks[id] = db.checks[id] || {};
+    db.checks[id][e.target.dataset.i] = e.target.checked;
+    save(); renderList(box);
+  });
+  const rst = box.querySelector('.reset');
+  if(rst) rst.addEventListener('click', () => { db.checks[box.dataset.list] = {}; save(); renderList(box); toast('リセットしました'); });
+});
+
+// ---- family card
+const CARD_FIELDS = { cMembers:'members', cMeet1:'meet1', cMeet2:'meet2', cSchool:'school', cDoctor:'doctor', cKin:'kin', cRule:'rule' };
+for(const [el, key] of Object.entries(CARD_FIELDS)){
+  document.getElementById(el).value = db.card[key] || '';
+}
+document.getElementById('btnCard').addEventListener('click', () => {
+  for(const [el, key] of Object.entries(CARD_FIELDS)){
+    db.card[key] = document.getElementById(el).value.trim();
+  }
+  save(); toast('この端末に保存しました');
+});
+
+// ---- drills
+function drawDrills(){
+  const now = new Date();
+  document.getElementById('drills').innerHTML = DRILLS.map(d => {
+    const last = db.drills[d.id] || '';
+    let due = '<span class="due">未実施。まず1回やってみる</span>';
+    if(last){
+      const nextDate = new Date(last);
+      nextDate.setMonth(nextDate.getMonth() + d.months);
+      const label = nextDate.getFullYear() + '-' + String(nextDate.getMonth()+1).padStart(2,'0');
+      due = nextDate <= now
+        ? '<span class="due late">! そろそろ実施（目安 ' + label + ' を経過）</span>'
+        : '<span class="due ok">次回目安 ' + label + '</span>';
+    }
+    return '<div class="drill"><h3>' + esc(d.name) + '<span class="freq">' + esc(d.freq) + '</span></h3>'
+      + '<ul>' + d.steps.map(s => '<li>' + esc(s) + '</li>').join('') + '</ul>'
+      + '<div class="last"><input type="date" data-drill="' + d.id + '" value="' + esc(last) + '">'
+      + '<button data-done="' + d.id + '">今日やった</button></div>' + due + '</div>';
+  }).join('');
+}
+document.getElementById('drills').addEventListener('change', e => {
+  const id = e.target.dataset.drill; if(!id) return;
+  db.drills[id] = e.target.value; save(); drawDrills();
+});
+document.getElementById('drills').addEventListener('click', e => {
+  const id = e.target.dataset.done; if(!id) return;
+  const d = new Date();
+  db.drills[id] = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  save(); drawDrills(); toast('実施を記録しました。おつかれさま');
+});
+drawDrills();
+
+// ---- tabs
+document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('main section').forEach(s => s.classList.toggle('on', s.id === 'tab-' + b.dataset.tab));
+}));
+
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').catch(() => {}); }
+</script>
+</body>
+</html>
