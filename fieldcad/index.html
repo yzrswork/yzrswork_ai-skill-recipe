@@ -213,7 +213,7 @@ button{ cursor:pointer; }
   flex:1;
   min-height:0;
   overflow-y:auto;
-  padding: 10px calc(12px + var(--safe-r)) 12px calc(12px + var(--safe-l));
+  padding: 10px calc(12px + var(--safe-r)) calc(24px + var(--safe-b)) calc(12px + var(--safe-l));
 }
 .tab-bar{
   display:flex;
@@ -445,7 +445,77 @@ button{ cursor:pointer; }
   display:flex; align-items:center; gap:8px;
 }
 .action-item.danger{ color:var(--color-danger); }
+.btn.danger{ color:var(--color-danger); border-color:var(--color-danger); }
 .sheet-hint{ font-size:12.5px; color:var(--color-text-2); line-height:1.6; margin-top:4px; }
+
+/* ============================================================
+   タスク3: フォーム部品共通(ステッパー入力・セグメント・スウォッチ)
+============================================================ */
+.field-col{ min-width:0; }
+.two-col{ display:grid; grid-template-columns:1fr 1fr; gap:0 10px; }
+.three-col{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:0 10px; }
+
+.stepper-row{ display:flex; align-items:center; gap:8px; }
+.stepper-btn{
+  width:var(--tap-min); height:var(--tap-min); flex:0 0 auto;
+  border:1px solid var(--color-border); background:var(--color-surface-2); border-radius:var(--radius-s);
+  font-size:20px; font-weight:700; color:var(--color-accent); line-height:1;
+  display:flex; align-items:center; justify-content:center;
+  user-select:none; -webkit-user-select:none; touch-action:manipulation;
+}
+.stepper-btn:active{ background:var(--color-accent); color:var(--color-accent-text); }
+.stepper-input{ flex:1; min-width:0; text-align:center; }
+
+.segmented{ display:flex; gap:8px; margin-top:2px; }
+.segmented-btn{
+  flex:1; min-height:var(--tap-min); border:1px solid var(--color-border); background:var(--color-surface-2);
+  border-radius:var(--radius-s); font-size:14px; font-weight:600; color:var(--color-text);
+  display:flex; align-items:center; justify-content:center; gap:4px;
+}
+.segmented-btn.active{ background:var(--color-accent); color:var(--color-accent-text); border-color:var(--color-accent); }
+.segmented-btn:disabled{ opacity:0.4; }
+.badge-v1{
+  font-size:9px; font-weight:700; background:var(--color-surface); color:var(--color-text-2);
+  border-radius:999px; padding:1px 5px;
+}
+
+.swatch-row{ display:flex; flex-wrap:wrap; gap:10px; margin-top:4px; }
+.color-swatch{ width:34px; height:34px; border-radius:50%; border:2px solid transparent; flex:0 0 auto; }
+.color-swatch.selected{ border-color:var(--color-surface); box-shadow:0 0 0 2px var(--color-accent); }
+
+.select-input{
+  width:100%;
+  border:1px solid var(--color-border);
+  background:var(--color-surface-2);
+  border-radius:var(--radius-s);
+  padding:0 12px;
+  min-height:var(--tap-min);
+  font-size:16px;
+  color:var(--color-text);
+}
+
+/* パーツタブ: 穴一覧テーブル(F-27) */
+.small-btn{ min-height:36px; padding:0 10px; font-size:13px; }
+.hole-table-wrap{ margin-top:10px; overflow-x:auto; }
+.hole-table{ width:100%; border-collapse:collapse; font-size:12.5px; }
+.hole-table th, .hole-table td{ padding:6px 8px 6px 0; text-align:left; border-bottom:1px solid var(--color-border); white-space:nowrap; }
+.hole-table tbody tr:active{ background:var(--color-surface-2); }
+.side-badge{ display:inline-block; font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:999px; }
+.side-badge.side-front{ color:var(--color-front); border:1px solid var(--color-front); }
+.side-badge.side-back{ color:var(--color-back); border:1px dashed var(--color-back); }
+
+/* ビュータブ: 書き出しツールバー */
+.view-toolbar{ display:flex; justify-content:flex-end; margin-bottom:8px; }
+
+/* 断面/Zタブ: 積み上げ項目リスト */
+.zitem-list-box{ background:var(--color-surface); border-radius:var(--radius-m); padding:14px; box-shadow:var(--shadow-1); margin-top:12px; }
+.zitem-row{ display:flex; align-items:center; gap:8px; padding:10px 0; border-bottom:1px solid var(--color-border); }
+.zitem-row:last-of-type{ border-bottom:none; }
+.zitem-main{ flex:1; min-width:0; display:flex; justify-content:space-between; gap:8px; text-align:left; background:transparent; border:none; padding:0; font-size:14px; color:var(--color-text); min-height:var(--tap-min); align-items:center; }
+.zitem-label{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.zitem-mm{ color:var(--color-text-2); flex:0 0 auto; }
+.zitem-controls{ display:flex; gap:2px; flex:0 0 auto; }
+.icon-btn.small{ width:36px; height:36px; font-size:15px; }
 
 /* ============================================================
    スナックバー
@@ -500,6 +570,9 @@ button{ cursor:pointer; }
   <div class="ws-body" id="ws-body">
     <!-- ---- ビュータブ ---- -->
     <div class="tab-content" id="tab-content-view">
+      <div class="view-toolbar">
+        <button class="btn small-btn" data-action="export-view-png">&#128228; 書き出し(PNG)</button>
+      </div>
       <div class="layer-chips" id="layer-chips"><!-- レイヤーチップ(パーツ表示切替) --></div>
 
       <!-- ★差込ポイント(タスク2): ここにビュー生成器(views モジュール)が
@@ -520,25 +593,22 @@ button{ cursor:pointer; }
     <!-- ---- パーツタブ ---- -->
     <div class="tab-content hidden" id="tab-content-parts">
       <div class="card-list" id="parts-card-list"><!-- App.ui.renderPartsTab() --></div>
-      <!-- ★差込ポイント(タスク3): パーツ編集ボトムシート(名前/W/H/T/種別/色) -->
-      <button class="add-btn" data-action="stub-add-part">&#65291; パーツを追加</button>
-      <p class="section-note">TODO(task3): パーツ・穴の追加/編集ボトムシートを実装。store の addPart/updatePart/deletePart/addHole/updateHole/deleteHole を利用。</p>
+      <button class="add-btn" data-action="add-part">&#65291; パーツを追加</button>
+      <p class="section-note">パーツをタップすると編集できます。各パーツの「+穴」から穴を追加できます。</p>
     </div>
 
     <!-- ---- 部品タブ(コンポーネント) ---- -->
     <div class="tab-content hidden" id="tab-content-components">
       <div class="card-list" id="components-card-list"><!-- App.ui.renderComponentsTab() --></div>
-      <!-- ★差込ポイント(タスク3): コンポーネント編集ボトムシート(名前/W×H×D/X,Y,Z/色) -->
-      <button class="add-btn" data-action="stub-add-component">&#65291; 部品を追加</button>
-      <p class="section-note">TODO(task3): コンポーネント追加/編集ボトムシートを実装。store の addComponent/updateComponent/deleteComponent、addPlacement/updatePlacement を利用。</p>
+      <button class="add-btn" data-action="add-component">&#65291; 部品を追加</button>
+      <p class="section-note">部品をタップすると編集できます(名前・W&times;H&times;D・配置X,Y,Z・色)。</p>
     </div>
 
     <!-- ---- 断面/Zタブ(クリアランス) ---- -->
     <div class="tab-content hidden" id="tab-content-section">
       <div id="zstack-container"><!-- App.ui.renderSectionTab() --></div>
-      <!-- ★差込ポイント(タスク2/3): 断面図SVG・切断位置スライダー・干渉チェックリスト -->
       <div id="section-view-placeholder" class="view-canvas-placeholder" style="margin-top:12px;">
-        断面図・切断位置スライダー・干渉チェックはタスク2/3で実装予定です。
+        断面図を準備しています…
       </div>
     </div>
   </div>
@@ -1443,15 +1513,17 @@ const Store = (function(){
     state.redoStack = [];
   }
 
-  /** 現在開いているプロジェクトを変更する共通ヘルパー。undo履歴の記録・自動保存・再描画までを一括で行う。 */
+  /** 現在開いているプロジェクトを変更する共通ヘルパー。undo履歴の記録・自動保存・再描画までを一括で行う。
+   *  タスク3向け変更: mutator の戻り値をそのまま返すようにした(add系アクションが生成IDを呼び出し元へ返せるようにするため)。 */
   function mutateCurrentProject(mutator){
     const bundle = getCurrentBundle();
-    if (!bundle) return;
+    if (!bundle) return undefined;
     pushUndoSnapshot(bundle);
-    mutator(bundle);
+    const result = mutator(bundle);
     bundle.project.updatedAt = new Date().toISOString();
     persist(bundle);
     notify();
+    return result;
   }
 
   function replaceBundleInPlace(target, replacement){
@@ -1618,7 +1690,7 @@ const Store = (function(){
   /* ---------- パーツ ---------- */
 
   function addPart(partial){
-    mutateCurrentProject(function(bundle){
+    return mutateCurrentProject(function(bundle){
       const part = Object.assign({
         id: genId("part"),
         name: "新しいパーツ",
@@ -1632,6 +1704,7 @@ const Store = (function(){
         holes: []
       }, partial || {});
       bundle.parts.push(part);
+      return part.id;
     });
   }
 
@@ -1642,16 +1715,19 @@ const Store = (function(){
     });
   }
 
+  /** タスク3向け変更: deleteComponent と同様、削除時に紐づく placement も併せて削除するようにした
+   *  (従来は placement が残存し、ビューには出ないが JSON 上にゴミデータとして残っていた)。 */
   function deletePart(partId){
     mutateCurrentProject(function(bundle){
       bundle.parts = bundle.parts.filter(function(p){ return p.id !== partId; });
+      bundle.placements = bundle.placements.filter(function(p){ return !(p.targetType === "part" && p.targetId === partId); });
     });
   }
 
   function duplicatePart(partId){
-    mutateCurrentProject(function(bundle){
+    return mutateCurrentProject(function(bundle){
       const part = bundle.parts.find(function(p){ return p.id === partId; });
-      if (!part) return;
+      if (!part) return null;
       const copy = deepClone(part);
       copy.id = genId("part");
       copy.name = part.name + " のコピー";
@@ -1661,6 +1737,7 @@ const Store = (function(){
         return hc;
       });
       bundle.parts.push(copy);
+      return copy.id;
     });
   }
 
@@ -1674,9 +1751,9 @@ const Store = (function(){
   /* ---------- 穴 ---------- */
 
   function addHole(partId, partial){
-    mutateCurrentProject(function(bundle){
+    return mutateCurrentProject(function(bundle){
       const part = bundle.parts.find(function(p){ return p.id === partId; });
-      if (!part) return;
+      if (!part) return null;
       const hole = Object.assign({
         id: genId("hole"),
         name: "新しい穴",
@@ -1688,6 +1765,7 @@ const Store = (function(){
         presetId: null
       }, partial || {});
       part.holes.push(hole);
+      return hole.id;
     });
   }
 
@@ -1709,22 +1787,23 @@ const Store = (function(){
   }
 
   function duplicateHole(partId, holeId){
-    mutateCurrentProject(function(bundle){
+    return mutateCurrentProject(function(bundle){
       const part = bundle.parts.find(function(p){ return p.id === partId; });
-      if (!part) return;
+      if (!part) return null;
       const hole = part.holes.find(function(h){ return h.id === holeId; });
-      if (!hole) return;
+      if (!hole) return null;
       const copy = deepClone(hole);
       copy.id = genId("hole");
       copy.name = hole.name + " のコピー";
       part.holes.push(copy);
+      return copy.id;
     });
   }
 
   /* ---------- コンポーネント ---------- */
 
   function addComponent(partial){
-    mutateCurrentProject(function(bundle){
+    return mutateCurrentProject(function(bundle){
       const cmp = Object.assign({
         id: genId("cmp"),
         name: "新しい部品",
@@ -1734,6 +1813,7 @@ const Store = (function(){
         mountedOn: null
       }, partial || {});
       bundle.components.push(cmp);
+      return cmp.id;
     });
   }
 
@@ -1751,10 +1831,31 @@ const Store = (function(){
     });
   }
 
+  /** タスク3で追加: 選択情報バーの[複製]を実体化するために必要な最小限のアクション。
+   *  component 本体と、それに紐づく placement をセットで複製する(placement が無ければ component のみ複製)。 */
+  function duplicateComponent(cmpId){
+    return mutateCurrentProject(function(bundle){
+      const cmp = bundle.components.find(function(c){ return c.id === cmpId; });
+      if (!cmp) return null;
+      const copy = deepClone(cmp);
+      copy.id = genId("cmp");
+      copy.name = cmp.name + " のコピー";
+      bundle.components.push(copy);
+      const plc = bundle.placements.find(function(p){ return p.targetType === "component" && p.targetId === cmpId; });
+      if (plc){
+        const plcCopy = deepClone(plc);
+        plcCopy.id = genId("plc");
+        plcCopy.targetId = copy.id;
+        bundle.placements.push(plcCopy);
+      }
+      return copy.id;
+    });
+  }
+
   /* ---------- 配置(placements) ---------- */
 
   function addPlacement(partial){
-    mutateCurrentProject(function(bundle){
+    return mutateCurrentProject(function(bundle){
       const plc = Object.assign({
         id: genId("plc"),
         targetType: "part",
@@ -1764,6 +1865,7 @@ const Store = (function(){
         flipped: false
       }, partial || {});
       bundle.placements.push(plc);
+      return plc.id;
     });
   }
 
@@ -1804,6 +1906,18 @@ const Store = (function(){
   function removeZStackItem(index){
     mutateCurrentProject(function(bundle){
       bundle.zstack.items.splice(index, 1);
+    });
+  }
+
+  /** タスク3で追加: Zスタック項目の並べ替え(上へ/下へボタン用。ドラッグ並べ替えはv1.0スコープ外)。 */
+  function moveZStackItem(index, delta){
+    mutateCurrentProject(function(bundle){
+      const items = bundle.zstack.items;
+      const target = index + delta;
+      if (target < 0 || target >= items.length) return;
+      const tmp = items[index];
+      items[index] = items[target];
+      items[target] = tmp;
     });
   }
 
@@ -1864,6 +1978,7 @@ const Store = (function(){
     addComponent: addComponent,
     updateComponent: updateComponent,
     deleteComponent: deleteComponent,
+    duplicateComponent: duplicateComponent,
 
     addPlacement: addPlacement,
     updatePlacement: updatePlacement,
@@ -1873,6 +1988,7 @@ const Store = (function(){
     addZStackItem: addZStackItem,
     updateZStackItem: updateZStackItem,
     removeZStackItem: removeZStackItem,
+    moveZStackItem: moveZStackItem,
 
     undo: undo,
     redo: redo
@@ -1890,6 +2006,12 @@ const UI = (function(){
   let longPressFired = false;
   let snackbarTimer = null;
   let snackbarActionCb = null;
+
+  // ---- ボトムシート(タスク3): 現在開いているフォームの文脈と「新規作成でキャンセルされた場合のロールバック」----
+  let sheetCtx = null;          // { kind:"hole"|"part"|"component"|"zitem"|"zdepth", ...対象ID, isNew }
+  let sheetCancelAction = null; // 新規作成時、閉じる(X・背景タップ・キャンセル相当)と仮エンティティを削除するロールバック関数
+  let stepperRepeatTimeout = null;
+  let stepperRepeatInterval = null;
 
   // ---- ビュー(タスク2): ズーム/パン状態は viewType ごとに保持し、render() を跨いで維持する ----
   let viewportByType = {};   // { front: {x,y,w,h}, back: {...}, ... } 現在のSVG viewBox
@@ -2105,9 +2227,232 @@ const UI = (function(){
     }
   }
 
+  /** シートを閉じる。sheetCancelAction が設定されている(=新規作成の仮エンティティが未確定)場合は
+   *  ロールバックしてから閉じる。X・背景タップ・Escいずれの経路でもここを通る。 */
   function closeSheet(){
+    if (sheetCancelAction){
+      const fn = sheetCancelAction;
+      sheetCancelAction = null;
+      fn();
+    }
+    sheetCtx = null;
     dom.sheetOverlay.classList.add("hidden");
+    dom.sheetOverlay.style.top = "";
+    dom.sheetOverlay.style.height = "";
     dom.sheetBody.innerHTML = "";
+  }
+
+  /** 「完了」ボタン専用: ロールバックを無効化してから閉じる(新規作成を確定させる)。 */
+  function completeSheet(){
+    sheetCancelAction = null;
+    closeSheet();
+  }
+
+  /** iOS等でソフトウェアキーボードが出た際、visualViewport に合わせてシートの高さ/位置を追従させる(簡易対応)。 */
+  function bindVisualViewport(){
+    if (!window.visualViewport) return;
+    function onVVChange(){
+      if (dom.sheetOverlay.classList.contains("hidden")) return;
+      const vv = window.visualViewport;
+      dom.sheetOverlay.style.height = vv.height + "px";
+      dom.sheetOverlay.style.top = vv.offsetTop + "px";
+    }
+    window.visualViewport.addEventListener("resize", onVVChange);
+    window.visualViewport.addEventListener("scroll", onVVChange);
+  }
+
+  /* ---------- タスク3: フォーム共通ヘルパー(ステッパー数値入力・種別セレクト・色スウォッチ) ---------- */
+
+  const PART_KIND_OPTIONS = [
+    { v: "acrylic", label: "アクリル板" },
+    { v: "wood", label: "木板" },
+    { v: "aluminum", label: "アルミ板" },
+    { v: "mdf", label: "MDF" },
+    { v: "frame", label: "フレーム(枠)" },
+    { v: "enclosure", label: "筐体(箱)" },
+    { v: "other", label: "その他" }
+  ];
+  const COMPONENT_KIND_OPTIONS = [
+    { v: "pcb", label: "基板(PCB)" },
+    { v: "lcd", label: "LCD" },
+    { v: "switch", label: "スイッチ" },
+    { v: "jack", label: "ジャック" },
+    { v: "led", label: "LED" },
+    { v: "speaker", label: "スピーカー" },
+    { v: "connector", label: "コネクタ" },
+    { v: "other", label: "その他" }
+  ];
+
+  /** 0.5mm刻みに丸め、末尾の.0は省略して表示する(Views.fmtNumと同じ規則をUI側でも踏襲)。 */
+  function fmtStepVal(n){
+    const v = Math.round(n * 10) / 10;
+    return (Math.abs(v - Math.round(v)) < 1e-9) ? String(Math.round(v)) : String(v);
+  }
+
+  /** ステッパー付き数値入力(§11.2): inputmode="decimal" + 左右±ボタン(0.5mm刻み、長押しで連続)。
+   *  ラベル+ステッパー行を1つの field-col に包み、two-col/three-col グリッドの1マスとして並べられるようにする。 */
+  function numberFieldHtml(id, label, value, opts){
+    opts = opts || {};
+    const step = opts.step != null ? opts.step : 0.5;
+    const min = opts.min;
+    return (
+      '<div class="field-col">' +
+        '<label class="field-label" for="' + id + '">' + escapeHtml(label) + '(mm)</label>' +
+        '<div class="stepper-row">' +
+          '<button type="button" class="stepper-btn" data-stepper-target="' + id + '" data-step="' + (-step) + '"' +
+            (min != null ? ' data-stepper-min="' + min + '"' : '') + ' aria-label="' + escapeHtml(label) + 'を減らす">&minus;</button>' +
+          '<input type="text" inputmode="decimal" id="' + id + '" class="number-input stepper-input" value="' + fmtStepVal(value) + '">' +
+          '<button type="button" class="stepper-btn" data-stepper-target="' + id + '" data-step="' + step + '" aria-label="' + escapeHtml(label) + 'を増やす">+</button>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function selectOptionsHtml(options, current){
+    return options.map(function(o){
+      return '<option value="' + o.v + '"' + (o.v === current ? ' selected' : '') + '>' + escapeHtml(o.label) + '</option>';
+    }).join("");
+  }
+
+  function colorSwatchRowHtml(current, action){
+    return '<div class="swatch-row">' + PART_COLOR_PALETTE.map(function(c){
+      return '<button type="button" class="color-swatch' + (current === c ? ' selected' : '') + '" style="background:' + c + '" ' +
+        'data-action="' + action + '" data-color="' + c + '" aria-label="色を選択"></button>';
+    }).join("") + '</div>';
+  }
+
+  /** ステッパーボタンのpointerdown〜長押し連続増減。値の変わり先は data-stepper-target の input要素(id指定)。
+   *  ボトムシート内の要素に対してのみ動作させれば十分だが、以後の再利用も考慮しdocument全体に委譲する。 */
+  function stepOnce(btn){
+    const targetId = btn.getAttribute("data-stepper-target");
+    const input = document.getElementById(targetId);
+    if (!input) return;
+    const step = parseFloat(btn.getAttribute("data-step"));
+    let v = parseFloat(input.value);
+    if (isNaN(v)) v = 0;
+    v = Math.round((v + step) * 100) / 100;
+    const minAttr = btn.getAttribute("data-stepper-min");
+    if (minAttr != null){
+      const min = parseFloat(minAttr);
+      if (!isNaN(min) && v < min) v = min;
+    }
+    input.value = fmtStepVal(v);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
+  function bindStepperEvents(){
+    document.body.addEventListener("pointerdown", function(e){
+      const btn = e.target.closest(".stepper-btn");
+      if (!btn || btn.disabled) return;
+      e.preventDefault();
+      stepOnce(btn);
+      clearTimeout(stepperRepeatTimeout);
+      clearInterval(stepperRepeatInterval);
+      stepperRepeatTimeout = setTimeout(function(){
+        stepperRepeatInterval = setInterval(function(){ stepOnce(btn); }, 90);
+      }, 450);
+      function stop(){
+        clearTimeout(stepperRepeatTimeout);
+        clearInterval(stepperRepeatInterval);
+        document.removeEventListener("pointerup", stop);
+        document.removeEventListener("pointercancel", stop);
+      }
+      document.addEventListener("pointerup", stop);
+      document.addEventListener("pointercancel", stop);
+    });
+  }
+
+  /* ---------- タスク3: PNG書き出し(F-70) ---------- */
+
+  /** クローンしたSVG内の fill/stroke に var(--color-*) が使われている要素を、
+   *  元要素の getComputedStyle() で解決した実色に置き換える(オフスクリーン画像化のため必須)。 */
+  function inlineComputedColors(clone, original){
+    function resolve(o, c){
+      ["fill", "stroke"].forEach(function(attr){
+        const raw = o.getAttribute && o.getAttribute(attr);
+        if (raw && raw.indexOf("var(") !== -1){
+          const resolved = getComputedStyle(o)[attr];
+          if (resolved) c.setAttribute(attr, resolved);
+        }
+      });
+    }
+    resolve(original, clone);
+    const origAll = original.querySelectorAll("*");
+    const cloneAll = clone.querySelectorAll("*");
+    for (let i = 0; i < origAll.length; i++) resolve(origAll[i], cloneAll[i]);
+  }
+
+  function downloadOrSharePng(blob, filename){
+    if (navigator.canShare && window.File){
+      try {
+        const file = new File([blob], filename, { type: "image/png" });
+        if (navigator.canShare({ files: [file] })){
+          navigator.share({ files: [file], title: filename }).catch(function(){ /* ユーザーキャンセル等は無視 */ });
+          return;
+        }
+      } catch (err){ /* File未対応環境などは下のダウンロードへフォールバック */ }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  }
+
+  /** 現在表示中のビューSVGをcanvas経由で2倍解像度PNG化し、共有シート(対応環境)またはダウンロードで書き出す。 */
+  function exportCurrentViewPng(){
+    const svgEl = dom.viewSvgContainer.querySelector("svg");
+    if (!svgEl){
+      showSnackbar("書き出せるビューがありません(パーツ/部品を追加してください)");
+      return;
+    }
+    const vbAttr = svgEl.getAttribute("viewBox") || "0 0 100 100";
+    const vbParts = vbAttr.split(/\s+/).map(Number);
+    const vbX = vbParts[0] || 0, vbY = vbParts[1] || 0;
+    const vbW = vbParts[2] || 100, vbH = vbParts[3] || 100;
+
+    const clone = svgEl.cloneNode(true);
+    clone.setAttribute("width", vbW);
+    clone.setAttribute("height", vbH);
+    inlineComputedColors(clone, svgEl);
+
+    const surfaceColor = (getComputedStyle(document.body).getPropertyValue("--color-surface") || "#ffffff").trim() || "#ffffff";
+    const bgRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    bgRect.setAttribute("x", vbX);
+    bgRect.setAttribute("y", vbY);
+    bgRect.setAttribute("width", vbW);
+    bgRect.setAttribute("height", vbH);
+    bgRect.setAttribute("fill", surfaceColor);
+    clone.insertBefore(bgRect, clone.firstChild);
+
+    const svgStr = new XMLSerializer().serializeToString(clone);
+    const svgBlob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(svgBlob);
+    const img = new Image();
+    img.onload = function(){
+      const scale = 2;
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(vbW * scale));
+      canvas.height = Math.max(1, Math.round(vbH * scale));
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(function(blob){
+        if (!blob){ showSnackbar("PNG生成に失敗しました"); return; }
+        const bundle = Store.getCurrentBundle();
+        const viewLabel = Views.VIEW_LABELS[Store.state.ui.activeView] || "view";
+        const safeName = ((bundle && bundle.project.name) || "fieldcad").replace(/[\\/:*?"<>|]/g, "_");
+        downloadOrSharePng(blob, "fieldcad_" + safeName + "_" + viewLabel + ".png");
+      }, "image/png");
+    };
+    img.onerror = function(){
+      URL.revokeObjectURL(url);
+      showSnackbar("PNG書き出しに失敗しました");
+    };
+    img.src = url;
   }
 
   /* ---------- スナックバー ---------- */
@@ -2273,35 +2618,64 @@ const UI = (function(){
         '<div class="sel-row">' + partSizeLabel(part) + ' ・ 穴' + part.holes.length + '個</div>';
     }
     bodyHtml += '<div class="sel-actions">' +
-      '<button class="btn" data-action="stub-edit-selection">&#9999;&#65039; 編集</button>' +
+      '<button class="btn" data-action="edit-selection">&#9999;&#65039; 編集</button>' +
       '<button class="btn" data-action="duplicate-selection">&#10697; 複製</button>' +
       '</div>';
     dom.selectionInfoBar.innerHTML = bodyHtml;
   }
 
+  /** 穴一覧テーブル(F-27): 名前/φ/X/Y/加工面。裏加工は橙バッジ、加工面混在パーツは見出しに注意アイコン。 */
+  function holeTableHtml(part){
+    if (!part.holes.length){
+      return '<div class="section-note">穴はまだありません。「+穴」から追加してください。</div>';
+    }
+    const hasFront = part.holes.some(function(h){ return h.side !== "back"; });
+    const hasBack = part.holes.some(function(h){ return h.side === "back"; });
+    const mixed = hasFront && hasBack;
+    const rows = part.holes.map(function(h){
+      const isBack = h.side === "back";
+      const dimLabel = h.type === "circle" ? ("&#966;" + h.dim.d) : "";
+      const badge = isBack
+        ? '<span class="side-badge side-back">裏</span>'
+        : '<span class="side-badge side-front">表</span>';
+      return (
+        '<tr data-action="edit-hole" data-part-id="' + part.id + '" data-hole-id="' + h.id + '">' +
+          '<td>' + escapeHtml(h.name) + '</td>' +
+          '<td>' + dimLabel + '</td>' +
+          '<td>' + h.pos.x + '</td>' +
+          '<td>' + h.pos.y + '</td>' +
+          '<td>' + badge + '</td>' +
+        '</tr>'
+      );
+    }).join("");
+    return (
+      '<div class="hole-table-wrap">' +
+        '<table class="hole-table">' +
+          '<thead><tr><th>名前</th><th>&#966;</th><th>X</th><th>Y</th><th>' + (mixed ? '&#9888;&#65039;面' : '面') + '</th></tr></thead>' +
+          '<tbody>' + rows + '</tbody>' +
+        '</table>' +
+      '</div>'
+    );
+  }
+
   function renderPartsTab(bundle){
     if (bundle.parts.length === 0){
-      dom.partsCardList.innerHTML = '<div class="empty-state">まだパーツがありません&#10;→ 下の「+ パーツを追加」から</div>';
+      dom.partsCardList.innerHTML = '<div class="empty-state">まだパーツがありません<br>→ 下の「+ パーツを追加」から</div>';
       return;
     }
     dom.partsCardList.innerHTML = bundle.parts.map(function(part){
-      const holeChips = part.holes.map(function(h){
-        const sideCls = h.side === "back" ? "side-back" : "side-front";
-        const sideLabel = h.side === "back" ? "裏" : "表";
-        const dimLabel = h.type === "circle" ? ("&#966;" + h.dim.d) : "";
-        return '<span class="hole-chip ' + sideCls + '">' + escapeHtml(h.name) + " " + dimLabel + " (" + sideLabel + ")</span>";
-      }).join("");
       return (
-        '<div class="entity-card">' +
+        '<div class="entity-card" data-action="edit-part" data-id="' + part.id + '">' +
           '<div class="entity-card-row">' +
             '<span class="entity-color-dot" style="background:' + part.color + '"></span>' +
             '<span class="entity-title">' + escapeHtml(part.name) + '</span>' +
             '<div class="entity-actions">' +
               '<button class="visible-toggle" data-action="toggle-part-visible" data-id="' + part.id + '" aria-label="表示切替">' + (part.visible ? "&#128065;" : "&#128065;&#65039;&#8203;") + '</button>' +
+              '<button class="btn small-btn" data-action="add-hole" data-part-id="' + part.id + '">&#65291;穴</button>' +
             '</div>' +
           '</div>' +
           '<div class="entity-sub">' + partSizeLabel(part) + " ・ 穴" + part.holes.length + "個" + '</div>' +
-          (holeChips ? '<div class="hole-chip-row">' + holeChips + '</div>' : '') +
+          holeTableHtml(part) +
         '</div>'
       );
     }).join("");
@@ -2309,14 +2683,14 @@ const UI = (function(){
 
   function renderComponentsTab(bundle){
     if (bundle.components.length === 0){
-      dom.componentsCardList.innerHTML = '<div class="empty-state">まだ部品がありません&#10;→ 下の「+ 部品を追加」から</div>';
+      dom.componentsCardList.innerHTML = '<div class="empty-state">まだ部品がありません<br>→ 下の「+ 部品を追加」から</div>';
       return;
     }
     dom.componentsCardList.innerHTML = bundle.components.map(function(cmp){
       const plc = bundle.placements.find(function(p){ return p.targetType === "component" && p.targetId === cmp.id; });
       const posLabel = plc ? ("X:" + plc.pos.x + " Y:" + plc.pos.y + " Z:" + plc.pos.z) : "未配置";
       return (
-        '<div class="entity-card">' +
+        '<div class="entity-card" data-action="edit-component" data-id="' + cmp.id + '">' +
           '<div class="entity-card-row">' +
             '<span class="entity-color-dot" style="background:' + cmp.color + '"></span>' +
             '<span class="entity-title">' + escapeHtml(cmp.name) + '</span>' +
@@ -2353,14 +2727,39 @@ const UI = (function(){
     const statusIcon = result.status === "ok" ? "&#9989;" : (result.status === "warn" ? "&#9888;&#65039;" : "&#9940;");
     const statusText = result.status === "ok" ? "余裕あり" : (result.status === "warn" ? "余裕わずか" : "干渉の可能性");
 
+    // タスク3: 積み上げ項目リスト(編集/削除はボトムシート、並べ替えは上へ/下へボタンで直接操作)
+    const itemCount = bundle.zstack.items.length;
+    const itemRowsHtml = bundle.zstack.items.map(function(item, idx){
+      return (
+        '<div class="zitem-row">' +
+          '<button type="button" class="zitem-main" data-action="edit-zitem" data-index="' + idx + '">' +
+            '<span class="zitem-label">' + escapeHtml(item.label) + '</span>' +
+            '<span class="zitem-mm">' + fmtStepVal(item.mm) + 'mm</span>' +
+          '</button>' +
+          '<div class="zitem-controls">' +
+            '<button class="icon-btn small" data-action="move-zitem-up" data-index="' + idx + '" aria-label="上へ"' + (idx === 0 ? " disabled" : "") + '>&#8593;</button>' +
+            '<button class="icon-btn small" data-action="move-zitem-down" data-index="' + idx + '" aria-label="下へ"' + (idx === itemCount - 1 ? " disabled" : "") + '>&#8595;</button>' +
+          '</div>' +
+        '</div>'
+      );
+    }).join("");
+
     dom.zstackContainer.innerHTML = (
       '<div class="zstack-box">' +
-        '<div class="entity-sub" style="margin-bottom:8px;">Z積み上げ(奥行き' + bundle.zstack.totalDepth + 'mm)</div>' +
+        '<div class="entity-card-row" style="margin-bottom:8px;">' +
+          '<div class="entity-sub" style="margin:0;flex:1;">Z積み上げ(奥行き' + bundle.zstack.totalDepth + 'mm)</div>' +
+          '<button class="btn small-btn" data-action="edit-zdepth">奥行きを編集</button>' +
+        '</div>' +
         '<div class="zstack-bar">' + barSegHtml + remainingBarHtml + '</div>' +
         '<div class="zstack-legend">' + legendHtml +
           '<div class="zstack-legend-row"><span class="zstack-legend-swatch remaining-' + result.status + '" style="background:var(--color-' + (result.status === "ok" ? "ok" : (result.status === "warn" ? "warn" : "danger")) + ')"></span><span>残り空間 ' + result.remaining.toFixed(1) + 'mm</span></div>' +
         '</div>' +
         '<div class="zstack-status-line remaining-' + result.status + '">' + statusIcon + ' ' + statusText + '(残り' + result.remaining.toFixed(1) + 'mm / しきい値' + warnMm + 'mm)</div>' +
+      '</div>' +
+      '<div class="zitem-list-box">' +
+        '<label class="field-label" style="margin-top:0;">積み上げ項目(スペーサー等は厚みだけの行として追加できます)</label>' +
+        (itemRowsHtml || '<div class="section-note">まだ項目がありません<br>→ 下の「+ 項目を追加」から</div>') +
+        '<button class="add-btn" data-action="add-zitem">&#65291; 項目を追加</button>' +
       '</div>'
     );
 
@@ -2432,6 +2831,324 @@ const UI = (function(){
       const mark = (v === current) ? " ✓" : "";
       return '<button class="action-item" data-action="select-view" data-view="' + v + '">' + Views.VIEW_LABELS[v] + mark + '</button>';
     }).join("") + '</div>';
+  }
+
+  /* ---------- タスク3: 穴編集ボトムシート(DESIGN.md §7.3準拠) ---------- */
+
+  function holeSheetBodyHtml(part, hole){
+    const isBack = hole.side === "back";
+    return (
+      '<label class="field-label" for="hole-name-input">名前</label>' +
+      '<input type="text" id="hole-name-input" class="text-input" value="' + escapeHtml(hole.name) + '" autocomplete="off">' +
+
+      '<label class="field-label">タイプ</label>' +
+      '<div class="segmented">' +
+        '<button type="button" class="segmented-btn active" disabled>丸穴</button>' +
+        '<button type="button" class="segmented-btn" disabled>長穴 <span class="badge-v1">v1.0</span></button>' +
+        '<button type="button" class="segmented-btn" disabled>角穴 <span class="badge-v1">v1.0</span></button>' +
+      '</div>' +
+
+      numberFieldHtml("hole-dim-d", "直径 φ", hole.dim.d, { min: 0.5 }) +
+
+      '<div class="two-col">' +
+        numberFieldHtml("hole-pos-x", "位置 X", hole.pos.x) +
+        numberFieldHtml("hole-pos-y", "位置 Y", hole.pos.y) +
+      '</div>' +
+
+      '<label class="field-label">加工面(' + escapeHtml(part.name) + ')</label>' +
+      '<div class="segmented">' +
+        '<button type="button" class="segmented-btn' + (!isBack ? " active" : "") + '" data-action="set-hole-side" data-side="front">表</button>' +
+        '<button type="button" class="segmented-btn' + (isBack ? " active" : "") + '" data-action="set-hole-side" data-side="back">裏</button>' +
+      '</div>' +
+
+      '<div class="sheet-actions">' +
+        '<button class="btn danger" data-action="delete-hole">&#128465;&#65039; 削除</button>' +
+        '<button class="btn" style="flex:1" data-action="duplicate-next-hole">&#10697; 複製して次へ</button>' +
+      '</div>' +
+      '<div class="sheet-actions">' +
+        '<button class="btn btn-primary" style="flex:1" data-action="complete-sheet">完了</button>' +
+      '</div>'
+    );
+  }
+
+  function bindHoleSheetEvents(){
+    const ctx = sheetCtx;
+    const nameInput = document.getElementById("hole-name-input");
+    if (nameInput) nameInput.addEventListener("input", function(){
+      Store.updateHole(ctx.partId, ctx.holeId, { name: nameInput.value });
+    });
+    const dInput = document.getElementById("hole-dim-d");
+    if (dInput) dInput.addEventListener("input", function(){
+      const v = parseFloat(dInput.value);
+      if (isNaN(v) || v <= 0) return;
+      Store.updateHole(ctx.partId, ctx.holeId, { dim: { d: v } });
+    });
+    const xInput = document.getElementById("hole-pos-x");
+    const yInput = document.getElementById("hole-pos-y");
+    function syncPos(){
+      const xv = parseFloat(xInput.value), yv = parseFloat(yInput.value);
+      if (isNaN(xv) || isNaN(yv)) return;
+      Store.updateHole(ctx.partId, ctx.holeId, { pos: { x: xv, y: yv } });
+    }
+    if (xInput) xInput.addEventListener("input", syncPos);
+    if (yInput) yInput.addEventListener("input", syncPos);
+  }
+
+  /** 穴編集シートを開く(新規作成時は isNew:true。閉じずにキャンセルすると仮穴を削除する)。 */
+  function openHoleSheetFor(partId, holeId, isNew){
+    const bundle = Store.getCurrentBundle();
+    const part = bundle && bundle.parts.find(function(p){ return p.id === partId; });
+    const hole = part && part.holes.find(function(h){ return h.id === holeId; });
+    if (!part || !hole){ closeSheet(); return; }
+    sheetCtx = { kind: "hole", partId: partId, holeId: holeId, isNew: !!isNew };
+    sheetCancelAction = isNew ? function(){ Store.deleteHole(partId, holeId); } : null;
+    openSheet(isNew ? "穴を追加" : "穴を編集", holeSheetBodyHtml(part, hole), "#hole-name-input");
+    bindHoleSheetEvents();
+  }
+
+  /* ---------- タスク3: パーツ編集ボトムシート ---------- */
+
+  function partSheetBodyHtml(part){
+    const isCircle = part.shape === "circle";
+    const showInner = part.kind === "frame" || part.kind === "enclosure";
+    const sizeFieldsHtml = isCircle
+      ? ('<div class="two-col">' +
+          numberFieldHtml("part-size-d", "直径", part.size.d, { min: 1 }) +
+          numberFieldHtml("part-size-t", "厚み", part.size.t, { min: 0.1 }) +
+        '</div>')
+      : ('<div class="three-col">' +
+          numberFieldHtml("part-size-w", "幅 W", part.size.w, { min: 1 }) +
+          numberFieldHtml("part-size-h", "高さ H", part.size.h, { min: 1 }) +
+          numberFieldHtml("part-size-t", "厚み T", part.size.t, { min: 0.1 }) +
+        '</div>');
+
+    return (
+      '<label class="field-label" for="part-name-input">名前</label>' +
+      '<input type="text" id="part-name-input" class="text-input" value="' + escapeHtml(part.name) + '" autocomplete="off">' +
+
+      '<label class="field-label" for="part-kind-select">種別</label>' +
+      '<select id="part-kind-select" class="select-input">' + selectOptionsHtml(PART_KIND_OPTIONS, part.kind) + '</select>' +
+
+      '<label class="field-label">形状</label>' +
+      '<div class="segmented">' +
+        '<button type="button" class="segmented-btn' + (!isCircle ? " active" : "") + '" data-action="set-part-shape" data-shape="rect">矩形</button>' +
+        '<button type="button" class="segmented-btn' + (isCircle ? " active" : "") + '" data-action="set-part-shape" data-shape="circle">円形</button>' +
+      '</div>' +
+
+      sizeFieldsHtml +
+
+      (showInner ?
+        (numberFieldHtml("part-inner-d", "内寸深さ(筐体/フレーム内側)", (part.innerSize && part.innerSize.d) || 0, { min: 0 }) +
+         '<button type="button" class="btn" style="width:100%;margin-top:8px;" data-action="apply-inner-depth-to-zstack">この深さをZスタック合計に反映</button>')
+        : "") +
+
+      '<label class="field-label">色</label>' +
+      colorSwatchRowHtml(part.color, "set-part-color") +
+
+      '<div class="sheet-actions">' +
+        '<button class="btn danger" data-action="delete-part">&#128465;&#65039; 削除</button>' +
+      '</div>' +
+      '<div class="sheet-actions">' +
+        '<button class="btn btn-primary" style="flex:1" data-action="complete-sheet">完了</button>' +
+      '</div>'
+    );
+  }
+
+  function bindPartSheetEvents(){
+    const ctx = sheetCtx;
+    function currentPart(){
+      const bundle = Store.getCurrentBundle();
+      return bundle && bundle.parts.find(function(p){ return p.id === ctx.partId; });
+    }
+    const nameInput = document.getElementById("part-name-input");
+    if (nameInput) nameInput.addEventListener("input", function(){ Store.updatePart(ctx.partId, { name: nameInput.value }); });
+
+    const kindSelect = document.getElementById("part-kind-select");
+    if (kindSelect) kindSelect.addEventListener("change", function(){
+      Store.updatePart(ctx.partId, { kind: kindSelect.value });
+      openPartSheetFor(ctx.partId, ctx.isNew); // 内寸深さ欄の表示/非表示が変わるため再描画
+    });
+
+    const wIn = document.getElementById("part-size-w"), hIn = document.getElementById("part-size-h");
+    const tIn = document.getElementById("part-size-t"), dIn = document.getElementById("part-size-d");
+    function syncRectSize(){
+      const part = currentPart(); if (!part) return;
+      const w = parseFloat(wIn.value), h = parseFloat(hIn.value), t = parseFloat(tIn.value);
+      if (isNaN(w) || isNaN(h) || isNaN(t)) return;
+      Store.updatePart(ctx.partId, { size: { w: w, h: h, t: t } });
+    }
+    function syncCircleSize(){
+      const part = currentPart(); if (!part) return;
+      const d = parseFloat(dIn.value), t = parseFloat(tIn.value);
+      if (isNaN(d) || isNaN(t)) return;
+      Store.updatePart(ctx.partId, { size: { d: d, t: t } });
+    }
+    if (wIn) wIn.addEventListener("input", syncRectSize);
+    if (hIn) hIn.addEventListener("input", syncRectSize);
+    if (tIn) tIn.addEventListener("input", function(){ if (dIn) syncCircleSize(); else syncRectSize(); });
+    if (dIn) dIn.addEventListener("input", syncCircleSize);
+
+    const innerDIn = document.getElementById("part-inner-d");
+    if (innerDIn) innerDIn.addEventListener("input", function(){
+      const v = parseFloat(innerDIn.value); if (isNaN(v)) return;
+      const part = currentPart(); if (!part) return;
+      const w = (part.innerSize && part.innerSize.w) || part.size.w || part.size.d;
+      const h = (part.innerSize && part.innerSize.h) || part.size.h || part.size.d;
+      Store.updatePart(ctx.partId, { innerSize: { w: w, h: h, d: v } });
+    });
+  }
+
+  function openPartSheetFor(partId, isNew){
+    const bundle = Store.getCurrentBundle();
+    const part = bundle && bundle.parts.find(function(p){ return p.id === partId; });
+    if (!part){ closeSheet(); return; }
+    sheetCtx = { kind: "part", partId: partId, isNew: !!isNew };
+    sheetCancelAction = isNew ? function(){ Store.deletePart(partId); } : null;
+    openSheet(isNew ? "パーツを追加" : "パーツを編集", partSheetBodyHtml(part), "#part-name-input");
+    bindPartSheetEvents();
+  }
+
+  /* ---------- タスク3: 部品(コンポーネント)編集ボトムシート ---------- */
+
+  function componentSheetBodyHtml(cmp, plc){
+    const pos = plc ? plc.pos : { x: 0, y: 0, z: 0 };
+    return (
+      '<label class="field-label" for="cmp-name-input">名前</label>' +
+      '<input type="text" id="cmp-name-input" class="text-input" value="' + escapeHtml(cmp.name) + '" autocomplete="off">' +
+
+      '<label class="field-label" for="cmp-kind-select">種別</label>' +
+      '<select id="cmp-kind-select" class="select-input">' + selectOptionsHtml(COMPONENT_KIND_OPTIONS, cmp.kind) + '</select>' +
+
+      '<div class="three-col">' +
+        numberFieldHtml("cmp-size-w", "幅 W", cmp.size.w, { min: 0.5 }) +
+        numberFieldHtml("cmp-size-h", "高さ H", cmp.size.h, { min: 0.5 }) +
+        numberFieldHtml("cmp-size-d", "奥行 D", cmp.size.d, { min: 0.5 }) +
+      '</div>' +
+
+      '<label class="field-label" style="margin-top:16px;">配置(アセンブリ座標)</label>' +
+      '<div class="three-col">' +
+        numberFieldHtml("cmp-pos-x", "X", pos.x) +
+        numberFieldHtml("cmp-pos-y", "Y", pos.y) +
+        numberFieldHtml("cmp-pos-z", "Z", pos.z, { min: 0 }) +
+      '</div>' +
+
+      '<label class="field-label">色</label>' +
+      colorSwatchRowHtml(cmp.color, "set-cmp-color") +
+
+      '<div class="sheet-actions">' +
+        '<button class="btn danger" data-action="delete-component">&#128465;&#65039; 削除</button>' +
+      '</div>' +
+      '<div class="sheet-actions">' +
+        '<button class="btn btn-primary" style="flex:1" data-action="complete-sheet">完了</button>' +
+      '</div>'
+    );
+  }
+
+  function bindComponentSheetEvents(){
+    const ctx = sheetCtx;
+    function currentPlc(){
+      const bundle = Store.getCurrentBundle();
+      return bundle && bundle.placements.find(function(p){ return p.targetType === "component" && p.targetId === ctx.cmpId; });
+    }
+    const nameInput = document.getElementById("cmp-name-input");
+    if (nameInput) nameInput.addEventListener("input", function(){ Store.updateComponent(ctx.cmpId, { name: nameInput.value }); });
+
+    const kindSelect = document.getElementById("cmp-kind-select");
+    if (kindSelect) kindSelect.addEventListener("change", function(){ Store.updateComponent(ctx.cmpId, { kind: kindSelect.value }); });
+
+    const wIn = document.getElementById("cmp-size-w"), hIn = document.getElementById("cmp-size-h"), dIn = document.getElementById("cmp-size-d");
+    function syncSize(){
+      const w = parseFloat(wIn.value), h = parseFloat(hIn.value), d = parseFloat(dIn.value);
+      if (isNaN(w) || isNaN(h) || isNaN(d)) return;
+      Store.updateComponent(ctx.cmpId, { size: { w: w, h: h, d: d } });
+    }
+    [wIn, hIn, dIn].forEach(function(inp){ if (inp) inp.addEventListener("input", syncSize); });
+
+    const xIn = document.getElementById("cmp-pos-x"), yIn = document.getElementById("cmp-pos-y"), zIn = document.getElementById("cmp-pos-z");
+    function syncPos(){
+      const plc = currentPlc(); if (!plc) return;
+      const x = parseFloat(xIn.value), y = parseFloat(yIn.value), z = parseFloat(zIn.value);
+      if (isNaN(x) || isNaN(y) || isNaN(z)) return;
+      Store.updatePlacement(plc.id, { pos: { x: x, y: y, z: z } });
+    }
+    [xIn, yIn, zIn].forEach(function(inp){ if (inp) inp.addEventListener("input", syncPos); });
+  }
+
+  function openComponentSheetFor(cmpId, isNew){
+    const bundle = Store.getCurrentBundle();
+    const cmp = bundle && bundle.components.find(function(c){ return c.id === cmpId; });
+    if (!cmp){ closeSheet(); return; }
+    let plc = bundle.placements.find(function(p){ return p.targetType === "component" && p.targetId === cmpId; });
+    if (!plc){
+      // 防御的フォールバック(通常は add-component が必ずセットで作成するため発生しない)
+      Store.addPlacement({ targetType: "component", targetId: cmpId, pos: { x: 0, y: 0, z: 0 }, orientation: "xy" });
+      plc = Store.getCurrentBundle().placements.find(function(p){ return p.targetType === "component" && p.targetId === cmpId; });
+    }
+    sheetCtx = { kind: "component", cmpId: cmpId, isNew: !!isNew };
+    sheetCancelAction = isNew ? function(){ Store.deleteComponent(cmpId); } : null;
+    openSheet(isNew ? "部品を追加" : "部品を編集", componentSheetBodyHtml(cmp, plc), "#cmp-name-input");
+    bindComponentSheetEvents();
+  }
+
+  /* ---------- タスク3: Zスタック(断面タブ)編集ボトムシート ---------- */
+
+  function zitemSheetBodyHtml(item){
+    return (
+      '<label class="field-label" for="zitem-label-input">ラベル</label>' +
+      '<input type="text" id="zitem-label-input" class="text-input" value="' + escapeHtml(item.label) + '" autocomplete="off">' +
+      numberFieldHtml("zitem-mm-input", "厚み", item.mm, { min: 0 }) +
+      '<div class="sheet-actions">' +
+        '<button class="btn danger" data-action="delete-zitem" data-index="' + '__CTX__' + '">&#128465;&#65039; 削除</button>' +
+      '</div>' +
+      '<div class="sheet-actions">' +
+        '<button class="btn btn-primary" style="flex:1" data-action="complete-sheet">完了</button>' +
+      '</div>'
+    );
+  }
+
+  function bindZItemSheetEvents(){
+    const ctx = sheetCtx;
+    const labelInput = document.getElementById("zitem-label-input");
+    if (labelInput) labelInput.addEventListener("input", function(){ Store.updateZStackItem(ctx.index, { label: labelInput.value }); });
+    const mmInput = document.getElementById("zitem-mm-input");
+    if (mmInput) mmInput.addEventListener("input", function(){
+      const v = parseFloat(mmInput.value);
+      if (isNaN(v) || v < 0) return;
+      Store.updateZStackItem(ctx.index, { mm: v });
+    });
+  }
+
+  function openZItemSheetFor(index, isNew){
+    const bundle = Store.getCurrentBundle();
+    const item = bundle && bundle.zstack.items[index];
+    if (!item){ closeSheet(); return; }
+    sheetCtx = { kind: "zitem", index: index, isNew: !!isNew };
+    sheetCancelAction = isNew ? function(){ Store.removeZStackItem(index); } : null;
+    const html = zitemSheetBodyHtml(item).replace('data-index="__CTX__"', 'data-index="' + index + '"');
+    openSheet(isNew ? "項目を追加" : "項目を編集", html, "#zitem-label-input");
+    bindZItemSheetEvents();
+  }
+
+  function totalDepthSheetBodyHtml(bundle){
+    return (
+      numberFieldHtml("zstack-total-depth-input", "奥行き合計", bundle.zstack.totalDepth, { min: 0 }) +
+      '<div class="sheet-actions">' +
+        '<button class="btn btn-primary" style="flex:1" data-action="complete-sheet">完了</button>' +
+      '</div>'
+    );
+  }
+
+  function openTotalDepthSheet(){
+    sheetCtx = { kind: "zdepth" };
+    sheetCancelAction = null;
+    const bundle = Store.getCurrentBundle();
+    openSheet("奥行き合計を編集", totalDepthSheetBodyHtml(bundle), "#zstack-total-depth-input");
+    const input = document.getElementById("zstack-total-depth-input");
+    if (input) input.addEventListener("input", function(){
+      const v = parseFloat(input.value);
+      if (isNaN(v) || v < 0) return;
+      Store.setZStackTotalDepth(v);
+    });
   }
 
   /* ---------- アクションディスパッチ ---------- */
@@ -2537,29 +3254,188 @@ const UI = (function(){
       case "toggle-part-visible":
         Store.togglePartVisible(id);
         break;
-      case "stub-add-part":
-        showSnackbar("パーツ編集フォームはタスク3で実装予定です");
+
+      /* ---- タスク3: 選択情報バー ---- */
+      case "edit-selection": {
+        const sel = Store.state.ui.selection;
+        if (!sel) break;
+        if (sel.kind === "hole") openHoleSheetFor(sel.partId, sel.holeId, false);
+        else if (sel.kind === "part") openPartSheetFor(sel.partId, false);
+        else if (sel.kind === "component") openComponentSheetFor(sel.cmpId, false);
         break;
-      case "stub-add-component":
-        showSnackbar("部品編集フォームはタスク3で実装予定です");
-        break;
-      case "stub-edit-selection":
-        showSnackbar("編集フォームはタスク3で実装予定です");
-        break;
+      }
       case "duplicate-selection": {
         const sel = Store.state.ui.selection;
-        if (!sel){ break; }
+        if (!sel) break;
         if (sel.kind === "hole"){
           Store.duplicateHole(sel.partId, sel.holeId);
           showSnackbar("穴を複製しました");
         } else if (sel.kind === "part"){
           Store.duplicatePart(sel.partId);
           showSnackbar("パーツを複製しました");
-        } else {
-          showSnackbar("部品の複製はタスク3で実装予定です");
+        } else if (sel.kind === "component"){
+          Store.duplicateComponent(sel.cmpId);
+          showSnackbar("部品を複製しました");
         }
         break;
       }
+
+      /* ---- タスク3: パーツ編集 ---- */
+      case "add-part": {
+        const newId = Store.addPart({});
+        Store.addPlacement({ targetType: "part", targetId: newId, pos: { x: 0, y: 0, z: 0 }, orientation: "xy" });
+        openPartSheetFor(newId, true);
+        break;
+      }
+      case "edit-part":
+        openPartSheetFor(id, false);
+        break;
+      case "delete-part": {
+        sheetCancelAction = null;
+        const bundle = Store.getCurrentBundle();
+        const part = bundle && bundle.parts.find(function(p){ return p.id === sheetCtx.partId; });
+        const label = part ? part.name : "パーツ";
+        const partId = sheetCtx.partId;
+        closeSheet();
+        Store.deletePart(partId);
+        showSnackbar("削除しました: " + label, { actionLabel: "元に戻す", onAction: function(){ Store.undo(); }, duration: 5000 });
+        break;
+      }
+      case "set-part-shape": {
+        if (!sheetCtx || sheetCtx.kind !== "part") break;
+        const bundle = Store.getCurrentBundle();
+        const part = bundle.parts.find(function(p){ return p.id === sheetCtx.partId; });
+        if (!part) break;
+        const shape = el.dataset.shape;
+        const patch = { shape: shape };
+        if (shape === "circle"){
+          patch.size = { d: part.size.d || part.size.w || 100, t: part.size.t || 3 };
+        } else {
+          patch.size = { w: part.size.w || part.size.d || 100, h: part.size.h || part.size.d || 100, t: part.size.t || 3 };
+        }
+        Store.updatePart(sheetCtx.partId, patch);
+        openPartSheetFor(sheetCtx.partId, sheetCtx.isNew);
+        break;
+      }
+      case "set-part-color":
+        if (sheetCtx && sheetCtx.kind === "part"){
+          Store.updatePart(sheetCtx.partId, { color: el.dataset.color });
+          openPartSheetFor(sheetCtx.partId, sheetCtx.isNew);
+        }
+        break;
+      case "apply-inner-depth-to-zstack": {
+        if (!sheetCtx || sheetCtx.kind !== "part") break;
+        const bundle = Store.getCurrentBundle();
+        const part = bundle.parts.find(function(p){ return p.id === sheetCtx.partId; });
+        if (part && part.innerSize){
+          Store.setZStackTotalDepth(part.innerSize.d);
+          showSnackbar("Zスタック合計を更新しました: " + fmtStepVal(part.innerSize.d) + "mm");
+        }
+        break;
+      }
+
+      /* ---- タスク3: 部品(コンポーネント)編集 ---- */
+      case "add-component": {
+        const newId = Store.addComponent({});
+        Store.addPlacement({ targetType: "component", targetId: newId, pos: { x: 0, y: 0, z: 0 }, orientation: "xy" });
+        openComponentSheetFor(newId, true);
+        break;
+      }
+      case "edit-component":
+        openComponentSheetFor(id, false);
+        break;
+      case "delete-component": {
+        sheetCancelAction = null;
+        const bundle = Store.getCurrentBundle();
+        const cmp = bundle && bundle.components.find(function(c){ return c.id === sheetCtx.cmpId; });
+        const label = cmp ? cmp.name : "部品";
+        const cmpId = sheetCtx.cmpId;
+        closeSheet();
+        Store.deleteComponent(cmpId);
+        showSnackbar("削除しました: " + label, { actionLabel: "元に戻す", onAction: function(){ Store.undo(); }, duration: 5000 });
+        break;
+      }
+      case "set-cmp-color":
+        if (sheetCtx && sheetCtx.kind === "component"){
+          Store.updateComponent(sheetCtx.cmpId, { color: el.dataset.color });
+          openComponentSheetFor(sheetCtx.cmpId, sheetCtx.isNew);
+        }
+        break;
+
+      /* ---- タスク3: 穴編集 ---- */
+      case "add-hole": {
+        const partId = el.dataset.partId;
+        const newId = Store.addHole(partId);
+        if (newId) openHoleSheetFor(partId, newId, true);
+        break;
+      }
+      case "edit-hole":
+        openHoleSheetFor(el.dataset.partId, el.dataset.holeId, false);
+        break;
+      case "set-hole-side": {
+        if (!sheetCtx || sheetCtx.kind !== "hole") break;
+        Store.updateHole(sheetCtx.partId, sheetCtx.holeId, { side: el.dataset.side });
+        openHoleSheetFor(sheetCtx.partId, sheetCtx.holeId, sheetCtx.isNew);
+        break;
+      }
+      case "delete-hole": {
+        if (!sheetCtx || sheetCtx.kind !== "hole") break;
+        sheetCancelAction = null;
+        const bundle = Store.getCurrentBundle();
+        const part = bundle.parts.find(function(p){ return p.id === sheetCtx.partId; });
+        const hole = part && part.holes.find(function(h){ return h.id === sheetCtx.holeId; });
+        const label = hole ? hole.name : "穴";
+        const partId = sheetCtx.partId, holeId = sheetCtx.holeId;
+        closeSheet();
+        Store.deleteHole(partId, holeId);
+        showSnackbar("削除しました: " + label, { actionLabel: "元に戻す", onAction: function(){ Store.undo(); }, duration: 5000 });
+        break;
+      }
+      case "duplicate-next-hole": {
+        if (!sheetCtx || sheetCtx.kind !== "hole") break;
+        sheetCancelAction = null;
+        const partId = sheetCtx.partId;
+        const newId = Store.duplicateHole(partId, sheetCtx.holeId);
+        if (newId) openHoleSheetFor(partId, newId, false);
+        break;
+      }
+
+      /* ---- タスク3: Zスタック(断面タブ) ---- */
+      case "edit-zdepth":
+        openTotalDepthSheet();
+        break;
+      case "add-zitem": {
+        Store.addZStackItem({ label: "新しい項目", mm: 0 });
+        const bundle = Store.getCurrentBundle();
+        openZItemSheetFor(bundle.zstack.items.length - 1, true);
+        break;
+      }
+      case "edit-zitem":
+        openZItemSheetFor(parseInt(el.dataset.index, 10), false);
+        break;
+      case "delete-zitem": {
+        sheetCancelAction = null;
+        const idx = parseInt(el.dataset.index, 10);
+        closeSheet();
+        Store.removeZStackItem(idx);
+        showSnackbar("項目を削除しました", { actionLabel: "元に戻す", onAction: function(){ Store.undo(); }, duration: 5000 });
+        break;
+      }
+      case "move-zitem-up":
+        Store.moveZStackItem(parseInt(el.dataset.index, 10), -1);
+        break;
+      case "move-zitem-down":
+        Store.moveZStackItem(parseInt(el.dataset.index, 10), 1);
+        break;
+
+      /* ---- タスク3: 共通完了ボタン・PNG書き出し ---- */
+      case "complete-sheet":
+        completeSheet();
+        break;
+      case "export-view-png":
+        exportCurrentViewPng();
+        break;
+
       default:
         break;
     }
@@ -2606,6 +3482,8 @@ const UI = (function(){
     });
 
     bindViewGestures();
+    bindStepperEvents();
+    bindVisualViewport();
 
     Store.subscribe(render);
   }
