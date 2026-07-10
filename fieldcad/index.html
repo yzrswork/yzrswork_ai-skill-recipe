@@ -276,6 +276,31 @@ button{ cursor:pointer; }
   color:var(--color-text-2);
   box-shadow:var(--shadow-1);
 }
+.sel-row{ margin-bottom:4px; color:var(--color-text); }
+.sel-row:last-of-type{ margin-bottom:0; }
+.sel-type{ color:var(--color-text-2); font-size:11.5px; margin-left:6px; }
+.sel-actions{ display:flex; gap:8px; margin-top:10px; }
+.sel-actions .btn{ flex:1; min-height:38px; font-size:13px; padding:0 10px; }
+
+/* ---------- ビュー描画キャンバス(タスク2) ---------- */
+.view-canvas{
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-m);
+  background:var(--color-surface);
+  overflow:hidden;
+  touch-action:none;
+  height:min(58vh, 440px);
+  min-height:260px;
+  position:relative;
+}
+.view-canvas svg{ width:100%; height:100%; display:block; touch-action:none; }
+.section-canvas{
+  border-radius:var(--radius-m);
+  background:var(--color-surface);
+  box-shadow:var(--shadow-1);
+  padding:8px;
+}
+.section-canvas svg{ width:100%; height:auto; display:block; }
 
 /* パーツ/部品タブ カード */
 .card-list{ display:flex; flex-direction:column; gap:10px; }
@@ -469,7 +494,7 @@ button{ cursor:pointer; }
     <div class="ws-title" id="ws-project-name">プロジェクト名</div>
     <button class="icon-btn" data-action="undo" id="undo-btn" aria-label="元に戻す" disabled>&#8630;</button>
     <button class="icon-btn" data-action="redo" id="redo-btn" aria-label="やり直す" disabled>&#8631;</button>
-    <button class="view-switch-btn" data-action="view-switch-placeholder" id="view-switch-btn">正面図 &#9662;</button>
+    <button class="view-switch-btn" data-action="view-switch" id="view-switch-btn">正面図 &#9662;</button>
   </header>
 
   <div class="ws-body" id="ws-body">
@@ -999,17 +1024,373 @@ const Presets = (function(){
 /* ============================================================
    ===== views(タスク2) =====
    ビュー生成器(純関数): parts + placements + components を
-   viewType に応じてSVG記述へ投影する。
-   TODO(task2): Geometry.projectAABB / Geometry.worldAABB を使い、
-   正面図・背面図(ミラー)・上面図などの SVG 要素配列を生成する実装をここに追加する。
-   出力インターフェース案: renderView(bundle, viewType) => string(SVG markup)
+   viewType に応じてSVG文字列へ投影する。DOMには一切触れない。
+
+   パイプライン(DESIGN.md §9.3):
+     ①ワールド化(Geometry.worldAABB) → ②投影(Geometry.projectAABB)
+     → ③奥行きソート → ④装飾(加工面スタイル・寸法線・レイヤー) → ⑤SVG文字列化
+
+   座標変換は toScreen() 一箇所に集約(mm座標・Y上向き → SVGのY下向きへの反転)。
+   ズーム時も文字が読めるよう、テキストには data-fixed-size(基準pxサイズ)を
+   持たせておき、実際の font-size 決定は UI層が現在の viewBox とコンテナ幅から
+   都度計算する(Views自体は現在のズーム率を知らない=純関数のまま保てる)。
+
+   公開API:
+     Views.renderView(bundle, viewType, options) => { svg, fitViewBox, empty }
+       viewType: "front" | "back" | "top" | "left" | "right"
+       options.selection: { kind:"hole", partId, holeId }
+                        | { kind:"component", cmpId }
+                        | { kind:"part", partId } | null
+     Views.renderSectionSVG(bundle) => svgString(断面/Zスタック帯グラフのSVG版)
 ============================================================ */
 const Views = (function(){
-  function renderView(/* bundle, viewType */){
-    // TODO(task2): 未実装。View タブの #view-svg-container はプレースホルダのまま。
-    return null;
+
+  const DEPTH_AXIS = { front: "z", back: "z", top: "y", left: "x", right: "x" };
+  const VIEW_LABELS = { front: "正面図", back: "背面図", top: "上面図", left: "左側面図", right: "右側面図" };
+
+  function fmtNum(n){
+    const v = Math.round(n * 10) / 10;
+    return (Math.abs(v - Math.round(v)) < 1e-9) ? String(Math.round(v)) : String(v);
   }
-  return { renderView: renderView };
+
+  /** 単一のビュー変換関数: mm座標(u,v; vはY上向き) → SVGローカル座標(x,y; yは下向き) */
+  function toScreen(u, v, bbox){
+    return { x: u - bbox.minU, y: bbox.maxV - v };
+  }
+
+  function mid(a, b){ return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; }
+
+  /* ---------- ①②③: ワールド化・投影・収集 ---------- */
+
+  function collectItems(bundle, viewType){
+    const items = [];
+    bundle.placements.forEach(function(plc){
+      let target = null, kind = null;
+      if (plc.targetType === "part"){
+        target = bundle.parts.find(function(p){ return p.id === plc.targetId; });
+        kind = "part";
+      } else {
+        target = bundle.components.find(function(c){ return c.id === plc.targetId; });
+        kind = "component";
+      }
+      if (!target) return;
+      if (kind === "part" && target.visible === false) return; // レイヤー非表示フィルタ
+      const size = kind === "part" ? Geometry.partBoxSize(target) : target.size;
+      const worldAABB = Geometry.worldAABB(plc.pos, size, plc.orientation);
+      const proj = Geometry.projectAABB(worldAABB, viewType);
+      items.push({
+        kind: kind,
+        id: target.id,
+        name: target.name,
+        color: target.color || "#9E9E9E",
+        opacity: kind === "part" ? (target.opacity != null ? target.opacity : 1) : 0.55,
+        shape: kind === "part" ? target.shape : "rect",
+        part: kind === "part" ? target : null,
+        placement: plc,
+        worldAABB: worldAABB,
+        proj: proj
+      });
+    });
+    return items;
+  }
+
+  function sortByDepth(items, viewType){
+    const axis = DEPTH_AXIS[viewType] || "z";
+    return items.slice().sort(function(a, b){ return a.worldAABB[axis] - b.worldAABB[axis]; });
+  }
+
+  function computeContentBBox(items){
+    let minU = Infinity, minV = Infinity, maxU = -Infinity, maxV = -Infinity;
+    items.forEach(function(it){
+      minU = Math.min(minU, it.proj.u);
+      minV = Math.min(minV, it.proj.v);
+      maxU = Math.max(maxU, it.proj.u + it.proj.w);
+      maxV = Math.max(maxV, it.proj.v + it.proj.h);
+    });
+    if (!isFinite(minU)){ minU = 0; minV = 0; maxU = 100; maxV = 100; }
+    return { minU: minU, minV: minV, maxU: maxU, maxV: maxV };
+  }
+
+  /* ---------- ④装飾: 形状マークアップ ---------- */
+
+  function truncateLabel(name, widthMM){
+    const maxChars = Math.max(0, Math.floor(widthMM / 6.2));
+    if (String(name).length <= maxChars) return name;
+    if (maxChars <= 1) return "";
+    return String(name).slice(0, maxChars - 1) + "…";
+  }
+
+  function partRectMarkup(item, bbox, isSelected){
+    const top = toScreen(item.proj.u, item.proj.v + item.proj.h, bbox);
+    const strokeColor = isSelected ? "var(--color-accent)" : "var(--color-text-2)";
+    const strokeW = isSelected ? 3 : 1.4;
+    return '<rect x="' + top.x.toFixed(2) + '" y="' + top.y.toFixed(2) + '" width="' + item.proj.w.toFixed(2) + '" height="' + item.proj.h.toFixed(2) + '" ' +
+      'fill="' + item.color + '" fill-opacity="' + item.opacity + '" stroke="' + strokeColor + '" stroke-width="' + strokeW + '" vector-effect="non-scaling-stroke" pointer-events="all" ' +
+      'data-kind="part" data-part-id="' + item.id + '"></rect>';
+  }
+
+  function partCircleMarkup(item, bbox, isSelected){
+    const cu = item.proj.u + item.proj.w / 2, cv = item.proj.v + item.proj.h / 2;
+    const c = toScreen(cu, cv, bbox);
+    const r = item.proj.w / 2;
+    const strokeColor = isSelected ? "var(--color-accent)" : "var(--color-text-2)";
+    const strokeW = isSelected ? 3 : 1.4;
+    return '<circle cx="' + c.x.toFixed(2) + '" cy="' + c.y.toFixed(2) + '" r="' + r.toFixed(2) + '" ' +
+      'fill="' + item.color + '" fill-opacity="' + item.opacity + '" stroke="' + strokeColor + '" stroke-width="' + strokeW + '" vector-effect="non-scaling-stroke" pointer-events="all" ' +
+      'data-kind="part" data-part-id="' + item.id + '"></circle>';
+  }
+
+  function componentMarkup(item, bbox, isSelected){
+    const top = toScreen(item.proj.u, item.proj.v + item.proj.h, bbox);
+    const strokeColor = isSelected ? "var(--color-accent)" : "var(--color-text)";
+    const strokeW = isSelected ? 3 : 1.1;
+    let s = '<g data-kind="component" data-id="' + item.id + '">';
+    s += '<rect x="' + top.x.toFixed(2) + '" y="' + top.y.toFixed(2) + '" width="' + item.proj.w.toFixed(2) + '" height="' + item.proj.h.toFixed(2) + '" ' +
+      'fill="' + item.color + '" fill-opacity="' + item.opacity + '" stroke="' + strokeColor + '" stroke-opacity="0.6" stroke-width="' + strokeW + '" vector-effect="non-scaling-stroke" pointer-events="all"></rect>';
+    if (item.proj.w > 13 && item.proj.h > 7){
+      const label = truncateLabel(item.name, item.proj.w);
+      if (label){
+        const cx = top.x + item.proj.w / 2, cy = top.y + item.proj.h / 2;
+        s += '<text x="' + cx.toFixed(2) + '" y="' + cy.toFixed(2) + '" text-anchor="middle" dominant-baseline="middle" ' +
+          'font-size="10" data-fixed-size="10" fill="#ffffff" style="pointer-events:none;">' + escapeHtml(label) + '</text>';
+      }
+    }
+    s += '</g>';
+    return s;
+  }
+
+  /* ---------- 穴(パーツローカル座標 → 配置経由でビュー座標へ) ---------- */
+
+  function holesMarkup(bundle, viewType, bbox, selection){
+    if (viewType !== "front" && viewType !== "back") return ""; // XY面(orientation:xy)の穴のみ。上面図等は省略
+    let s = "";
+    bundle.placements.forEach(function(plc){
+      if (plc.targetType !== "part" || plc.orientation !== "xy") return;
+      const part = bundle.parts.find(function(p){ return p.id === plc.targetId; });
+      if (!part || part.visible === false || !part.holes || !part.holes.length) return;
+      part.holes.forEach(function(hole){
+        const worldX = plc.pos.x + hole.pos.x;
+        const worldY = plc.pos.y + hole.pos.y;
+        // 背面図はX軸ミラー(projectAABBの back 変換と同じ点対称則: u = -worldX)
+        const u = (viewType === "back") ? -worldX : worldX;
+        const v = worldY;
+        const c = toScreen(u, v, bbox);
+        const r = (hole.dim && hole.dim.d ? hole.dim.d : 5) / 2;
+        const isBack = hole.side === "back";
+        const isSel = !!(selection && selection.kind === "hole" && selection.holeId === hole.id);
+        const strokeColor = isSel ? "var(--color-accent)" : (isBack ? "var(--color-back)" : "var(--color-front)");
+        const strokeW = isSel ? 3 : 1.6;
+        const dash = isBack ? ' stroke-dasharray="4 3"' : "";
+        s += '<circle cx="' + c.x.toFixed(2) + '" cy="' + c.y.toFixed(2) + '" r="' + r.toFixed(2) + '" fill="none" ' +
+          'stroke="' + strokeColor + '" stroke-width="' + strokeW + '" vector-effect="non-scaling-stroke" pointer-events="all"' + dash +
+          ' data-kind="hole" data-part-id="' + part.id + '" data-hole-id="' + hole.id + '"></circle>';
+        // φ注記(密集時の重なり回避は行わない簡易実装。DESIGN.md §12-7 許容範囲)
+        const diamLabel = hole.type === "circle" ? ("φ" + fmtNum(hole.dim.d)) : "";
+        if (diamLabel){
+          s += '<text x="' + (c.x + r + 3).toFixed(2) + '" y="' + (c.y - r - 3).toFixed(2) + '" font-size="9" data-fixed-size="9" ' +
+            'fill="var(--color-text)" style="pointer-events:none;">' + diamLabel + '</text>';
+        }
+        if (isBack){
+          s += '<text x="' + (c.x + r + 3).toFixed(2) + '" y="' + (c.y + r + 10).toFixed(2) + '" font-size="8.5" data-fixed-size="8.5" ' +
+            'fill="var(--color-back)" font-weight="700" style="pointer-events:none;">[裏]</text>';
+        }
+      });
+    });
+    return s;
+  }
+
+  /* ---------- 寸法線 ---------- */
+
+  function arrowHead(tipX, tipY, dx, dy, size){
+    const nx = -dy, ny = dx;
+    const bx = tipX - dx * size, by = tipY - dy * size;
+    const p1x = bx + nx * size * 0.5, p1y = by + ny * size * 0.5;
+    const p2x = bx - nx * size * 0.5, p2y = by - ny * size * 0.5;
+    return '<polygon points="' + tipX.toFixed(2) + ',' + tipY.toFixed(2) + ' ' + p1x.toFixed(2) + ',' + p1y.toFixed(2) + ' ' + p2x.toFixed(2) + ',' + p2y.toFixed(2) + '" fill="var(--color-text-2)"></polygon>';
+  }
+
+  function dimArrowLine(p1, p2){
+    const dx = p2.x - p1.x, dy = p2.y - p1.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const ux = dx / len, uy = dy / len;
+    let s = '<line x1="' + p1.x.toFixed(2) + '" y1="' + p1.y.toFixed(2) + '" x2="' + p2.x.toFixed(2) + '" y2="' + p2.y.toFixed(2) + '" ' +
+      'stroke="var(--color-text-2)" stroke-width="1" vector-effect="non-scaling-stroke"></line>';
+    s += arrowHead(p1.x, p1.y, -ux, -uy, 3);
+    s += arrowHead(p2.x, p2.y, ux, uy, 3);
+    return s;
+  }
+
+  function extLine(a, b){
+    return '<line x1="' + a.x.toFixed(2) + '" y1="' + a.y.toFixed(2) + '" x2="' + b.x.toFixed(2) + '" y2="' + b.y.toFixed(2) + '" ' +
+      'stroke="var(--color-text-2)" stroke-width="0.75" vector-effect="non-scaling-stroke" stroke-dasharray="1.5 1.5"></line>';
+  }
+
+  function dimText(pt, label, opts){
+    opts = opts || {};
+    const size = opts.size || 10;
+    const color = opts.color || "var(--color-text-2)";
+    const anchor = opts.anchor || "middle";
+    const dy = opts.dy != null ? opts.dy : -3;
+    return '<text x="' + pt.x.toFixed(2) + '" y="' + (pt.y + dy).toFixed(2) + '" text-anchor="' + anchor + '" ' +
+      'font-size="' + size + '" data-fixed-size="' + size + '" fill="' + color + '" style="pointer-events:none;">' + escapeHtml(label) + '</text>';
+  }
+
+  /** パーツ外形の全幅・全高の寸法線(図の外側、段積みでlevel毎にオフセット) */
+  function partOverallDimMarkup(item, level, bbox){
+    const offset = 11 + level * 15;
+    const u0 = item.proj.u, u1 = item.proj.u + item.proj.w;
+    const v0 = item.proj.v, v1 = item.proj.v + item.proj.h;
+    let s = "";
+
+    // 全幅(下側)
+    const dimV = v0 - offset;
+    const p1 = toScreen(u0, dimV, bbox), p2 = toScreen(u1, dimV, bbox);
+    s += extLine(toScreen(u0, v0, bbox), toScreen(u0, dimV - 3, bbox));
+    s += extLine(toScreen(u1, v0, bbox), toScreen(u1, dimV - 3, bbox));
+    s += dimArrowLine(p1, p2);
+    s += dimText(mid(p1, p2), fmtNum(item.proj.w) + "mm", { dy: -3 });
+
+    // 全高(左側)
+    const dimU = u0 - offset;
+    const q1 = toScreen(dimU, v0, bbox), q2 = toScreen(dimU, v1, bbox);
+    s += extLine(toScreen(u0, v0, bbox), toScreen(dimU - 3, v0, bbox));
+    s += extLine(toScreen(u0, v1, bbox), toScreen(dimU - 3, v1, bbox));
+    s += dimArrowLine(q1, q2);
+    const qm = mid(q1, q2);
+    s += '<text x="' + qm.x.toFixed(2) + '" y="' + qm.y.toFixed(2) + '" text-anchor="middle" font-size="10" data-fixed-size="10" ' +
+      'fill="var(--color-text-2)" transform="rotate(-90 ' + qm.x.toFixed(2) + ' ' + qm.y.toFixed(2) + ')" style="pointer-events:none;">' + fmtNum(item.proj.h) + 'mm</text>';
+
+    return s;
+  }
+
+  /** 選択中の穴のみ: パーツ原点(左下)からのX/Y寸法線(F-45) */
+  function selectedHoleDimMarkup(bundle, viewType, bbox, selection){
+    if (!selection || selection.kind !== "hole") return "";
+    if (viewType !== "front" && viewType !== "back") return "";
+    const part = bundle.parts.find(function(p){ return p.id === selection.partId; });
+    if (!part) return "";
+    const plc = bundle.placements.find(function(p){ return p.targetType === "part" && p.targetId === part.id; });
+    if (!plc) return "";
+    const hole = part.holes.find(function(h){ return h.id === selection.holeId; });
+    if (!hole) return "";
+
+    const originWorldX = plc.pos.x, originWorldY = plc.pos.y;
+    const originU = (viewType === "back") ? -originWorldX : originWorldX;
+    const originV = originWorldY;
+    const holeWorldX = plc.pos.x + hole.pos.x, holeWorldY = plc.pos.y + hole.pos.y;
+    const holeU = (viewType === "back") ? -holeWorldX : holeWorldX;
+    const holeV = holeWorldY;
+
+    const o = toScreen(originU, originV, bbox);
+    const corner = toScreen(holeU, originV, bbox);
+    const hpt = toScreen(holeU, holeV, bbox);
+
+    let s = '<g class="dim-selected-hole">';
+    s += '<line x1="' + o.x.toFixed(2) + '" y1="' + o.y.toFixed(2) + '" x2="' + corner.x.toFixed(2) + '" y2="' + corner.y.toFixed(2) + '" stroke="var(--color-accent)" stroke-width="1.2" stroke-dasharray="3 2" vector-effect="non-scaling-stroke"></line>';
+    s += '<line x1="' + corner.x.toFixed(2) + '" y1="' + corner.y.toFixed(2) + '" x2="' + hpt.x.toFixed(2) + '" y2="' + hpt.y.toFixed(2) + '" stroke="var(--color-accent)" stroke-width="1.2" stroke-dasharray="3 2" vector-effect="non-scaling-stroke"></line>';
+    s += dimText(mid(o, corner), "X:" + fmtNum(hole.pos.x), { color: "var(--color-accent)", dy: -3 });
+    s += dimText(mid(corner, hpt), "Y:" + fmtNum(hole.pos.y), { color: "var(--color-accent)", anchor: "start", dy: 3 });
+    s += '<circle cx="' + o.x.toFixed(2) + '" cy="' + o.y.toFixed(2) + '" r="2.2" fill="var(--color-accent)"></circle>';
+    s += '</g>';
+    return s;
+  }
+
+  /* ---------- ⑤SVG出力 ---------- */
+
+  function renderView(bundle, viewType, options){
+    options = options || {};
+    const selection = options.selection || null;
+    if (!bundle) return { svg: "", fitViewBox: { x: 0, y: 0, w: 100, h: 100 }, empty: true };
+
+    const items = collectItems(bundle, viewType);
+    if (items.length === 0){
+      const fb = { x: 0, y: 0, w: 100, h: 100 };
+      return { svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"></svg>', fitViewBox: fb, empty: true };
+    }
+
+    const sorted = sortByDepth(items, viewType);
+    const dimTargets = items.filter(function(it){ return it.kind === "part" && it.placement.orientation === "xy" && it.shape !== "circle"; });
+    const bbox = computeContentBBox(items);
+    const dimLevels = dimTargets.length;
+
+    const padLeft = 20 + dimLevels * 16;
+    const padBottom = 20 + dimLevels * 16;
+    const padTop = 16;
+    const padRight = 16;
+    const contentW = Math.max(1, bbox.maxU - bbox.minU);
+    const contentH = Math.max(1, bbox.maxV - bbox.minV);
+
+    const fitViewBox = { x: -padLeft, y: -padTop, w: contentW + padLeft + padRight, h: contentH + padTop + padBottom };
+
+    let body = "";
+    sorted.forEach(function(item){
+      const isSelected = !!(selection && (
+        (selection.kind === "part" && item.kind === "part" && selection.partId === item.id) ||
+        (selection.kind === "component" && item.kind === "component" && selection.cmpId === item.id)
+      ));
+      if (item.kind === "part" && item.shape === "circle" && (viewType === "front" || viewType === "back")){
+        body += partCircleMarkup(item, bbox, isSelected);
+      } else if (item.kind === "part"){
+        body += partRectMarkup(item, bbox, isSelected);
+      } else {
+        body += componentMarkup(item, bbox, isSelected);
+      }
+    });
+
+    body += holesMarkup(bundle, viewType, bbox, selection);
+    dimTargets.forEach(function(item, idx){ body += partOverallDimMarkup(item, idx, bbox); });
+    body += selectedHoleDimMarkup(bundle, viewType, bbox, selection);
+
+    if (viewType === "back"){
+      const noteY = contentH + padBottom - 6;
+      body += '<text x="' + (contentW / 2).toFixed(2) + '" y="' + noteY.toFixed(2) + '" text-anchor="middle" font-size="11" data-fixed-size="11" ' +
+        'fill="var(--color-back)" font-weight="700" style="pointer-events:none;">裏から見た図(左右反転済み)</text>';
+    }
+
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + fitViewBox.x + ' ' + fitViewBox.y + ' ' + fitViewBox.w + ' ' + fitViewBox.h + '" preserveAspectRatio="xMidYMid meet">' + body + '</svg>';
+    return { svg: svg, fitViewBox: fitViewBox, empty: false };
+  }
+
+  /* ---------- 断面/Zタブ: 積み上げ断面SVG(静的。切断位置スライダーはv1.0スコープ) ---------- */
+
+  function renderSectionSVG(bundle){
+    const warnMm = (bundle.project.settings && bundle.project.settings.clearanceWarnMm != null) ? bundle.project.settings.clearanceWarnMm : 5;
+    const result = Geometry.stackIntervals(bundle.zstack.items, bundle.zstack.totalDepth, warnMm);
+    const totalDepth = Math.max(bundle.zstack.totalDepth || 0, result.sum, 1);
+
+    const barX = 60, barW = 70, barTop = 14, barH = 190;
+    const scale = barH / totalDepth;
+    const colors = ["#4FC3F7", "#B0BEC5", "#81C784", "#FFB74D", "#BA68C8", "#4DD0E1"];
+
+    let body = "";
+    result.segments.forEach(function(seg, i){
+      const y = barTop + seg.start * scale;
+      const h = Math.max(seg.mm * scale, 1);
+      body += '<rect x="' + barX + '" y="' + y.toFixed(2) + '" width="' + barW + '" height="' + h.toFixed(2) + '" fill="' + colors[i % colors.length] + '" stroke="var(--color-text)" stroke-opacity="0.3" stroke-width="1"></rect>';
+      body += '<text x="' + (barX + barW + 10) + '" y="' + (y + h / 2 + 4).toFixed(2) + '" font-size="12.5" fill="var(--color-text)">' + escapeHtml(seg.label) + ' ' + fmtNum(seg.mm) + 'mm</text>';
+    });
+
+    const remColor = result.status === "ok" ? "var(--color-ok)" : (result.status === "warn" ? "var(--color-warn)" : "var(--color-danger)");
+    if (result.remaining > 0){
+      const remY = barTop + result.sum * scale;
+      const remH = result.remaining * scale;
+      body += '<rect x="' + barX + '" y="' + remY.toFixed(2) + '" width="' + barW + '" height="' + remH.toFixed(2) + '" fill="' + remColor + '" fill-opacity="0.55" stroke="' + remColor + '" stroke-width="1.5"></rect>';
+      body += '<text x="' + (barX + barW + 10) + '" y="' + (remY + remH / 2 + 4).toFixed(2) + '" font-size="12.5" fill="' + remColor + '" font-weight="700">残り ' + result.remaining.toFixed(1) + 'mm</text>';
+    } else {
+      body += '<text x="' + (barX + barW + 10) + '" y="' + (barTop + barH + 16) + '" font-size="12.5" fill="var(--color-danger)" font-weight="700">干渉 ' + result.remaining.toFixed(1) + 'mm</text>';
+    }
+
+    body += '<rect x="' + barX + '" y="' + barTop + '" width="' + barW + '" height="' + barH + '" fill="none" stroke="var(--color-text)" stroke-width="1.6"></rect>';
+    body += '<text x="' + barX + '" y="' + (barTop - 5) + '" font-size="11" fill="var(--color-text-2)">Z断面(奥行き' + fmtNum(totalDepth) + 'mm)</text>';
+
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 ' + (barTop + barH + 26) + '" preserveAspectRatio="xMidYMid meet">' + body + '</svg>';
+  }
+
+  return {
+    renderView: renderView,
+    renderSectionSVG: renderSectionSVG,
+    VIEW_LABELS: VIEW_LABELS
+  };
 })();
 
 /* ============================================================
@@ -1510,6 +1891,17 @@ const UI = (function(){
   let snackbarTimer = null;
   let snackbarActionCb = null;
 
+  // ---- ビュー(タスク2): ズーム/パン状態は viewType ごとに保持し、render() を跨いで維持する ----
+  let viewportByType = {};   // { front: {x,y,w,h}, back: {...}, ... } 現在のSVG viewBox
+  let fitBoxByType = {};     // 直近の renderView() が返した「全体表示」用 viewBox
+  let gesturePointers = new Map(); // pointerId -> {x,y}
+  let gestureStartDist = null;
+  let gestureStartVB = null;
+  let gestureMid = null;
+  let dragStart = null;      // { x, y, vb }
+  let tapCandidate = null;   // { x, y, time, moved }
+  let lastTapInfo = null;    // ダブルタップ判定用 { x, y, time }
+
   function cacheDom(){
     dom.storageBanner = document.getElementById("storage-banner");
     dom.screenHome = document.getElementById("screen-home");
@@ -1525,10 +1917,12 @@ const UI = (function(){
     dom.tabContentComponents = document.getElementById("tab-content-components");
     dom.tabContentSection = document.getElementById("tab-content-section");
     dom.layerChips = document.getElementById("layer-chips");
+    dom.viewSvgContainer = document.getElementById("view-svg-container");
     dom.selectionInfoBar = document.getElementById("selection-info-bar");
     dom.partsCardList = document.getElementById("parts-card-list");
     dom.componentsCardList = document.getElementById("components-card-list");
     dom.zstackContainer = document.getElementById("zstack-container");
+    dom.sectionViewPlaceholder = document.getElementById("section-view-placeholder");
     dom.sheetOverlay = document.getElementById("sheet-overlay");
     dom.sheetTitle = document.getElementById("sheet-title");
     dom.sheetBody = document.getElementById("sheet-body");
@@ -1536,6 +1930,162 @@ const UI = (function(){
     dom.snackbarText = document.getElementById("snackbar-text");
     dom.snackbarAction = document.getElementById("snackbar-action");
     dom.importFileInput = document.getElementById("import-file-input");
+  }
+
+  /* ---------- ビュー(タスク2): ズーム/パン/選択のジェスチャ処理 ----------
+     touch-action:none にしたコンテナ上で Pointer Events を自前ハンドリングする。
+     1本指ドラッグ=パン、2本指ピンチ=ズーム、タップ=要素選択、ダブルタップ=フィット。
+     マウスは pointerType:"mouse" として同じ経路を通る(ドラッグパン)ため、
+     ホイールのみ別途ズームとして扱う。 */
+
+  function distOf(a, b){ return Math.hypot(a.x - b.x, a.y - b.y); }
+  function midOf(a, b){ return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; }
+  function clampNum(v, lo, hi){ return Math.min(hi, Math.max(lo, v)); }
+
+  function currentViewType(){ return Store.state.ui.activeView; }
+
+  function rescaleFixedText(svgEl, vb){
+    if (!svgEl || !vb) return;
+    const rect = svgEl.getBoundingClientRect();
+    if (!rect.width) return;
+    const mmPerPx = vb.w / rect.width;
+    const nodes = svgEl.querySelectorAll("[data-fixed-size]");
+    for (let i = 0; i < nodes.length; i++){
+      const n = nodes[i];
+      const base = parseFloat(n.getAttribute("data-fixed-size")) || 10;
+      n.setAttribute("font-size", (base * mmPerPx).toFixed(3));
+    }
+  }
+
+  function applyViewportToDom(){
+    const svgEl = dom.viewSvgContainer.querySelector("svg");
+    const vt = currentViewType();
+    const vb = viewportByType[vt];
+    if (!svgEl || !vb) return;
+    svgEl.setAttribute("viewBox", vb.x + " " + vb.y + " " + vb.w + " " + vb.h);
+    rescaleFixedText(svgEl, vb);
+  }
+
+  function fitToContent(){
+    const vt = currentViewType();
+    const fit = fitBoxByType[vt];
+    if (!fit) return;
+    viewportByType[vt] = Object.assign({}, fit);
+    applyViewportToDom();
+  }
+
+  function applyZoom(vt, baseVB, factor, midClient, container){
+    const rect = container.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const fracX = (midClient.x - rect.left) / rect.width;
+    const fracY = (midClient.y - rect.top) / rect.height;
+    let newW = baseVB.w * factor;
+    let newH = baseVB.h * factor;
+    const minW = 15, maxW = 4000;
+    if (newW < minW){ const s = minW / newW; newW *= s; newH *= s; }
+    if (newW > maxW){ const s = maxW / newW; newW *= s; newH *= s; }
+    const anchorX = baseVB.x + fracX * baseVB.w;
+    const anchorY = baseVB.y + fracY * baseVB.h;
+    viewportByType[vt] = { x: anchorX - fracX * newW, y: anchorY - fracY * newH, w: newW, h: newH };
+    applyViewportToDom();
+  }
+
+  function applyPan(vt, baseVB, dxPx, dyPx, container){
+    const rect = container.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const mmPerPxX = baseVB.w / rect.width, mmPerPxY = baseVB.h / rect.height;
+    viewportByType[vt] = { x: baseVB.x - dxPx * mmPerPxX, y: baseVB.y - dyPx * mmPerPxY, w: baseVB.w, h: baseVB.h };
+    applyViewportToDom();
+  }
+
+  function selectionFromElement(el){
+    const target = el && el.closest ? el.closest("[data-kind]") : null;
+    if (!target) return null;
+    const kind = target.getAttribute("data-kind");
+    if (kind === "hole") return { kind: "hole", partId: target.getAttribute("data-part-id"), holeId: target.getAttribute("data-hole-id") };
+    if (kind === "component") return { kind: "component", cmpId: target.getAttribute("data-id") };
+    if (kind === "part") return { kind: "part", partId: target.getAttribute("data-part-id") };
+    return null;
+  }
+
+  function handleViewTap(clientX, clientY){
+    const now = Date.now();
+    if (lastTapInfo && (now - lastTapInfo.time) < 350 && distOf({ x: clientX, y: clientY }, lastTapInfo) < 40){
+      lastTapInfo = null;
+      fitToContent();
+      return;
+    }
+    lastTapInfo = { x: clientX, y: clientY, time: now };
+    const el = document.elementFromPoint(clientX, clientY);
+    const sel = selectionFromElement(el);
+    Store.setSelection(sel);
+  }
+
+  function bindViewGestures(){
+    const container = dom.viewSvgContainer;
+
+    container.addEventListener("pointerdown", function(e){
+      if (container.setPointerCapture){
+        try { container.setPointerCapture(e.pointerId); } catch (err){ /* noop */ }
+      }
+      gesturePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      const vt = currentViewType();
+      if (!viewportByType[vt]) return;
+      if (gesturePointers.size === 1){
+        tapCandidate = { x: e.clientX, y: e.clientY, time: Date.now(), moved: false };
+        dragStart = { x: e.clientX, y: e.clientY, vb: Object.assign({}, viewportByType[vt]) };
+      } else if (gesturePointers.size === 2){
+        tapCandidate = null;
+        const pts = Array.from(gesturePointers.values());
+        gestureStartDist = distOf(pts[0], pts[1]);
+        gestureMid = midOf(pts[0], pts[1]);
+        gestureStartVB = Object.assign({}, viewportByType[vt]);
+      }
+    });
+
+    container.addEventListener("pointermove", function(e){
+      if (!gesturePointers.has(e.pointerId)) return;
+      gesturePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      const vt = currentViewType();
+      if (gesturePointers.size >= 2 && gestureStartDist){
+        const pts = Array.from(gesturePointers.values()).slice(0, 2);
+        const d = distOf(pts[0], pts[1]) || 1;
+        const factor = clampNum(gestureStartDist / d, 0.05, 20);
+        applyZoom(vt, gestureStartVB, factor, gestureMid, container);
+      } else if (gesturePointers.size === 1 && dragStart){
+        const dx = e.clientX - dragStart.x, dy = e.clientY - dragStart.y;
+        if (tapCandidate && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) tapCandidate.moved = true;
+        applyPan(vt, dragStart.vb, dx, dy, container);
+      }
+    });
+
+    function endPointer(e){
+      gesturePointers.delete(e.pointerId);
+      if (gesturePointers.size < 2){ gestureStartDist = null; gestureStartVB = null; gestureMid = null; }
+      if (gesturePointers.size === 0){
+        dragStart = null;
+        if (tapCandidate && !tapCandidate.moved && (Date.now() - tapCandidate.time) < 500){
+          handleViewTap(tapCandidate.x, tapCandidate.y);
+        }
+        tapCandidate = null;
+      }
+    }
+    container.addEventListener("pointerup", endPointer);
+    container.addEventListener("pointercancel", endPointer);
+    container.addEventListener("pointerleave", function(e){
+      // マウスがコンテナ外に出たらドラッグ状態のみ解除(タップ判定は行わない)
+      if (gesturePointers.has(e.pointerId) && gesturePointers.size === 1) tapCandidate = null;
+    });
+
+    // デスクトップ検証用: ホイールズーム
+    container.addEventListener("wheel", function(e){
+      e.preventDefault();
+      const vt = currentViewType();
+      const base = viewportByType[vt];
+      if (!base) return;
+      const factor = e.deltaY > 0 ? 1.12 : 0.89;
+      applyZoom(vt, base, factor, { x: e.clientX, y: e.clientY }, container);
+    }, { passive: false });
   }
 
   /* ---------- ボトムシート ---------- */
@@ -1627,6 +2177,7 @@ const UI = (function(){
     dom.wsProjectName.textContent = bundle.project.name;
     dom.undoBtn.disabled = Store.state.undoStack.length === 0;
     dom.redoBtn.disabled = Store.state.redoStack.length === 0;
+    dom.viewSwitchBtn.textContent = (Views.VIEW_LABELS[Store.state.ui.activeView] || "正面図") + " ▾";
 
     const tabs = ["view", "parts", "components", "section"];
     const contents = {
@@ -1658,12 +2209,74 @@ const UI = (function(){
         '</button>'
       );
     }).join("") || '<span class="section-note">パーツがありません</span>';
-    // selection-info-bar, view-svg-container はタスク2実装までプレースホルダのまま(HTML側の静的内容を保持)
+
+    const viewType = Store.state.ui.activeView || "front";
+    const selection = Store.state.ui.selection;
+    const result = Views.renderView(bundle, viewType, { selection: selection });
+
+    dom.viewSvgContainer.className = "view-canvas";
+    if (result.empty){
+      dom.viewSvgContainer.innerHTML = '<div style="padding:24px;text-align:center;color:var(--color-text-2);font-size:13px;line-height:1.7;">表示できるパーツ/部品がありません&#10;パーツタブから追加してください</div>';
+    } else {
+      dom.viewSvgContainer.innerHTML = result.svg;
+      fitBoxByType[viewType] = result.fitViewBox;
+      if (!viewportByType[viewType]) viewportByType[viewType] = Object.assign({}, result.fitViewBox);
+      applyViewportToDom();
+    }
+
+    renderSelectionInfoBar(bundle, selection);
   }
 
   function partSizeLabel(part){
     if (part.shape === "circle") return "φ" + part.size.d + "×" + part.size.t + "mm";
     return part.size.w + "×" + part.size.h + "×" + part.size.t + "mm";
+  }
+
+  /** 選択情報バー(F-45連携): 名前/種別/寸法/X,Y/加工面 + 編集(タスク3スタブ)/複製 */
+  function renderSelectionInfoBar(bundle, selection){
+    if (!selection){
+      dom.selectionInfoBar.innerHTML = '要素(穴・部品・パーツ)をタップすると詳細がここに表示されます。';
+      return;
+    }
+    let bodyHtml = "";
+    if (selection.kind === "hole"){
+      const part = bundle.parts.find(function(p){ return p.id === selection.partId; });
+      const hole = part && part.holes.find(function(h){ return h.id === selection.holeId; });
+      if (!hole){
+        dom.selectionInfoBar.innerHTML = "選択中の要素が見つかりません(削除された可能性があります)。";
+        return;
+      }
+      const dimLabel = hole.type === "circle" ? ("φ" + hole.dim.d + "mm") : "";
+      const sideLabel = hole.side === "back" ? "裏" : "表";
+      bodyHtml =
+        '<div class="sel-row"><strong>' + escapeHtml(hole.name) + '</strong><span class="sel-type">穴</span></div>' +
+        '<div class="sel-row">' + dimLabel + ' ・ X:' + hole.pos.x + ' Y:' + hole.pos.y + ' ・ 加工面: ' + sideLabel + '(' + escapeHtml(part.name) + ')</div>';
+    } else if (selection.kind === "component"){
+      const cmp = bundle.components.find(function(c){ return c.id === selection.cmpId; });
+      if (!cmp){
+        dom.selectionInfoBar.innerHTML = "選択中の要素が見つかりません(削除された可能性があります)。";
+        return;
+      }
+      const plc = bundle.placements.find(function(p){ return p.targetType === "component" && p.targetId === cmp.id; });
+      bodyHtml =
+        '<div class="sel-row"><strong>' + escapeHtml(cmp.name) + '</strong><span class="sel-type">部品</span></div>' +
+        '<div class="sel-row">' + cmp.size.w + '×' + cmp.size.h + '×' + cmp.size.d + 'mm' +
+          (plc ? (' ・ X:' + plc.pos.x + ' Y:' + plc.pos.y + ' Z:' + plc.pos.z) : ' ・ 未配置') + '</div>';
+    } else if (selection.kind === "part"){
+      const part = bundle.parts.find(function(p){ return p.id === selection.partId; });
+      if (!part){
+        dom.selectionInfoBar.innerHTML = "選択中の要素が見つかりません(削除された可能性があります)。";
+        return;
+      }
+      bodyHtml =
+        '<div class="sel-row"><strong>' + escapeHtml(part.name) + '</strong><span class="sel-type">パーツ</span></div>' +
+        '<div class="sel-row">' + partSizeLabel(part) + ' ・ 穴' + part.holes.length + '個</div>';
+    }
+    bodyHtml += '<div class="sel-actions">' +
+      '<button class="btn" data-action="stub-edit-selection">&#9999;&#65039; 編集</button>' +
+      '<button class="btn" data-action="duplicate-selection">&#10697; 複製</button>' +
+      '</div>';
+    dom.selectionInfoBar.innerHTML = bodyHtml;
   }
 
   function renderPartsTab(bundle){
@@ -1750,6 +2363,10 @@ const UI = (function(){
         '<div class="zstack-status-line remaining-' + result.status + '">' + statusIcon + ' ' + statusText + '(残り' + result.remaining.toFixed(1) + 'mm / しきい値' + warnMm + 'mm)</div>' +
       '</div>'
     );
+
+    // ★タスク2: 側面から見た積層断面SVG(切断位置スライダーはv1.0スコープにつき未実装)
+    dom.sectionViewPlaceholder.className = "section-canvas";
+    dom.sectionViewPlaceholder.innerHTML = Views.renderSectionSVG(bundle);
   }
 
   function render(){
@@ -1805,6 +2422,16 @@ const UI = (function(){
       '<label class="field-label">バックアップ</label>' +
       '<button class="btn" style="width:100%" data-action="trigger-import">JSONファイルを読み込む(インポート)</button>'
     );
+  }
+
+  /** ビュー切替パレット(タスク2): 正面/背面/上面(MVP)+ 左右側面(投影関数は対応済みのため有効化) */
+  function viewSwitchSheetHtml(){
+    const order = ["front", "back", "top", "left", "right"];
+    const current = Store.state.ui.activeView;
+    return '<div class="action-list">' + order.map(function(v){
+      const mark = (v === current) ? " ✓" : "";
+      return '<button class="action-item" data-action="select-view" data-view="' + v + '">' + Views.VIEW_LABELS[v] + mark + '</button>';
+    }).join("") + '</div>';
   }
 
   /* ---------- アクションディスパッチ ---------- */
@@ -1897,8 +2524,12 @@ const UI = (function(){
       case "redo":
         Store.redo();
         break;
-      case "view-switch-placeholder":
-        showSnackbar("ビュー切替はタスク2で実装予定です");
+      case "view-switch":
+        openSheet("ビューを切り替え", viewSwitchSheetHtml());
+        break;
+      case "select-view":
+        Store.setActiveView(el.dataset.view);
+        closeSheet();
         break;
       case "set-tab":
         Store.setActiveTab(el.dataset.tab);
@@ -1912,6 +2543,23 @@ const UI = (function(){
       case "stub-add-component":
         showSnackbar("部品編集フォームはタスク3で実装予定です");
         break;
+      case "stub-edit-selection":
+        showSnackbar("編集フォームはタスク3で実装予定です");
+        break;
+      case "duplicate-selection": {
+        const sel = Store.state.ui.selection;
+        if (!sel){ break; }
+        if (sel.kind === "hole"){
+          Store.duplicateHole(sel.partId, sel.holeId);
+          showSnackbar("穴を複製しました");
+        } else if (sel.kind === "part"){
+          Store.duplicatePart(sel.partId);
+          showSnackbar("パーツを複製しました");
+        } else {
+          showSnackbar("部品の複製はタスク3で実装予定です");
+        }
+        break;
+      }
       default:
         break;
     }
@@ -1956,6 +2604,8 @@ const UI = (function(){
       e.target.value = "";
       if (file) Store.importProjectFromFile(file);
     });
+
+    bindViewGestures();
 
     Store.subscribe(render);
   }
