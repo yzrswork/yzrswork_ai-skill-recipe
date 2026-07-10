@@ -1,0 +1,3544 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f2f2f7">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23007aff'/%3E%3Ctext x='50' y='68' font-size='58' text-anchor='middle' fill='white' font-family='sans-serif'%3EF%3C/text%3E%3C/svg%3E">
+<title>FieldCAD - 現場寸法記録・レイアウト可視化</title>
+<style>
+/* ============================================================
+   デザイントークン
+============================================================ */
+:root{
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --tap-min: 44px;
+  --radius-s: 8px;
+  --radius-m: 14px;
+  --radius-l: 20px;
+
+  --color-bg: #f2f2f7;
+  --color-surface: #ffffff;
+  --color-surface-2: #ececed;
+  --color-text: #1c1c1e;
+  --color-text-2: #6e6e73;
+  --color-border: #d8d8dc;
+  --color-accent: #007aff;
+  --color-accent-text: #ffffff;
+  --color-danger: #ff3b30;
+  --color-ok: #2fa84a;
+  --color-warn: #b8860b;
+  --color-front: #007aff;
+  --color-back: #d9770a;
+  --shadow-1: 0 1px 3px rgba(0,0,0,0.14);
+  --shadow-2: 0 6px 24px rgba(0,0,0,0.22);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --color-bg:#000000;
+    --color-surface:#1c1c1e;
+    --color-surface-2:#2c2c2e;
+    --color-text:#f2f2f7;
+    --color-text-2:#98989d;
+    --color-border:#3a3a3c;
+    --color-accent:#0a84ff;
+    --color-accent-text:#ffffff;
+    --color-danger:#ff453a;
+    --color-ok:#32d74b;
+    --color-warn:#ffd60a;
+    --color-front:#0a84ff;
+    --color-back:#ff9f0a;
+    --shadow-1: 0 1px 3px rgba(0,0,0,0.5);
+    --shadow-2: 0 6px 28px rgba(0,0,0,0.6);
+    color-scheme: dark;
+  }
+}
+*{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  background:var(--color-bg);
+  color:var(--color-text);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+  overscroll-behavior:none;
+  -webkit-text-size-adjust:100%;
+  display:flex;
+  flex-direction:column;
+}
+button, input{ font-family:inherit; color:inherit; }
+button{ cursor:pointer; }
+.hidden{ display:none !important; }
+
+/* ============================================================
+   共通: 警告バナー
+============================================================ */
+#storage-banner{
+  background:var(--color-danger);
+  color:#fff;
+  font-size:13px;
+  line-height:1.4;
+  padding:8px 12px calc(8px);
+  padding-top: calc(8px + var(--safe-t));
+  text-align:center;
+}
+
+/* ============================================================
+   画面共通レイアウト
+============================================================ */
+.screen{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+  height:100%;
+}
+
+/* ---------- ホーム画面 ---------- */
+.home-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: calc(12px + var(--safe-t)) calc(16px + var(--safe-r)) 12px calc(16px + var(--safe-l));
+  background:var(--color-surface);
+  border-bottom:1px solid var(--color-border);
+}
+.home-header h1{ font-size:22px; margin:0; font-weight:700; }
+#project-list{
+  flex:1;
+  overflow-y:auto;
+  padding: 8px calc(12px + var(--safe-r)) calc(96px + var(--safe-b)) calc(12px + var(--safe-l));
+}
+.empty-state{
+  text-align:center;
+  color:var(--color-text-2);
+  padding: 48px 24px;
+  font-size:15px;
+  line-height:1.7;
+}
+.project-row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  background:var(--color-surface);
+  border-radius:var(--radius-m);
+  padding:10px 10px 10px 10px;
+  margin-bottom:10px;
+  box-shadow:var(--shadow-1);
+  user-select:none;
+  -webkit-user-select:none;
+}
+.project-thumb{
+  flex:0 0 auto;
+  width:56px; height:56px;
+  border-radius:var(--radius-s);
+  background:var(--color-surface-2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;
+  overflow:hidden;
+}
+.project-thumb svg{ width:100%; height:100%; }
+.project-info{ flex:1; min-width:0; }
+.project-name{ font-size:16px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.project-meta{ font-size:12.5px; color:var(--color-text-2); margin-top:2px; }
+.row-menu-btn{
+  flex:0 0 auto;
+  width:var(--tap-min); height:var(--tap-min);
+  border:none; background:transparent; border-radius:50%;
+  font-size:20px; color:var(--color-text-2);
+  display:flex;align-items:center;justify-content:center;
+}
+.row-menu-btn:active{ background:var(--color-surface-2); }
+
+.fab{
+  position:fixed;
+  right: calc(20px + var(--safe-r));
+  bottom: calc(24px + var(--safe-b));
+  min-width:64px; height:56px;
+  padding:0 20px;
+  border:none;
+  border-radius:28px;
+  background:var(--color-accent);
+  color:var(--color-accent-text);
+  font-size:16px;
+  font-weight:700;
+  box-shadow:var(--shadow-2);
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  z-index:30;
+}
+.fab:active{ transform:scale(0.96); }
+
+.icon-btn{
+  width:var(--tap-min); height:var(--tap-min);
+  border:none; background:transparent; color:var(--color-text);
+  border-radius:50%;
+  font-size:22px;
+  display:flex;align-items:center;justify-content:center;
+  flex:0 0 auto;
+}
+.icon-btn:active{ background:var(--color-surface-2); }
+.icon-btn:disabled{ opacity:0.3; }
+
+/* ---------- ワークスペース画面 ---------- */
+.ws-header{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  padding: calc(8px + var(--safe-t)) calc(8px + var(--safe-r)) 8px calc(8px + var(--safe-l));
+  background:var(--color-surface);
+  border-bottom:1px solid var(--color-border);
+}
+.ws-title{
+  flex:1; min-width:0;
+  font-size:16px; font-weight:700;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  text-align:center;
+}
+.view-switch-btn{
+  flex:0 0 auto;
+  border:1px solid var(--color-border);
+  background:var(--color-surface-2);
+  color:var(--color-text);
+  border-radius:var(--radius-s);
+  padding:8px 10px;
+  min-height:var(--tap-min);
+  font-size:14px;
+  white-space:nowrap;
+}
+.ws-body{
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  padding: 10px calc(12px + var(--safe-r)) calc(24px + var(--safe-b)) calc(12px + var(--safe-l));
+}
+.tab-bar{
+  display:flex;
+  border-top:1px solid var(--color-border);
+  background:var(--color-surface);
+  padding-bottom: var(--safe-b);
+}
+.tab-bar button{
+  flex:1;
+  border:none;
+  background:transparent;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:2px;
+  padding:8px 4px 6px;
+  min-height:52px;
+  font-size:10.5px;
+  color:var(--color-text-2);
+}
+.tab-bar button.active{ color:var(--color-accent); font-weight:700; }
+.tab-bar button .tab-icon{ font-size:20px; line-height:1; }
+
+/* レイヤーチップ */
+.layer-chips{
+  display:flex; gap:8px; overflow-x:auto;
+  padding:2px 2px 12px;
+  -webkit-overflow-scrolling:touch;
+}
+.layer-chip{
+  flex:0 0 auto;
+  display:flex; align-items:center; gap:6px;
+  border:1px solid var(--color-border);
+  background:var(--color-surface);
+  border-radius:999px;
+  padding:8px 14px;
+  min-height:var(--tap-min);
+  font-size:13px;
+  white-space:nowrap;
+}
+.layer-chip .dot{ width:10px; height:10px; border-radius:50%; display:inline-block; }
+.layer-chip[data-visible="false"]{ opacity:0.45; }
+
+.view-canvas-placeholder{
+  border:2px dashed var(--color-border);
+  border-radius:var(--radius-m);
+  min-height:260px;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--color-text-2);
+  font-size:13px;
+  text-align:center;
+  padding:24px;
+  line-height:1.7;
+  background:var(--color-surface);
+}
+.selection-info-bar{
+  margin-top:12px;
+  padding:12px 14px;
+  background:var(--color-surface);
+  border-radius:var(--radius-m);
+  font-size:13px;
+  color:var(--color-text-2);
+  box-shadow:var(--shadow-1);
+}
+.sel-row{ margin-bottom:4px; color:var(--color-text); }
+.sel-row:last-of-type{ margin-bottom:0; }
+.sel-type{ color:var(--color-text-2); font-size:11.5px; margin-left:6px; }
+.sel-actions{ display:flex; gap:8px; margin-top:10px; }
+.sel-actions .btn{ flex:1; min-height:38px; font-size:13px; padding:0 10px; }
+
+/* ---------- ビュー描画キャンバス(タスク2) ---------- */
+.view-canvas{
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-m);
+  background:var(--color-surface);
+  overflow:hidden;
+  touch-action:none;
+  height:min(58vh, 440px);
+  min-height:260px;
+  position:relative;
+}
+.view-canvas svg{ width:100%; height:100%; display:block; touch-action:none; }
+.section-canvas{
+  border-radius:var(--radius-m);
+  background:var(--color-surface);
+  box-shadow:var(--shadow-1);
+  padding:8px;
+}
+.section-canvas svg{ width:100%; height:auto; display:block; }
+
+/* パーツ/部品タブ カード */
+.card-list{ display:flex; flex-direction:column; gap:10px; }
+.entity-card{
+  background:var(--color-surface);
+  border-radius:var(--radius-m);
+  padding:12px 14px;
+  box-shadow:var(--shadow-1);
+}
+.entity-card-row{ display:flex; align-items:center; gap:10px; }
+.entity-color-dot{ width:14px; height:14px; border-radius:4px; flex:0 0 auto; }
+.entity-title{ font-weight:700; font-size:15px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.entity-sub{ font-size:12.5px; color:var(--color-text-2); margin-top:4px; }
+.entity-actions{ display:flex; align-items:center; gap:6px; }
+.visible-toggle{
+  width:var(--tap-min); height:var(--tap-min);
+  border:none; background:transparent; font-size:18px;
+  display:flex;align-items:center;justify-content:center;
+}
+.hole-chip-row{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.hole-chip{
+  font-size:11.5px;
+  border-radius:999px;
+  padding:4px 9px;
+  border:1px solid var(--color-border);
+  display:inline-flex; align-items:center; gap:4px;
+}
+.hole-chip.side-front{ border-color:var(--color-front); color:var(--color-front); }
+.hole-chip.side-back{ border-color:var(--color-back); color:var(--color-back); border-style:dashed; }
+
+.add-btn{
+  width:100%;
+  min-height:var(--tap-min);
+  border:1px dashed var(--color-border);
+  border-radius:var(--radius-m);
+  background:transparent;
+  color:var(--color-accent);
+  font-size:14px;
+  font-weight:600;
+  margin-top:4px;
+}
+
+.section-note{
+  font-size:12.5px; color:var(--color-text-2); margin-top:10px; line-height:1.6;
+}
+
+/* Zスタック帯グラフ */
+.zstack-box{
+  background:var(--color-surface);
+  border-radius:var(--radius-m);
+  padding:14px;
+  box-shadow:var(--shadow-1);
+}
+.zstack-bar{
+  display:flex;
+  width:100%;
+  height:28px;
+  border-radius:var(--radius-s);
+  overflow:hidden;
+  border:1px solid var(--color-border);
+}
+.zstack-seg{
+  height:100%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:10px; color:#fff; overflow:hidden; white-space:nowrap;
+}
+.zstack-seg.remaining-ok{ background:var(--color-ok); }
+.zstack-seg.remaining-warn{ background:var(--color-warn); }
+.zstack-seg.remaining-danger{ background:var(--color-danger); }
+.zstack-legend{ margin-top:12px; display:flex; flex-direction:column; gap:6px; }
+.zstack-legend-row{ display:flex; align-items:center; gap:8px; font-size:13px; }
+.zstack-legend-swatch{ width:14px; height:14px; border-radius:3px; flex:0 0 auto; }
+.zstack-status-line{
+  margin-top:10px; padding-top:10px; border-top:1px solid var(--color-border);
+  font-size:14px; font-weight:700; display:flex; align-items:center; gap:6px;
+}
+.zstack-status-line.remaining-ok{ color:var(--color-ok); }
+.zstack-status-line.remaining-warn{ color:var(--color-warn); }
+.zstack-status-line.remaining-danger{ color:var(--color-danger); }
+
+/* ============================================================
+   ボトムシート
+============================================================ */
+#sheet-overlay{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,0.4);
+  display:flex; align-items:flex-end; justify-content:center;
+  z-index:100;
+}
+.sheet-panel{
+  width:100%;
+  max-width:560px;
+  background:var(--color-surface);
+  border-radius:var(--radius-l) var(--radius-l) 0 0;
+  box-shadow:var(--shadow-2);
+  max-height:82vh;
+  display:flex; flex-direction:column;
+  padding-bottom: calc(12px + var(--safe-b));
+}
+.sheet-header{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 16px 8px;
+}
+.sheet-header h2{ font-size:17px; margin:0; }
+.sheet-close{
+  width:var(--tap-min); height:var(--tap-min);
+  border:none; background:var(--color-surface-2); border-radius:50%;
+  font-size:16px; color:var(--color-text-2);
+}
+.sheet-body{ padding:4px 16px 16px; overflow-y:auto; }
+.field-label{ display:block; font-size:12.5px; color:var(--color-text-2); margin:14px 0 6px; }
+.field-label:first-child{ margin-top:0; }
+.text-input, .number-input{
+  width:100%;
+  border:1px solid var(--color-border);
+  background:var(--color-surface-2);
+  border-radius:var(--radius-s);
+  padding:0 12px;
+  min-height:var(--tap-min);
+  font-size:16px;
+  color:var(--color-text);
+}
+.sheet-actions{ display:flex; gap:10px; margin-top:20px; }
+.btn{
+  min-height:var(--tap-min);
+  border-radius:var(--radius-s);
+  border:1px solid var(--color-border);
+  background:var(--color-surface-2);
+  font-size:15px; font-weight:600;
+  padding:0 16px;
+}
+.btn-primary{ background:var(--color-accent); color:var(--color-accent-text); border-color:var(--color-accent); }
+.action-list{ display:flex; flex-direction:column; gap:8px; }
+.action-item{
+  min-height:var(--tap-min);
+  border:none;
+  background:var(--color-surface-2);
+  border-radius:var(--radius-s);
+  font-size:15px;
+  text-align:left;
+  padding:0 14px;
+  display:flex; align-items:center; gap:8px;
+}
+.action-item.danger{ color:var(--color-danger); }
+.btn.danger{ color:var(--color-danger); border-color:var(--color-danger); }
+.sheet-hint{ font-size:12.5px; color:var(--color-text-2); line-height:1.6; margin-top:4px; }
+
+/* ============================================================
+   タスク3: フォーム部品共通(ステッパー入力・セグメント・スウォッチ)
+============================================================ */
+.field-col{ min-width:0; }
+.two-col{ display:grid; grid-template-columns:1fr 1fr; gap:0 10px; }
+.three-col{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:0 10px; }
+
+.stepper-row{ display:flex; align-items:center; gap:8px; }
+.stepper-btn{
+  width:var(--tap-min); height:var(--tap-min); flex:0 0 auto;
+  border:1px solid var(--color-border); background:var(--color-surface-2); border-radius:var(--radius-s);
+  font-size:20px; font-weight:700; color:var(--color-accent); line-height:1;
+  display:flex; align-items:center; justify-content:center;
+  user-select:none; -webkit-user-select:none; touch-action:manipulation;
+}
+.stepper-btn:active{ background:var(--color-accent); color:var(--color-accent-text); }
+.stepper-input{ flex:1; min-width:0; text-align:center; }
+
+.segmented{ display:flex; gap:8px; margin-top:2px; }
+.segmented-btn{
+  flex:1; min-height:var(--tap-min); border:1px solid var(--color-border); background:var(--color-surface-2);
+  border-radius:var(--radius-s); font-size:14px; font-weight:600; color:var(--color-text);
+  display:flex; align-items:center; justify-content:center; gap:4px;
+}
+.segmented-btn.active{ background:var(--color-accent); color:var(--color-accent-text); border-color:var(--color-accent); }
+.segmented-btn:disabled{ opacity:0.4; }
+.badge-v1{
+  font-size:9px; font-weight:700; background:var(--color-surface); color:var(--color-text-2);
+  border-radius:999px; padding:1px 5px;
+}
+
+.swatch-row{ display:flex; flex-wrap:wrap; gap:10px; margin-top:4px; }
+.color-swatch{ width:34px; height:34px; border-radius:50%; border:2px solid transparent; flex:0 0 auto; }
+.color-swatch.selected{ border-color:var(--color-surface); box-shadow:0 0 0 2px var(--color-accent); }
+
+.select-input{
+  width:100%;
+  border:1px solid var(--color-border);
+  background:var(--color-surface-2);
+  border-radius:var(--radius-s);
+  padding:0 12px;
+  min-height:var(--tap-min);
+  font-size:16px;
+  color:var(--color-text);
+}
+
+/* パーツタブ: 穴一覧テーブル(F-27) */
+.small-btn{ min-height:36px; padding:0 10px; font-size:13px; }
+.hole-table-wrap{ margin-top:10px; overflow-x:auto; }
+.hole-table{ width:100%; border-collapse:collapse; font-size:12.5px; }
+.hole-table th, .hole-table td{ padding:6px 8px 6px 0; text-align:left; border-bottom:1px solid var(--color-border); white-space:nowrap; }
+.hole-table tbody tr:active{ background:var(--color-surface-2); }
+.side-badge{ display:inline-block; font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:999px; }
+.side-badge.side-front{ color:var(--color-front); border:1px solid var(--color-front); }
+.side-badge.side-back{ color:var(--color-back); border:1px dashed var(--color-back); }
+
+/* ビュータブ: 書き出しツールバー */
+.view-toolbar{ display:flex; justify-content:flex-end; margin-bottom:8px; }
+
+/* 断面/Zタブ: 積み上げ項目リスト */
+.zitem-list-box{ background:var(--color-surface); border-radius:var(--radius-m); padding:14px; box-shadow:var(--shadow-1); margin-top:12px; }
+.zitem-row{ display:flex; align-items:center; gap:8px; padding:10px 0; border-bottom:1px solid var(--color-border); }
+.zitem-row:last-of-type{ border-bottom:none; }
+.zitem-main{ flex:1; min-width:0; display:flex; justify-content:space-between; gap:8px; text-align:left; background:transparent; border:none; padding:0; font-size:14px; color:var(--color-text); min-height:var(--tap-min); align-items:center; }
+.zitem-label{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.zitem-mm{ color:var(--color-text-2); flex:0 0 auto; }
+.zitem-controls{ display:flex; gap:2px; flex:0 0 auto; }
+.icon-btn.small{ width:36px; height:36px; font-size:15px; }
+
+/* ============================================================
+   スナックバー
+============================================================ */
+#snackbar{
+  position:fixed;
+  left:50%;
+  bottom: calc(24px + var(--safe-b));
+  transform:translateX(-50%);
+  background:#323234;
+  color:#fff;
+  border-radius:var(--radius-m);
+  padding:12px 12px 12px 16px;
+  display:flex; align-items:center; gap:14px;
+  box-shadow:var(--shadow-2);
+  z-index:200;
+  max-width:calc(100vw - 32px);
+  font-size:14px;
+}
+#snackbar-action{
+  border:none; background:transparent; color:#7cc0ff; font-weight:700; font-size:14px;
+  min-height:36px; padding:0 4px; flex:0 0 auto;
+}
+</style>
+</head>
+<body>
+
+<div id="storage-banner" class="hidden" role="alert">
+  &#9888;&#65039; この端末ではデータを保存できません。作業内容はメモリ上のみに保持されます。JSON書き出しで必ずバックアップしてください。
+</div>
+
+<!-- ================= ① ホーム画面(プロジェクト一覧) ================= -->
+<section id="screen-home" class="screen">
+  <header class="home-header">
+    <h1>FieldCAD</h1>
+    <button class="icon-btn" data-action="open-settings" aria-label="設定">&#9881;&#65038;</button>
+  </header>
+  <div id="project-list"><!-- App.ui.renderHome() が描画 --></div>
+  <button class="fab" data-action="new-project">&#65291; 新規</button>
+</section>
+
+<!-- ================= ② ワークスペース画面 ================= -->
+<section id="screen-workspace" class="screen hidden">
+  <header class="ws-header">
+    <button class="icon-btn" data-action="go-home" aria-label="戻る">&#8249;</button>
+    <div class="ws-title" id="ws-project-name">プロジェクト名</div>
+    <button class="icon-btn" data-action="undo" id="undo-btn" aria-label="元に戻す" disabled>&#8630;</button>
+    <button class="icon-btn" data-action="redo" id="redo-btn" aria-label="やり直す" disabled>&#8631;</button>
+    <button class="view-switch-btn" data-action="view-switch" id="view-switch-btn">正面図 &#9662;</button>
+  </header>
+
+  <div class="ws-body" id="ws-body">
+    <!-- ---- ビュータブ ---- -->
+    <div class="tab-content" id="tab-content-view">
+      <div class="view-toolbar">
+        <button class="btn small-btn" data-action="export-view-png">&#128228; 書き出し(PNG)</button>
+      </div>
+      <div class="layer-chips" id="layer-chips"><!-- レイヤーチップ(パーツ表示切替) --></div>
+
+      <!-- ★差込ポイント(タスク2): ここにビュー生成器(views モジュール)が
+           出力する SVG を挿入する。App.views.renderView(bundle, viewType) が
+           SVG文字列 or DOM を返す想定。 -->
+      <div id="view-svg-container" class="view-canvas-placeholder">
+        ビュー描画エリア(正面図・上面図など)<br>
+        タスク2で実装予定です。<br>
+        <span style="font-size:11px;">TODO(task2): App.views.renderView(currentBundle, activeView) をここに描画</span>
+      </div>
+
+      <!-- ★差込ポイント(タスク2/3): 要素選択時の詳細表示・編集導線 -->
+      <div id="selection-info-bar" class="selection-info-bar">
+        要素を選択するとここに詳細が表示されます(タスク2/3で実装予定)。
+      </div>
+    </div>
+
+    <!-- ---- パーツタブ ---- -->
+    <div class="tab-content hidden" id="tab-content-parts">
+      <div class="card-list" id="parts-card-list"><!-- App.ui.renderPartsTab() --></div>
+      <button class="add-btn" data-action="add-part">&#65291; パーツを追加</button>
+      <p class="section-note">パーツをタップすると編集できます。各パーツの「+穴」から穴を追加できます。</p>
+    </div>
+
+    <!-- ---- 部品タブ(コンポーネント) ---- -->
+    <div class="tab-content hidden" id="tab-content-components">
+      <div class="card-list" id="components-card-list"><!-- App.ui.renderComponentsTab() --></div>
+      <button class="add-btn" data-action="add-component">&#65291; 部品を追加</button>
+      <p class="section-note">部品をタップすると編集できます(名前・W&times;H&times;D・配置X,Y,Z・色)。</p>
+    </div>
+
+    <!-- ---- 断面/Zタブ(クリアランス) ---- -->
+    <div class="tab-content hidden" id="tab-content-section">
+      <div id="zstack-container"><!-- App.ui.renderSectionTab() --></div>
+      <div id="section-view-placeholder" class="view-canvas-placeholder" style="margin-top:12px;">
+        断面図を準備しています…
+      </div>
+    </div>
+  </div>
+
+  <nav class="tab-bar" id="tab-bar">
+    <button data-action="set-tab" data-tab="view"><span class="tab-icon">&#128444;&#65039;</span><span>ビュー</span></button>
+    <button data-action="set-tab" data-tab="parts"><span class="tab-icon">&#129521;</span><span>パーツ</span></button>
+    <button data-action="set-tab" data-tab="components"><span class="tab-icon">&#128295;</span><span>部品</span></button>
+    <button data-action="set-tab" data-tab="section"><span class="tab-icon">&#128207;</span><span>断面</span></button>
+  </nav>
+</section>
+
+<!-- ================= ボトムシート(共通) ================= -->
+<div id="sheet-overlay" class="hidden" data-action="close-sheet">
+  <div class="sheet-panel" id="sheet-panel" data-action="noop">
+    <div class="sheet-header">
+      <h2 id="sheet-title"></h2>
+      <button class="sheet-close" data-action="close-sheet" aria-label="閉じる">&#10005;</button>
+    </div>
+    <div class="sheet-body" id="sheet-body"></div>
+  </div>
+</div>
+
+<!-- ================= スナックバー ================= -->
+<div id="snackbar" class="hidden" role="status">
+  <span id="snackbar-text"></span>
+  <button id="snackbar-action" class="hidden" data-action="snackbar-action"></button>
+</div>
+
+<input type="file" id="import-file-input" accept=".json,application/json" class="hidden">
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   ===== utils =====
+   汎用ヘルパー(HTMLエスケープ・ID生成・日付整形)
+============================================================ */
+let __idCounter = 0;
+function genId(prefix){
+  __idCounter += 1;
+  return prefix + "_" + Date.now().toString(36) + "_" + __idCounter.toString(36);
+}
+
+function escapeHtml(str){
+  return String(str == null ? "" : str).replace(/[&<>"']/g, function(ch){
+    return { "&":"&amp;", "<":"&lt;", ">":"&gt;", "\"":"&quot;", "'":"&#39;" }[ch];
+  });
+}
+
+function formatUpdatedAt(iso){
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "-";
+  const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  if (sameDay){
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mm = String(d.getMinutes()).padStart(2, "0");
+    return "今日 " + hh + ":" + mm;
+  }
+  return (d.getMonth() + 1) + "/" + d.getDate();
+}
+
+function deepClone(obj){
+  return JSON.parse(JSON.stringify(obj));
+}
+
+const PART_COLOR_PALETTE = ["#4FC3F7", "#81C784", "#FFB74D", "#BA68C8", "#F06292", "#90A4AE", "#A1887F", "#4DD0E1"];
+function pickPartColor(index){
+  return PART_COLOR_PALETTE[index % PART_COLOR_PALETTE.length];
+}
+
+/* ============================================================
+   ===== geometry =====
+   純関数群(AABB投影・区間積算・重なり判定)。
+   このセクションは DOM に一切触れない。単体テスト対象。
+
+   AABB(軸平行境界箱)の共通形式: { x, y, z, w, h, d }
+     x,y,z: アセンブリ座標系での原点位置(mm)
+     w,h,d: 各軸方向の寸法(mm)
+============================================================ */
+const Geometry = (function(){
+
+  /**
+   * 3D AABB を指定ビューの2D平面へ投影する。
+   * 90°単位の回転のみを扱う本アプリの制約により、三角関数は不要。
+   * @param {{x:number,y:number,z:number,w:number,h:number,d:number}} aabb
+   * @param {"front"|"back"|"top"|"left"|"right"} viewType
+   * @returns {{u:number,v:number,w:number,h:number}} 投影後の2Dローカル座標(u,v)と幅高さ。
+   *   画面座標への変換(Y軸反転・オフセット・スケール)は views 層(タスク2)の責務とする。
+   */
+  function projectAABB(aabb, viewType){
+    switch (viewType){
+      case "front":
+        return { u: aabb.x, v: aabb.y, w: aabb.w, h: aabb.h };
+      case "back":
+        // 背面図は正面図をX軸反転(ミラー)したもの
+        return { u: -(aabb.x + aabb.w), v: aabb.y, w: aabb.w, h: aabb.h };
+      case "top":
+        return { u: aabb.x, v: aabb.z, w: aabb.w, h: aabb.d };
+      case "left":
+        return { u: aabb.z, v: aabb.y, w: aabb.d, h: aabb.h };
+      case "right":
+        return { u: -(aabb.z + aabb.d), v: aabb.y, w: aabb.d, h: aabb.h };
+      default:
+        throw new Error("projectAABB: unknown viewType '" + viewType + "'");
+    }
+  }
+
+  /**
+   * 配置(pos, orientation)とローカルサイズから アセンブリ座標系AABB を求める。
+   * orientation は 90°単位のみ("xy"|"xz"|"yz")。flipped は将来の左右反転描画のためのフラグで、
+   * AABB自体の寸法には影響しない(views層でのミラー描画に利用)。
+   * @param {{x:number,y:number,z:number}} pos
+   * @param {{w:number,h:number,d:number}} size 基準姿勢("xy")でのローカルサイズ
+   * @param {"xy"|"xz"|"yz"} orientation
+   * @returns {{x:number,y:number,z:number,w:number,h:number,d:number}}
+   */
+  function worldAABB(pos, size, orientation){
+    let w = size.w, h = size.h, d = size.d;
+    if (orientation === "xz"){
+      // 水平(棚のように寝かせる): 高さ方向と奥行き方向を入れ替え
+      const tmp = h; h = d; d = tmp;
+    } else if (orientation === "yz"){
+      // 側面向き: 幅方向と奥行き方向を入れ替え
+      const tmp = w; w = d; d = tmp;
+    }
+    return { x: pos.x, y: pos.y, z: pos.z, w: w, h: h, d: d };
+  }
+
+  /**
+   * Part エンティティ(矩形 or 円形)を w,h,d の箱サイズに変換する。
+   * 円形は外接する矩形(w=h=直径)として扱う。
+   * @param {object} part
+   * @returns {{w:number,h:number,d:number}}
+   */
+  function partBoxSize(part){
+    if (part.shape === "circle"){
+      return { w: part.size.d, h: part.size.d, d: part.size.t };
+    }
+    return { w: part.size.w, h: part.size.h, d: part.size.t };
+  }
+
+  /**
+   * 1次元区間の積み上げ計算(Zスタック用)。
+   * @param {Array<{label:string, mm:number, ref?:string}>} items 積み上げ順のリスト(先頭から)
+   * @param {number} totalDepth 基準となる筐体内寸深さ(mm)
+   * @param {number} [warnMm=5] 残り空間がこの値未満で警告(黄)、負値で干渉(赤)
+   * @returns {{
+   *   segments: Array<{label:string, mm:number, start:number, end:number, ref:(string|null)}>,
+   *   sum: number,
+   *   remaining: number,
+   *   status: "ok"|"warn"|"danger"
+   * }}
+   */
+  function stackIntervals(items, totalDepth, warnMm){
+    if (warnMm == null) warnMm = 5;
+    let cursor = 0;
+    const segments = (items || []).map(function(item){
+      const start = cursor;
+      const end = cursor + item.mm;
+      cursor = end;
+      return { label: item.label, mm: item.mm, start: start, end: end, ref: item.ref || null };
+    });
+    const sum = cursor;
+    const remaining = totalDepth - sum;
+    let status;
+    if (remaining < 0) status = "danger";
+    else if (remaining < warnMm) status = "warn";
+    else status = "ok";
+    return { segments: segments, sum: sum, remaining: remaining, status: status };
+  }
+
+  /**
+   * 2つの AABB の XY平面上の重なりを判定する(z,d は無視)。
+   * @param {{x:number,y:number,w:number,h:number}} a
+   * @param {{x:number,y:number,w:number,h:number}} b
+   * @returns {null|{x:number,y:number,w:number,h:number}} 重なりが無ければ null、あれば重なり矩形
+   */
+  function aabbOverlapXY(a, b){
+    const x1 = Math.max(a.x, b.x);
+    const y1 = Math.max(a.y, b.y);
+    const x2 = Math.min(a.x + a.w, b.x + b.w);
+    const y2 = Math.min(a.y + a.h, b.y + b.h);
+    if (x2 <= x1 || y2 <= y1) return null;
+    return { x: x1, y: y1, w: x2 - x1, h: y2 - y1 };
+  }
+
+  return {
+    projectAABB: projectAABB,
+    worldAABB: worldAABB,
+    partBoxSize: partBoxSize,
+    stackIntervals: stackIntervals,
+    aabbOverlapXY: aabbOverlapXY
+  };
+})();
+
+/* ============================================================
+   ===== io =====
+   IndexedDB永続化 + JSONエクスポート/インポート
+============================================================ */
+const IO = (function(){
+  const DB_NAME = "fieldcad";
+  const DB_VERSION = 1;
+  const STORE_NAME = "projects";
+
+  let _db = null;
+  let _mode = "memory"; // "indexeddb" | "memory"
+  const _saveTimers = {};
+
+  function idbOpen(){
+    return new Promise(function(resolve, reject){
+      if (!("indexedDB" in window) || !window.indexedDB){
+        reject(new Error("indexedDB not available"));
+        return;
+      }
+      let req;
+      try {
+        req = window.indexedDB.open(DB_NAME, DB_VERSION);
+      } catch (err){
+        reject(err);
+        return;
+      }
+      req.onupgradeneeded = function(e){
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(STORE_NAME)){
+          db.createObjectStore(STORE_NAME);
+        }
+      };
+      req.onsuccess = function(){ resolve(req.result); };
+      req.onerror = function(){ reject(req.error || new Error("indexedDB open failed")); };
+      req.onblocked = function(){ reject(new Error("indexedDB open blocked")); };
+    });
+  }
+
+  function idbTestWrite(db){
+    return new Promise(function(resolve, reject){
+      try {
+        const tx = db.transaction(STORE_NAME, "readwrite");
+        tx.objectStore(STORE_NAME).put({ test: true, at: Date.now() }, "__write_test__");
+        tx.oncomplete = function(){ resolve(true); };
+        tx.onerror = function(){ reject(tx.error || new Error("write test failed")); };
+        tx.onabort = function(){ reject(tx.error || new Error("write test aborted")); };
+      } catch (err){
+        reject(err);
+      }
+    });
+  }
+
+  async function init(){
+    try {
+      const db = await idbOpen();
+      await idbTestWrite(db);
+      _db = db;
+      _mode = "indexeddb";
+    } catch (err){
+      console.warn("FieldCAD: IndexedDB unavailable, falling back to memory storage.", err);
+      _db = null;
+      _mode = "memory";
+    }
+    return _mode;
+  }
+
+  function getMode(){ return _mode; }
+
+  function getAllProjects(){
+    if (_mode !== "indexeddb" || !_db) return Promise.resolve([]);
+    return new Promise(function(resolve, reject){
+      const tx = _db.transaction(STORE_NAME, "readonly");
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.getAll ? store.getAll() : null;
+      if (req){
+        req.onsuccess = function(){
+          const all = (req.result || []).filter(function(v){ return v && v.project && v.project.id; });
+          resolve(all);
+        };
+        req.onerror = function(){ reject(req.error); };
+      } else {
+        // getAll 未対応環境向けフォールバック(カーソル走査)
+        const results = [];
+        const cursorReq = store.openCursor();
+        cursorReq.onsuccess = function(e){
+          const cursor = e.target.result;
+          if (cursor){
+            if (cursor.value && cursor.value.project && cursor.value.project.id){
+              results.push(cursor.value);
+            }
+            cursor.continue();
+          } else {
+            resolve(results);
+          }
+        };
+        cursorReq.onerror = function(){ reject(cursorReq.error); };
+      }
+    });
+  }
+
+  function putProjectNow(bundle){
+    if (_mode !== "indexeddb" || !_db) return Promise.resolve(false);
+    return new Promise(function(resolve, reject){
+      const tx = _db.transaction(STORE_NAME, "readwrite");
+      tx.objectStore(STORE_NAME).put(bundle, bundle.project.id);
+      tx.oncomplete = function(){ resolve(true); };
+      tx.onerror = function(){ reject(tx.error); };
+    });
+  }
+
+  function scheduleSave(bundle){
+    if (_mode !== "indexeddb" || !_db) return;
+    const id = bundle.project.id;
+    if (_saveTimers[id]) clearTimeout(_saveTimers[id]);
+    _saveTimers[id] = setTimeout(function(){
+      delete _saveTimers[id];
+      putProjectNow(bundle).catch(function(err){
+        console.error("FieldCAD: save failed", err);
+      });
+    }, 500);
+  }
+
+  function deleteProjectNow(id){
+    if (_mode !== "indexeddb" || !_db) return Promise.resolve(false);
+    return new Promise(function(resolve, reject){
+      const tx = _db.transaction(STORE_NAME, "readwrite");
+      tx.objectStore(STORE_NAME).delete(id);
+      tx.oncomplete = function(){ resolve(true); };
+      tx.onerror = function(){ reject(tx.error); };
+    });
+  }
+
+  /** プロジェクトを schemaVersion:1 のJSONとしてダウンロードさせる */
+  function downloadProjectJSON(bundle){
+    const json = JSON.stringify(bundle, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const safeName = (bundle.project.name || "project").replace(/[\\/:*?"<>|]/g, "_");
+    const dateStr = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = "fieldcad_" + safeName + "_" + dateStr + ".json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  }
+
+  /**
+   * JSONファイルを読み込みバリデーションする。
+   * @param {File} file
+   * @returns {Promise<object>} 検証済みのプロジェクトバンドル
+   */
+  function readProjectJSON(file){
+    return new Promise(function(resolve, reject){
+      const reader = new FileReader();
+      reader.onload = function(){
+        let data;
+        try {
+          data = JSON.parse(reader.result);
+        } catch (err){
+          reject(new Error("JSONの解析に失敗しました"));
+          return;
+        }
+        if (!data || data.schemaVersion !== 1 || !data.project || !data.project.id ||
+            !Array.isArray(data.parts) || !Array.isArray(data.components) ||
+            !Array.isArray(data.placements) || !data.zstack){
+          reject(new Error("schemaVersion:1 のFieldCADプロジェクト形式ではありません"));
+          return;
+        }
+        resolve(data);
+      };
+      reader.onerror = function(){ reject(new Error("ファイルの読み込みに失敗しました")); };
+      reader.readAsText(file);
+    });
+  }
+
+  return {
+    init: init,
+    getMode: getMode,
+    getAllProjects: getAllProjects,
+    putProjectNow: putProjectNow,
+    scheduleSave: scheduleSave,
+    deleteProjectNow: deleteProjectNow,
+    downloadProjectJSON: downloadProjectJSON,
+    readProjectJSON: readProjectJSON
+  };
+})();
+
+/* ============================================================
+   ===== presets =====
+   初回起動時のサンプルプロジェクト「シンセ筐体(例)」
+   (DESIGN.md 付録A 準拠: パーツ2, 穴8, 部品6, zstack合計28/残り7)
+============================================================ */
+const Presets = (function(){
+
+  function buildSampleProject(){
+    const now = new Date().toISOString();
+
+    const partFront = {
+      id: "part_a1",
+      name: "フロントアクリル",
+      kind: "acrylic",
+      shape: "rect",
+      size: { w: 200, h: 150, t: 3 },
+      innerSize: null,
+      color: "#4FC3F7",
+      visible: true,
+      opacity: 0.85,
+      holes: [
+        { id: "hole_c1", name: "取付穴(左下)", type: "circle", dim: { d: 3.2 }, pos: { x: 10, y: 10 }, depth: null, side: "front", presetId: "hp_m3" },
+        { id: "hole_c2", name: "取付穴(右下)", type: "circle", dim: { d: 3.2 }, pos: { x: 190, y: 10 }, depth: null, side: "front", presetId: "hp_m3" },
+        { id: "hole_c3", name: "取付穴(左上)", type: "circle", dim: { d: 3.2 }, pos: { x: 10, y: 140 }, depth: null, side: "front", presetId: "hp_m3" },
+        { id: "hole_c4", name: "取付穴(右上)", type: "circle", dim: { d: 3.2 }, pos: { x: 190, y: 140 }, depth: null, side: "front", presetId: "hp_m3" },
+        { id: "hole_toggle", name: "トグルSW穴", type: "circle", dim: { d: 12 }, pos: { x: 30, y: 100 }, depth: null, side: "front", presetId: "hp_toggle12" },
+        { id: "hole_dcjack", name: "DCジャック穴", type: "circle", dim: { d: 11 }, pos: { x: 170, y: 120 }, depth: null, side: "front", presetId: "hp_dcjack11" },
+        { id: "hole_led", name: "LEDホルダー穴", type: "circle", dim: { d: 8 }, pos: { x: 100, y: 130 }, depth: null, side: "front", presetId: null },
+        { id: "hole_audio", name: "オーディオジャック穴", type: "circle", dim: { d: 6 }, pos: { x: 60, y: 20 }, depth: null, side: "front", presetId: null }
+      ]
+    };
+
+    const partFrame = {
+      id: "part_frame1",
+      name: "フレーム筐体",
+      kind: "enclosure",
+      shape: "rect",
+      size: { w: 200, h: 150, t: 5 },
+      innerSize: { w: 190, h: 140, d: 35 },
+      color: "#37474F",
+      visible: true,
+      opacity: 1,
+      holes: []
+    };
+
+    const components = [
+      { id: "cmp_pcb1", name: "RP2350ボード", kind: "pcb", size: { w: 51, h: 21, d: 1.6 }, color: "#2E7D32", mountedOn: null },
+      { id: "cmp_lcd1", name: "1.8インチLCD", kind: "lcd", size: { w: 34, h: 47, d: 4 }, color: "#263238", mountedOn: { partId: "part_a1", holeId: null } },
+      { id: "cmp_enc1", name: "エンコーダ基板", kind: "pcb", size: { w: 20, h: 20, d: 10 }, color: "#6D4C41", mountedOn: null },
+      { id: "cmp_sw1", name: "トグルスイッチ", kind: "switch", size: { w: 12, h: 12, d: 20 }, color: "#B0BEC5", mountedOn: { partId: "part_a1", holeId: "hole_toggle" } },
+      { id: "cmp_jack1", name: "DCジャック", kind: "jack", size: { w: 11, h: 11, d: 15 }, color: "#E53935", mountedOn: { partId: "part_a1", holeId: "hole_dcjack" } },
+      { id: "cmp_led1", name: "LEDホルダー", kind: "led", size: { w: 8, h: 8, d: 10 }, color: "#FDD835", mountedOn: { partId: "part_a1", holeId: "hole_led" } }
+    ];
+
+    const placements = [
+      { id: "plc_frame", targetType: "part", targetId: "part_frame1", pos: { x: 0, y: 0, z: 0 }, orientation: "xy", flipped: false },
+      { id: "plc_front", targetType: "part", targetId: "part_a1", pos: { x: 0, y: 0, z: 32 }, orientation: "xy", flipped: false },
+      { id: "plc_pcb1", targetType: "component", targetId: "cmp_pcb1", pos: { x: 75, y: 15, z: 10 }, orientation: "xy", flipped: false },
+      { id: "plc_lcd1", targetType: "component", targetId: "cmp_lcd1", pos: { x: 80, y: 55, z: 13 }, orientation: "xy", flipped: false },
+      { id: "plc_enc1", targetType: "component", targetId: "cmp_enc1", pos: { x: 130, y: 60, z: 15 }, orientation: "xy", flipped: false },
+      { id: "plc_sw1", targetType: "component", targetId: "cmp_sw1", pos: { x: 24, y: 94, z: 15 }, orientation: "xy", flipped: false },
+      { id: "plc_jack1", targetType: "component", targetId: "cmp_jack1", pos: { x: 164.5, y: 114.5, z: 15 }, orientation: "xy", flipped: false },
+      { id: "plc_led1", targetType: "component", targetId: "cmp_led1", pos: { x: 96, y: 126, z: 20 }, orientation: "xy", flipped: false }
+    ];
+
+    const zstack = {
+      axis: "z",
+      totalDepth: 35,
+      items: [
+        { ref: "part_a1", label: "フロントアクリル", mm: 3 },
+        { ref: "spacer_1", label: "スペーサー", mm: 10 },
+        { ref: "cmp_pcb1", label: "PCB(RP2350)+部品", mm: 15 }
+      ]
+    };
+
+    return {
+      schemaVersion: 1,
+      project: {
+        id: "prj_synth_sample",
+        name: "シンセ筐体(例)",
+        note: "サンプルプロジェクト(初回起動時に自動生成)。自作シンセ筐体の穴あけ図と部品配置の例です。",
+        createdAt: now,
+        updatedAt: now,
+        settings: { unit: "mm", clearanceWarnMm: 5.0 }
+      },
+      parts: [partFront, partFrame],
+      components: components,
+      placements: placements,
+      zstack: zstack
+    };
+  }
+
+  return { buildSampleProject: buildSampleProject };
+})();
+
+/* ============================================================
+   ===== views(タスク2) =====
+   ビュー生成器(純関数): parts + placements + components を
+   viewType に応じてSVG文字列へ投影する。DOMには一切触れない。
+
+   パイプライン(DESIGN.md §9.3):
+     ①ワールド化(Geometry.worldAABB) → ②投影(Geometry.projectAABB)
+     → ③奥行きソート → ④装飾(加工面スタイル・寸法線・レイヤー) → ⑤SVG文字列化
+
+   座標変換は toScreen() 一箇所に集約(mm座標・Y上向き → SVGのY下向きへの反転)。
+   ズーム時も文字が読めるよう、テキストには data-fixed-size(基準pxサイズ)を
+   持たせておき、実際の font-size 決定は UI層が現在の viewBox とコンテナ幅から
+   都度計算する(Views自体は現在のズーム率を知らない=純関数のまま保てる)。
+
+   公開API:
+     Views.renderView(bundle, viewType, options) => { svg, fitViewBox, empty }
+       viewType: "front" | "back" | "top" | "left" | "right"
+       options.selection: { kind:"hole", partId, holeId }
+                        | { kind:"component", cmpId }
+                        | { kind:"part", partId } | null
+     Views.renderSectionSVG(bundle) => svgString(断面/Zスタック帯グラフのSVG版)
+============================================================ */
+const Views = (function(){
+
+  const DEPTH_AXIS = { front: "z", back: "z", top: "y", left: "x", right: "x" };
+  const VIEW_LABELS = { front: "正面図", back: "背面図", top: "上面図", left: "左側面図", right: "右側面図" };
+
+  function fmtNum(n){
+    const v = Math.round(n * 10) / 10;
+    return (Math.abs(v - Math.round(v)) < 1e-9) ? String(Math.round(v)) : String(v);
+  }
+
+  /** 単一のビュー変換関数: mm座標(u,v; vはY上向き) → SVGローカル座標(x,y; yは下向き) */
+  function toScreen(u, v, bbox){
+    return { x: u - bbox.minU, y: bbox.maxV - v };
+  }
+
+  function mid(a, b){ return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; }
+
+  /* ---------- ①②③: ワールド化・投影・収集 ---------- */
+
+  function collectItems(bundle, viewType){
+    const items = [];
+    bundle.placements.forEach(function(plc){
+      let target = null, kind = null;
+      if (plc.targetType === "part"){
+        target = bundle.parts.find(function(p){ return p.id === plc.targetId; });
+        kind = "part";
+      } else {
+        target = bundle.components.find(function(c){ return c.id === plc.targetId; });
+        kind = "component";
+      }
+      if (!target) return;
+      if (kind === "part" && target.visible === false) return; // レイヤー非表示フィルタ
+      const size = kind === "part" ? Geometry.partBoxSize(target) : target.size;
+      const worldAABB = Geometry.worldAABB(plc.pos, size, plc.orientation);
+      const proj = Geometry.projectAABB(worldAABB, viewType);
+      items.push({
+        kind: kind,
+        id: target.id,
+        name: target.name,
+        color: target.color || "#9E9E9E",
+        opacity: kind === "part" ? (target.opacity != null ? target.opacity : 1) : 0.55,
+        shape: kind === "part" ? target.shape : "rect",
+        part: kind === "part" ? target : null,
+        placement: plc,
+        worldAABB: worldAABB,
+        proj: proj
+      });
+    });
+    return items;
+  }
+
+  function sortByDepth(items, viewType){
+    const axis = DEPTH_AXIS[viewType] || "z";
+    return items.slice().sort(function(a, b){ return a.worldAABB[axis] - b.worldAABB[axis]; });
+  }
+
+  function computeContentBBox(items){
+    let minU = Infinity, minV = Infinity, maxU = -Infinity, maxV = -Infinity;
+    items.forEach(function(it){
+      minU = Math.min(minU, it.proj.u);
+      minV = Math.min(minV, it.proj.v);
+      maxU = Math.max(maxU, it.proj.u + it.proj.w);
+      maxV = Math.max(maxV, it.proj.v + it.proj.h);
+    });
+    if (!isFinite(minU)){ minU = 0; minV = 0; maxU = 100; maxV = 100; }
+    return { minU: minU, minV: minV, maxU: maxU, maxV: maxV };
+  }
+
+  /* ---------- ④装飾: 形状マークアップ ---------- */
+
+  function truncateLabel(name, widthMM){
+    const maxChars = Math.max(0, Math.floor(widthMM / 6.2));
+    if (String(name).length <= maxChars) return name;
+    if (maxChars <= 1) return "";
+    return String(name).slice(0, maxChars - 1) + "…";
+  }
+
+  function partRectMarkup(item, bbox, isSelected){
+    const top = toScreen(item.proj.u, item.proj.v + item.proj.h, bbox);
+    const strokeColor = isSelected ? "var(--color-accent)" : "var(--color-text-2)";
+    const strokeW = isSelected ? 3 : 1.4;
+    return '<rect x="' + top.x.toFixed(2) + '" y="' + top.y.toFixed(2) + '" width="' + item.proj.w.toFixed(2) + '" height="' + item.proj.h.toFixed(2) + '" ' +
+      'fill="' + item.color + '" fill-opacity="' + item.opacity + '" stroke="' + strokeColor + '" stroke-width="' + strokeW + '" vector-effect="non-scaling-stroke" pointer-events="all" ' +
+      'data-kind="part" data-part-id="' + item.id + '"></rect>';
+  }
+
+  function partCircleMarkup(item, bbox, isSelected){
+    const cu = item.proj.u + item.proj.w / 2, cv = item.proj.v + item.proj.h / 2;
+    const c = toScreen(cu, cv, bbox);
+    const r = item.proj.w / 2;
+    const strokeColor = isSelected ? "var(--color-accent)" : "var(--color-text-2)";
+    const strokeW = isSelected ? 3 : 1.4;
+    return '<circle cx="' + c.x.toFixed(2) + '" cy="' + c.y.toFixed(2) + '" r="' + r.toFixed(2) + '" ' +
+      'fill="' + item.color + '" fill-opacity="' + item.opacity + '" stroke="' + strokeColor + '" stroke-width="' + strokeW + '" vector-effect="non-scaling-stroke" pointer-events="all" ' +
+      'data-kind="part" data-part-id="' + item.id + '"></circle>';
+  }
+
+  function componentMarkup(item, bbox, isSelected){
+    const top = toScreen(item.proj.u, item.proj.v + item.proj.h, bbox);
+    const strokeColor = isSelected ? "var(--color-accent)" : "var(--color-text)";
+    const strokeW = isSelected ? 3 : 1.1;
+    let s = '<g data-kind="component" data-id="' + item.id + '">';
+    s += '<rect x="' + top.x.toFixed(2) + '" y="' + top.y.toFixed(2) + '" width="' + item.proj.w.toFixed(2) + '" height="' + item.proj.h.toFixed(2) + '" ' +
+      'fill="' + item.color + '" fill-opacity="' + item.opacity + '" stroke="' + strokeColor + '" stroke-opacity="0.6" stroke-width="' + strokeW + '" vector-effect="non-scaling-stroke" pointer-events="all"></rect>';
+    if (item.proj.w > 13 && item.proj.h > 7){
+      const label = truncateLabel(item.name, item.proj.w);
+      if (label){
+        const cx = top.x + item.proj.w / 2, cy = top.y + item.proj.h / 2;
+        s += '<text x="' + cx.toFixed(2) + '" y="' + cy.toFixed(2) + '" text-anchor="middle" dominant-baseline="middle" ' +
+          'font-size="10" data-fixed-size="10" fill="#ffffff" style="pointer-events:none;">' + escapeHtml(label) + '</text>';
+      }
+    }
+    s += '</g>';
+    return s;
+  }
+
+  /* ---------- 穴(パーツローカル座標 → 配置経由でビュー座標へ) ---------- */
+
+  function holesMarkup(bundle, viewType, bbox, selection){
+    if (viewType !== "front" && viewType !== "back") return ""; // XY面(orientation:xy)の穴のみ。上面図等は省略
+    let s = "";
+    bundle.placements.forEach(function(plc){
+      if (plc.targetType !== "part" || plc.orientation !== "xy") return;
+      const part = bundle.parts.find(function(p){ return p.id === plc.targetId; });
+      if (!part || part.visible === false || !part.holes || !part.holes.length) return;
+      part.holes.forEach(function(hole){
+        const worldX = plc.pos.x + hole.pos.x;
+        const worldY = plc.pos.y + hole.pos.y;
+        // 背面図はX軸ミラー(projectAABBの back 変換と同じ点対称則: u = -worldX)
+        const u = (viewType === "back") ? -worldX : worldX;
+        const v = worldY;
+        const c = toScreen(u, v, bbox);
+        const r = (hole.dim && hole.dim.d ? hole.dim.d : 5) / 2;
+        const isBack = hole.side === "back";
+        const isSel = !!(selection && selection.kind === "hole" && selection.holeId === hole.id);
+        const strokeColor = isSel ? "var(--color-accent)" : (isBack ? "var(--color-back)" : "var(--color-front)");
+        const strokeW = isSel ? 3 : 1.6;
+        const dash = isBack ? ' stroke-dasharray="4 3"' : "";
+        s += '<circle cx="' + c.x.toFixed(2) + '" cy="' + c.y.toFixed(2) + '" r="' + r.toFixed(2) + '" fill="none" ' +
+          'stroke="' + strokeColor + '" stroke-width="' + strokeW + '" vector-effect="non-scaling-stroke" pointer-events="all"' + dash +
+          ' data-kind="hole" data-part-id="' + part.id + '" data-hole-id="' + hole.id + '"></circle>';
+        // φ注記(密集時の重なり回避は行わない簡易実装。DESIGN.md §12-7 許容範囲)
+        const diamLabel = hole.type === "circle" ? ("φ" + fmtNum(hole.dim.d)) : "";
+        if (diamLabel){
+          s += '<text x="' + (c.x + r + 3).toFixed(2) + '" y="' + (c.y - r - 3).toFixed(2) + '" font-size="9" data-fixed-size="9" ' +
+            'fill="var(--color-text)" style="pointer-events:none;">' + diamLabel + '</text>';
+        }
+        if (isBack){
+          s += '<text x="' + (c.x + r + 3).toFixed(2) + '" y="' + (c.y + r + 10).toFixed(2) + '" font-size="8.5" data-fixed-size="8.5" ' +
+            'fill="var(--color-back)" font-weight="700" style="pointer-events:none;">[裏]</text>';
+        }
+      });
+    });
+    return s;
+  }
+
+  /* ---------- 寸法線 ---------- */
+
+  function arrowHead(tipX, tipY, dx, dy, size){
+    const nx = -dy, ny = dx;
+    const bx = tipX - dx * size, by = tipY - dy * size;
+    const p1x = bx + nx * size * 0.5, p1y = by + ny * size * 0.5;
+    const p2x = bx - nx * size * 0.5, p2y = by - ny * size * 0.5;
+    return '<polygon points="' + tipX.toFixed(2) + ',' + tipY.toFixed(2) + ' ' + p1x.toFixed(2) + ',' + p1y.toFixed(2) + ' ' + p2x.toFixed(2) + ',' + p2y.toFixed(2) + '" fill="var(--color-text-2)"></polygon>';
+  }
+
+  function dimArrowLine(p1, p2){
+    const dx = p2.x - p1.x, dy = p2.y - p1.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const ux = dx / len, uy = dy / len;
+    let s = '<line x1="' + p1.x.toFixed(2) + '" y1="' + p1.y.toFixed(2) + '" x2="' + p2.x.toFixed(2) + '" y2="' + p2.y.toFixed(2) + '" ' +
+      'stroke="var(--color-text-2)" stroke-width="1" vector-effect="non-scaling-stroke"></line>';
+    s += arrowHead(p1.x, p1.y, -ux, -uy, 3);
+    s += arrowHead(p2.x, p2.y, ux, uy, 3);
+    return s;
+  }
+
+  function extLine(a, b){
+    return '<line x1="' + a.x.toFixed(2) + '" y1="' + a.y.toFixed(2) + '" x2="' + b.x.toFixed(2) + '" y2="' + b.y.toFixed(2) + '" ' +
+      'stroke="var(--color-text-2)" stroke-width="0.75" vector-effect="non-scaling-stroke" stroke-dasharray="1.5 1.5"></line>';
+  }
+
+  function dimText(pt, label, opts){
+    opts = opts || {};
+    const size = opts.size || 10;
+    const color = opts.color || "var(--color-text-2)";
+    const anchor = opts.anchor || "middle";
+    const dy = opts.dy != null ? opts.dy : -3;
+    return '<text x="' + pt.x.toFixed(2) + '" y="' + (pt.y + dy).toFixed(2) + '" text-anchor="' + anchor + '" ' +
+      'font-size="' + size + '" data-fixed-size="' + size + '" fill="' + color + '" style="pointer-events:none;">' + escapeHtml(label) + '</text>';
+  }
+
+  /** パーツ外形の全幅・全高の寸法線(図の外側、段積みでlevel毎にオフセット) */
+  function partOverallDimMarkup(item, level, bbox){
+    const offset = 11 + level * 15;
+    const u0 = item.proj.u, u1 = item.proj.u + item.proj.w;
+    const v0 = item.proj.v, v1 = item.proj.v + item.proj.h;
+    let s = "";
+
+    // 全幅(下側)
+    const dimV = v0 - offset;
+    const p1 = toScreen(u0, dimV, bbox), p2 = toScreen(u1, dimV, bbox);
+    s += extLine(toScreen(u0, v0, bbox), toScreen(u0, dimV - 3, bbox));
+    s += extLine(toScreen(u1, v0, bbox), toScreen(u1, dimV - 3, bbox));
+    s += dimArrowLine(p1, p2);
+    s += dimText(mid(p1, p2), fmtNum(item.proj.w) + "mm", { dy: -3 });
+
+    // 全高(左側)
+    const dimU = u0 - offset;
+    const q1 = toScreen(dimU, v0, bbox), q2 = toScreen(dimU, v1, bbox);
+    s += extLine(toScreen(u0, v0, bbox), toScreen(dimU - 3, v0, bbox));
+    s += extLine(toScreen(u0, v1, bbox), toScreen(dimU - 3, v1, bbox));
+    s += dimArrowLine(q1, q2);
+    const qm = mid(q1, q2);
+    s += '<text x="' + qm.x.toFixed(2) + '" y="' + qm.y.toFixed(2) + '" text-anchor="middle" font-size="10" data-fixed-size="10" ' +
+      'fill="var(--color-text-2)" transform="rotate(-90 ' + qm.x.toFixed(2) + ' ' + qm.y.toFixed(2) + ')" style="pointer-events:none;">' + fmtNum(item.proj.h) + 'mm</text>';
+
+    return s;
+  }
+
+  /** 選択中の穴のみ: パーツ原点(左下)からのX/Y寸法線(F-45) */
+  function selectedHoleDimMarkup(bundle, viewType, bbox, selection){
+    if (!selection || selection.kind !== "hole") return "";
+    if (viewType !== "front" && viewType !== "back") return "";
+    const part = bundle.parts.find(function(p){ return p.id === selection.partId; });
+    if (!part) return "";
+    const plc = bundle.placements.find(function(p){ return p.targetType === "part" && p.targetId === part.id; });
+    if (!plc) return "";
+    const hole = part.holes.find(function(h){ return h.id === selection.holeId; });
+    if (!hole) return "";
+
+    const originWorldX = plc.pos.x, originWorldY = plc.pos.y;
+    const originU = (viewType === "back") ? -originWorldX : originWorldX;
+    const originV = originWorldY;
+    const holeWorldX = plc.pos.x + hole.pos.x, holeWorldY = plc.pos.y + hole.pos.y;
+    const holeU = (viewType === "back") ? -holeWorldX : holeWorldX;
+    const holeV = holeWorldY;
+
+    const o = toScreen(originU, originV, bbox);
+    const corner = toScreen(holeU, originV, bbox);
+    const hpt = toScreen(holeU, holeV, bbox);
+
+    let s = '<g class="dim-selected-hole">';
+    s += '<line x1="' + o.x.toFixed(2) + '" y1="' + o.y.toFixed(2) + '" x2="' + corner.x.toFixed(2) + '" y2="' + corner.y.toFixed(2) + '" stroke="var(--color-accent)" stroke-width="1.2" stroke-dasharray="3 2" vector-effect="non-scaling-stroke"></line>';
+    s += '<line x1="' + corner.x.toFixed(2) + '" y1="' + corner.y.toFixed(2) + '" x2="' + hpt.x.toFixed(2) + '" y2="' + hpt.y.toFixed(2) + '" stroke="var(--color-accent)" stroke-width="1.2" stroke-dasharray="3 2" vector-effect="non-scaling-stroke"></line>';
+    s += dimText(mid(o, corner), "X:" + fmtNum(hole.pos.x), { color: "var(--color-accent)", dy: -3 });
+    s += dimText(mid(corner, hpt), "Y:" + fmtNum(hole.pos.y), { color: "var(--color-accent)", anchor: "start", dy: 3 });
+    s += '<circle cx="' + o.x.toFixed(2) + '" cy="' + o.y.toFixed(2) + '" r="2.2" fill="var(--color-accent)"></circle>';
+    s += '</g>';
+    return s;
+  }
+
+  /* ---------- ⑤SVG出力 ---------- */
+
+  function renderView(bundle, viewType, options){
+    options = options || {};
+    const selection = options.selection || null;
+    if (!bundle) return { svg: "", fitViewBox: { x: 0, y: 0, w: 100, h: 100 }, empty: true };
+
+    const items = collectItems(bundle, viewType);
+    if (items.length === 0){
+      const fb = { x: 0, y: 0, w: 100, h: 100 };
+      return { svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"></svg>', fitViewBox: fb, empty: true };
+    }
+
+    const sorted = sortByDepth(items, viewType);
+    const dimTargets = items.filter(function(it){ return it.kind === "part" && it.placement.orientation === "xy" && it.shape !== "circle"; });
+    const bbox = computeContentBBox(items);
+    const dimLevels = dimTargets.length;
+
+    const padLeft = 20 + dimLevels * 16;
+    const padBottom = 20 + dimLevels * 16;
+    const padTop = 16;
+    const padRight = 16;
+    const contentW = Math.max(1, bbox.maxU - bbox.minU);
+    const contentH = Math.max(1, bbox.maxV - bbox.minV);
+
+    const fitViewBox = { x: -padLeft, y: -padTop, w: contentW + padLeft + padRight, h: contentH + padTop + padBottom };
+
+    let body = "";
+    sorted.forEach(function(item){
+      const isSelected = !!(selection && (
+        (selection.kind === "part" && item.kind === "part" && selection.partId === item.id) ||
+        (selection.kind === "component" && item.kind === "component" && selection.cmpId === item.id)
+      ));
+      if (item.kind === "part" && item.shape === "circle" && (viewType === "front" || viewType === "back")){
+        body += partCircleMarkup(item, bbox, isSelected);
+      } else if (item.kind === "part"){
+        body += partRectMarkup(item, bbox, isSelected);
+      } else {
+        body += componentMarkup(item, bbox, isSelected);
+      }
+    });
+
+    body += holesMarkup(bundle, viewType, bbox, selection);
+    dimTargets.forEach(function(item, idx){ body += partOverallDimMarkup(item, idx, bbox); });
+    body += selectedHoleDimMarkup(bundle, viewType, bbox, selection);
+
+    if (viewType === "back"){
+      const noteY = contentH + padBottom - 6;
+      body += '<text x="' + (contentW / 2).toFixed(2) + '" y="' + noteY.toFixed(2) + '" text-anchor="middle" font-size="11" data-fixed-size="11" ' +
+        'fill="var(--color-back)" font-weight="700" style="pointer-events:none;">裏から見た図(左右反転済み)</text>';
+    }
+
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + fitViewBox.x + ' ' + fitViewBox.y + ' ' + fitViewBox.w + ' ' + fitViewBox.h + '" preserveAspectRatio="xMidYMid meet">' + body + '</svg>';
+    return { svg: svg, fitViewBox: fitViewBox, empty: false };
+  }
+
+  /* ---------- 断面/Zタブ: 積み上げ断面SVG(静的。切断位置スライダーはv1.0スコープ) ---------- */
+
+  function renderSectionSVG(bundle){
+    const warnMm = (bundle.project.settings && bundle.project.settings.clearanceWarnMm != null) ? bundle.project.settings.clearanceWarnMm : 5;
+    const result = Geometry.stackIntervals(bundle.zstack.items, bundle.zstack.totalDepth, warnMm);
+    const totalDepth = Math.max(bundle.zstack.totalDepth || 0, result.sum, 1);
+
+    const barX = 60, barW = 70, barTop = 14, barH = 190;
+    const scale = barH / totalDepth;
+    const colors = ["#4FC3F7", "#B0BEC5", "#81C784", "#FFB74D", "#BA68C8", "#4DD0E1"];
+
+    let body = "";
+    result.segments.forEach(function(seg, i){
+      const y = barTop + seg.start * scale;
+      const h = Math.max(seg.mm * scale, 1);
+      body += '<rect x="' + barX + '" y="' + y.toFixed(2) + '" width="' + barW + '" height="' + h.toFixed(2) + '" fill="' + colors[i % colors.length] + '" stroke="var(--color-text)" stroke-opacity="0.3" stroke-width="1"></rect>';
+      body += '<text x="' + (barX + barW + 10) + '" y="' + (y + h / 2 + 4).toFixed(2) + '" font-size="12.5" fill="var(--color-text)">' + escapeHtml(seg.label) + ' ' + fmtNum(seg.mm) + 'mm</text>';
+    });
+
+    const remColor = result.status === "ok" ? "var(--color-ok)" : (result.status === "warn" ? "var(--color-warn)" : "var(--color-danger)");
+    if (result.remaining > 0){
+      const remY = barTop + result.sum * scale;
+      const remH = result.remaining * scale;
+      body += '<rect x="' + barX + '" y="' + remY.toFixed(2) + '" width="' + barW + '" height="' + remH.toFixed(2) + '" fill="' + remColor + '" fill-opacity="0.55" stroke="' + remColor + '" stroke-width="1.5"></rect>';
+      body += '<text x="' + (barX + barW + 10) + '" y="' + (remY + remH / 2 + 4).toFixed(2) + '" font-size="12.5" fill="' + remColor + '" font-weight="700">残り ' + result.remaining.toFixed(1) + 'mm</text>';
+    } else {
+      body += '<text x="' + (barX + barW + 10) + '" y="' + (barTop + barH + 16) + '" font-size="12.5" fill="var(--color-danger)" font-weight="700">干渉 ' + result.remaining.toFixed(1) + 'mm</text>';
+    }
+
+    body += '<rect x="' + barX + '" y="' + barTop + '" width="' + barW + '" height="' + barH + '" fill="none" stroke="var(--color-text)" stroke-width="1.6"></rect>';
+    body += '<text x="' + barX + '" y="' + (barTop - 5) + '" font-size="11" fill="var(--color-text-2)">Z断面(奥行き' + fmtNum(totalDepth) + 'mm)</text>';
+
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 ' + (barTop + barH + 26) + '" preserveAspectRatio="xMidYMid meet">' + body + '</svg>';
+  }
+
+  return {
+    renderView: renderView,
+    renderSectionSVG: renderSectionSVG,
+    VIEW_LABELS: VIEW_LABELS
+  };
+})();
+
+/* ============================================================
+   ===== store =====
+   状態・アクション・undo/redo・自動保存トリガ
+============================================================ */
+const Store = (function(){
+  const state = {
+    projects: [],            // 全プロジェクトのフルバンドル配列 [{schemaVersion,project,parts,components,placements,zstack}, ...]
+    currentProjectId: null,
+    storageMode: "memory",   // "indexeddb" | "memory"
+    defaultClearanceWarnMm: 5.0,
+    pendingDelete: null,     // { bundle, timerId } 削除のundo猶予中データ
+    undoStack: [],           // 現在開いているプロジェクトのスナップショット(JSON文字列)
+    redoStack: [],
+    ui: {
+      screen: "home",        // "home" | "workspace"
+      activeTab: "view",      // "view" | "parts" | "components" | "section"
+      activeView: "front",    // タスク2で使用(ビュー切替)
+      selection: null         // タスク2/3で使用(選択中の要素)
+    }
+  };
+
+  let _onChange = function(){};
+  function subscribe(fn){ _onChange = fn; }
+  function notify(){ _onChange(); }
+
+  function getCurrentBundle(){
+    if (!state.currentProjectId) return null;
+    for (let i = 0; i < state.projects.length; i++){
+      if (state.projects[i].project.id === state.currentProjectId) return state.projects[i];
+    }
+    return null;
+  }
+
+  function findBundle(id){
+    for (let i = 0; i < state.projects.length; i++){
+      if (state.projects[i].project.id === id) return state.projects[i];
+    }
+    return null;
+  }
+
+  function persist(bundle){
+    IO.scheduleSave(bundle);
+  }
+
+  function pushUndoSnapshot(bundle){
+    state.undoStack.push(JSON.stringify(bundle));
+    if (state.undoStack.length > 50) state.undoStack.shift();
+    state.redoStack = [];
+  }
+
+  /** 現在開いているプロジェクトを変更する共通ヘルパー。undo履歴の記録・自動保存・再描画までを一括で行う。
+   *  タスク3向け変更: mutator の戻り値をそのまま返すようにした(add系アクションが生成IDを呼び出し元へ返せるようにするため)。 */
+  function mutateCurrentProject(mutator){
+    const bundle = getCurrentBundle();
+    if (!bundle) return undefined;
+    pushUndoSnapshot(bundle);
+    const result = mutator(bundle);
+    bundle.project.updatedAt = new Date().toISOString();
+    persist(bundle);
+    notify();
+    return result;
+  }
+
+  function replaceBundleInPlace(target, replacement){
+    // 参照を保ったまま中身だけ入れ替える(state.projects配列の要素を差し替えるのではなく上書き)
+    Object.keys(target).forEach(function(k){ delete target[k]; });
+    Object.assign(target, replacement);
+  }
+
+  /* ---------- プロジェクト管理 ---------- */
+
+  function createProject(name){
+    const now = new Date().toISOString();
+    const bundle = {
+      schemaVersion: 1,
+      project: {
+        id: genId("prj"),
+        name: (name && name.trim()) || "新規プロジェクト",
+        note: "",
+        createdAt: now,
+        updatedAt: now,
+        settings: { unit: "mm", clearanceWarnMm: state.defaultClearanceWarnMm }
+      },
+      parts: [],
+      components: [],
+      placements: [],
+      zstack: { axis: "z", totalDepth: 0, items: [] }
+    };
+    state.projects.push(bundle);
+    persist(bundle);
+    notify();
+    return bundle.project.id;
+  }
+
+  function openProject(id){
+    if (!findBundle(id)) return;
+    state.currentProjectId = id;
+    state.ui.screen = "workspace";
+    state.ui.activeTab = "view";
+    state.ui.selection = null;
+    state.undoStack = [];
+    state.redoStack = [];
+    notify();
+  }
+
+  function goHome(){
+    state.ui.screen = "home";
+    state.currentProjectId = null;
+    notify();
+  }
+
+  function renameProject(id, newName){
+    const bundle = findBundle(id);
+    if (!bundle) return;
+    bundle.project.name = (newName && newName.trim()) || bundle.project.name;
+    bundle.project.updatedAt = new Date().toISOString();
+    persist(bundle);
+    notify();
+  }
+
+  function duplicateProject(id){
+    const bundle = findBundle(id);
+    if (!bundle) return null;
+    const copy = deepClone(bundle);
+    const now = new Date().toISOString();
+    copy.project.id = genId("prj");
+    copy.project.name = bundle.project.name + " のコピー";
+    copy.project.createdAt = now;
+    copy.project.updatedAt = now;
+    state.projects.push(copy);
+    persist(copy);
+    notify();
+    return copy.project.id;
+  }
+
+  function finalizePendingDelete(){
+    if (!state.pendingDelete) return;
+    clearTimeout(state.pendingDelete.timerId);
+    IO.deleteProjectNow(state.pendingDelete.bundle.project.id).catch(function(err){
+      console.error("FieldCAD: delete failed", err);
+    });
+    state.pendingDelete = null;
+  }
+
+  /** 削除。即座に一覧から消すが、5秒間はDBから消さずundo可能に保持する。 */
+  function deleteProject(id, onFinalized){
+    // 既存の保留削除があれば先に確定させる(同時に1件のみ保留)
+    if (state.pendingDelete) finalizePendingDelete();
+
+    const idx = state.projects.findIndex(function(p){ return p.project.id === id; });
+    if (idx < 0) return;
+    const removed = state.projects[idx];
+    state.projects.splice(idx, 1);
+    if (state.currentProjectId === id){
+      state.currentProjectId = null;
+      state.ui.screen = "home";
+    }
+    const timerId = setTimeout(function(){
+      state.pendingDelete = null;
+      IO.deleteProjectNow(removed.project.id).catch(function(err){
+        console.error("FieldCAD: delete failed", err);
+      });
+      if (typeof onFinalized === "function") onFinalized();
+    }, 5000);
+    state.pendingDelete = { bundle: removed, timerId: timerId };
+    notify();
+  }
+
+  function undoDeleteProject(){
+    if (!state.pendingDelete) return;
+    clearTimeout(state.pendingDelete.timerId);
+    state.projects.push(state.pendingDelete.bundle);
+    state.pendingDelete = null;
+    notify();
+  }
+
+  function exportProject(id){
+    const bundle = findBundle(id);
+    if (!bundle) return;
+    IO.downloadProjectJSON(bundle);
+  }
+
+  async function importProjectFromFile(file){
+    let data;
+    try {
+      data = await IO.readProjectJSON(file);
+    } catch (err){
+      UI.showSnackbar(err.message || "インポートに失敗しました");
+      return false;
+    }
+    const copy = deepClone(data);
+    copy.project.id = genId("prj"); // 衝突回避のため常に新規IDを割り当てる
+    copy.project.updatedAt = new Date().toISOString();
+    state.projects.push(copy);
+    persist(copy);
+    notify();
+    UI.showSnackbar("読み込みました: " + copy.project.name);
+    return true;
+  }
+
+  function setDefaultClearanceWarnMm(mm){
+    const v = parseFloat(mm);
+    if (!isNaN(v) && v >= 0) state.defaultClearanceWarnMm = v;
+  }
+
+  /* ---------- UI状態 ---------- */
+
+  function setActiveTab(tab){
+    state.ui.activeTab = tab;
+    notify();
+  }
+
+  function setActiveView(viewType){
+    // タスク2向けスタブ。ビュー切替パレット実装時にここへ接続する。
+    state.ui.activeView = viewType;
+    notify();
+  }
+
+  function setSelection(sel){
+    // タスク2/3向けスタブ。図内要素タップで選択情報バーへ反映する。
+    state.ui.selection = sel;
+    notify();
+  }
+
+  /* ---------- パーツ ---------- */
+
+  function addPart(partial){
+    return mutateCurrentProject(function(bundle){
+      const part = Object.assign({
+        id: genId("part"),
+        name: "新しいパーツ",
+        kind: "other",
+        shape: "rect",
+        size: { w: 100, h: 100, t: 3 },
+        innerSize: null,
+        color: pickPartColor(bundle.parts.length),
+        visible: true,
+        opacity: 1,
+        holes: []
+      }, partial || {});
+      bundle.parts.push(part);
+      return part.id;
+    });
+  }
+
+  function updatePart(partId, patch){
+    mutateCurrentProject(function(bundle){
+      const part = bundle.parts.find(function(p){ return p.id === partId; });
+      if (part) Object.assign(part, patch);
+    });
+  }
+
+  /** タスク3向け変更: deleteComponent と同様、削除時に紐づく placement も併せて削除するようにした
+   *  (従来は placement が残存し、ビューには出ないが JSON 上にゴミデータとして残っていた)。 */
+  function deletePart(partId){
+    mutateCurrentProject(function(bundle){
+      bundle.parts = bundle.parts.filter(function(p){ return p.id !== partId; });
+      bundle.placements = bundle.placements.filter(function(p){ return !(p.targetType === "part" && p.targetId === partId); });
+    });
+  }
+
+  function duplicatePart(partId){
+    return mutateCurrentProject(function(bundle){
+      const part = bundle.parts.find(function(p){ return p.id === partId; });
+      if (!part) return null;
+      const copy = deepClone(part);
+      copy.id = genId("part");
+      copy.name = part.name + " のコピー";
+      copy.holes = copy.holes.map(function(h){
+        const hc = deepClone(h);
+        hc.id = genId("hole");
+        return hc;
+      });
+      bundle.parts.push(copy);
+      return copy.id;
+    });
+  }
+
+  function togglePartVisible(partId){
+    mutateCurrentProject(function(bundle){
+      const part = bundle.parts.find(function(p){ return p.id === partId; });
+      if (part) part.visible = !part.visible;
+    });
+  }
+
+  /* ---------- 穴 ---------- */
+
+  function addHole(partId, partial){
+    return mutateCurrentProject(function(bundle){
+      const part = bundle.parts.find(function(p){ return p.id === partId; });
+      if (!part) return null;
+      const hole = Object.assign({
+        id: genId("hole"),
+        name: "新しい穴",
+        type: "circle",
+        dim: { d: 5 },
+        pos: { x: 0, y: 0 },
+        depth: null,
+        side: "front",
+        presetId: null
+      }, partial || {});
+      part.holes.push(hole);
+      return hole.id;
+    });
+  }
+
+  function updateHole(partId, holeId, patch){
+    mutateCurrentProject(function(bundle){
+      const part = bundle.parts.find(function(p){ return p.id === partId; });
+      if (!part) return;
+      const hole = part.holes.find(function(h){ return h.id === holeId; });
+      if (hole) Object.assign(hole, patch);
+    });
+  }
+
+  function deleteHole(partId, holeId){
+    mutateCurrentProject(function(bundle){
+      const part = bundle.parts.find(function(p){ return p.id === partId; });
+      if (!part) return;
+      part.holes = part.holes.filter(function(h){ return h.id !== holeId; });
+    });
+  }
+
+  function duplicateHole(partId, holeId){
+    return mutateCurrentProject(function(bundle){
+      const part = bundle.parts.find(function(p){ return p.id === partId; });
+      if (!part) return null;
+      const hole = part.holes.find(function(h){ return h.id === holeId; });
+      if (!hole) return null;
+      const copy = deepClone(hole);
+      copy.id = genId("hole");
+      copy.name = hole.name + " のコピー";
+      part.holes.push(copy);
+      return copy.id;
+    });
+  }
+
+  /* ---------- コンポーネント ---------- */
+
+  function addComponent(partial){
+    return mutateCurrentProject(function(bundle){
+      const cmp = Object.assign({
+        id: genId("cmp"),
+        name: "新しい部品",
+        kind: "other",
+        size: { w: 10, h: 10, d: 10 },
+        color: "#9E9E9E",
+        mountedOn: null
+      }, partial || {});
+      bundle.components.push(cmp);
+      return cmp.id;
+    });
+  }
+
+  function updateComponent(cmpId, patch){
+    mutateCurrentProject(function(bundle){
+      const cmp = bundle.components.find(function(c){ return c.id === cmpId; });
+      if (cmp) Object.assign(cmp, patch);
+    });
+  }
+
+  function deleteComponent(cmpId){
+    mutateCurrentProject(function(bundle){
+      bundle.components = bundle.components.filter(function(c){ return c.id !== cmpId; });
+      bundle.placements = bundle.placements.filter(function(p){ return !(p.targetType === "component" && p.targetId === cmpId); });
+    });
+  }
+
+  /** タスク3で追加: 選択情報バーの[複製]を実体化するために必要な最小限のアクション。
+   *  component 本体と、それに紐づく placement をセットで複製する(placement が無ければ component のみ複製)。 */
+  function duplicateComponent(cmpId){
+    return mutateCurrentProject(function(bundle){
+      const cmp = bundle.components.find(function(c){ return c.id === cmpId; });
+      if (!cmp) return null;
+      const copy = deepClone(cmp);
+      copy.id = genId("cmp");
+      copy.name = cmp.name + " のコピー";
+      bundle.components.push(copy);
+      const plc = bundle.placements.find(function(p){ return p.targetType === "component" && p.targetId === cmpId; });
+      if (plc){
+        const plcCopy = deepClone(plc);
+        plcCopy.id = genId("plc");
+        plcCopy.targetId = copy.id;
+        bundle.placements.push(plcCopy);
+      }
+      return copy.id;
+    });
+  }
+
+  /* ---------- 配置(placements) ---------- */
+
+  function addPlacement(partial){
+    return mutateCurrentProject(function(bundle){
+      const plc = Object.assign({
+        id: genId("plc"),
+        targetType: "part",
+        targetId: null,
+        pos: { x: 0, y: 0, z: 0 },
+        orientation: "xy",
+        flipped: false
+      }, partial || {});
+      bundle.placements.push(plc);
+      return plc.id;
+    });
+  }
+
+  function updatePlacement(plcId, patch){
+    mutateCurrentProject(function(bundle){
+      const plc = bundle.placements.find(function(p){ return p.id === plcId; });
+      if (plc) Object.assign(plc, patch);
+    });
+  }
+
+  function deletePlacement(plcId){
+    mutateCurrentProject(function(bundle){
+      bundle.placements = bundle.placements.filter(function(p){ return p.id !== plcId; });
+    });
+  }
+
+  /* ---------- Zスタック ---------- */
+
+  function setZStackTotalDepth(mm){
+    mutateCurrentProject(function(bundle){
+      bundle.zstack.totalDepth = parseFloat(mm) || 0;
+    });
+  }
+
+  function addZStackItem(item){
+    mutateCurrentProject(function(bundle){
+      bundle.zstack.items.push(Object.assign({ ref: null, label: "項目", mm: 0 }, item || {}));
+    });
+  }
+
+  function updateZStackItem(index, patch){
+    mutateCurrentProject(function(bundle){
+      const item = bundle.zstack.items[index];
+      if (item) Object.assign(item, patch);
+    });
+  }
+
+  function removeZStackItem(index){
+    mutateCurrentProject(function(bundle){
+      bundle.zstack.items.splice(index, 1);
+    });
+  }
+
+  /** タスク3で追加: Zスタック項目の並べ替え(上へ/下へボタン用。ドラッグ並べ替えはv1.0スコープ外)。 */
+  function moveZStackItem(index, delta){
+    mutateCurrentProject(function(bundle){
+      const items = bundle.zstack.items;
+      const target = index + delta;
+      if (target < 0 || target >= items.length) return;
+      const tmp = items[index];
+      items[index] = items[target];
+      items[target] = tmp;
+    });
+  }
+
+  /* ---------- undo / redo ---------- */
+
+  function undo(){
+    const bundle = getCurrentBundle();
+    if (!bundle || state.undoStack.length === 0) return;
+    state.redoStack.push(JSON.stringify(bundle));
+    const prev = JSON.parse(state.undoStack.pop());
+    replaceBundleInPlace(bundle, prev);
+    persist(bundle);
+    notify();
+  }
+
+  function redo(){
+    const bundle = getCurrentBundle();
+    if (!bundle || state.redoStack.length === 0) return;
+    state.undoStack.push(JSON.stringify(bundle));
+    const next = JSON.parse(state.redoStack.pop());
+    replaceBundleInPlace(bundle, next);
+    persist(bundle);
+    notify();
+  }
+
+  return {
+    state: state,
+    subscribe: subscribe,
+    getCurrentBundle: getCurrentBundle,
+    findBundle: findBundle,
+
+    createProject: createProject,
+    openProject: openProject,
+    goHome: goHome,
+    renameProject: renameProject,
+    duplicateProject: duplicateProject,
+    deleteProject: deleteProject,
+    undoDeleteProject: undoDeleteProject,
+    exportProject: exportProject,
+    importProjectFromFile: importProjectFromFile,
+    setDefaultClearanceWarnMm: setDefaultClearanceWarnMm,
+
+    setActiveTab: setActiveTab,
+    setActiveView: setActiveView,
+    setSelection: setSelection,
+
+    addPart: addPart,
+    updatePart: updatePart,
+    deletePart: deletePart,
+    duplicatePart: duplicatePart,
+    togglePartVisible: togglePartVisible,
+
+    addHole: addHole,
+    updateHole: updateHole,
+    deleteHole: deleteHole,
+    duplicateHole: duplicateHole,
+
+    addComponent: addComponent,
+    updateComponent: updateComponent,
+    deleteComponent: deleteComponent,
+    duplicateComponent: duplicateComponent,
+
+    addPlacement: addPlacement,
+    updatePlacement: updatePlacement,
+    deletePlacement: deletePlacement,
+
+    setZStackTotalDepth: setZStackTotalDepth,
+    addZStackItem: addZStackItem,
+    updateZStackItem: updateZStackItem,
+    removeZStackItem: removeZStackItem,
+    moveZStackItem: moveZStackItem,
+
+    undo: undo,
+    redo: redo
+  };
+})();
+
+/* ============================================================
+   ===== ui =====
+   単方向データフロー: アクション → Store更新 → render()
+   render() は state から全UIを毎回再構築する。
+============================================================ */
+const UI = (function(){
+  let dom = {};
+  let longPressTimer = null;
+  let longPressFired = false;
+  let snackbarTimer = null;
+  let snackbarActionCb = null;
+
+  // ---- ボトムシート(タスク3): 現在開いているフォームの文脈と「新規作成でキャンセルされた場合のロールバック」----
+  let sheetCtx = null;          // { kind:"hole"|"part"|"component"|"zitem"|"zdepth", ...対象ID, isNew }
+  let sheetCancelAction = null; // 新規作成時、閉じる(X・背景タップ・キャンセル相当)と仮エンティティを削除するロールバック関数
+  let stepperRepeatTimeout = null;
+  let stepperRepeatInterval = null;
+
+  // ---- ビュー(タスク2): ズーム/パン状態は viewType ごとに保持し、render() を跨いで維持する ----
+  let viewportByType = {};   // { front: {x,y,w,h}, back: {...}, ... } 現在のSVG viewBox
+  let fitBoxByType = {};     // 直近の renderView() が返した「全体表示」用 viewBox
+  let gesturePointers = new Map(); // pointerId -> {x,y}
+  let gestureStartDist = null;
+  let gestureStartVB = null;
+  let gestureMid = null;
+  let dragStart = null;      // { x, y, vb }
+  let tapCandidate = null;   // { x, y, time, moved }
+  let lastTapInfo = null;    // ダブルタップ判定用 { x, y, time }
+
+  function cacheDom(){
+    dom.storageBanner = document.getElementById("storage-banner");
+    dom.screenHome = document.getElementById("screen-home");
+    dom.screenWorkspace = document.getElementById("screen-workspace");
+    dom.projectList = document.getElementById("project-list");
+    dom.wsProjectName = document.getElementById("ws-project-name");
+    dom.undoBtn = document.getElementById("undo-btn");
+    dom.redoBtn = document.getElementById("redo-btn");
+    dom.viewSwitchBtn = document.getElementById("view-switch-btn");
+    dom.tabBar = document.getElementById("tab-bar");
+    dom.tabContentView = document.getElementById("tab-content-view");
+    dom.tabContentParts = document.getElementById("tab-content-parts");
+    dom.tabContentComponents = document.getElementById("tab-content-components");
+    dom.tabContentSection = document.getElementById("tab-content-section");
+    dom.layerChips = document.getElementById("layer-chips");
+    dom.viewSvgContainer = document.getElementById("view-svg-container");
+    dom.selectionInfoBar = document.getElementById("selection-info-bar");
+    dom.partsCardList = document.getElementById("parts-card-list");
+    dom.componentsCardList = document.getElementById("components-card-list");
+    dom.zstackContainer = document.getElementById("zstack-container");
+    dom.sectionViewPlaceholder = document.getElementById("section-view-placeholder");
+    dom.sheetOverlay = document.getElementById("sheet-overlay");
+    dom.sheetTitle = document.getElementById("sheet-title");
+    dom.sheetBody = document.getElementById("sheet-body");
+    dom.snackbar = document.getElementById("snackbar");
+    dom.snackbarText = document.getElementById("snackbar-text");
+    dom.snackbarAction = document.getElementById("snackbar-action");
+    dom.importFileInput = document.getElementById("import-file-input");
+  }
+
+  /* ---------- ビュー(タスク2): ズーム/パン/選択のジェスチャ処理 ----------
+     touch-action:none にしたコンテナ上で Pointer Events を自前ハンドリングする。
+     1本指ドラッグ=パン、2本指ピンチ=ズーム、タップ=要素選択、ダブルタップ=フィット。
+     マウスは pointerType:"mouse" として同じ経路を通る(ドラッグパン)ため、
+     ホイールのみ別途ズームとして扱う。 */
+
+  function distOf(a, b){ return Math.hypot(a.x - b.x, a.y - b.y); }
+  function midOf(a, b){ return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; }
+  function clampNum(v, lo, hi){ return Math.min(hi, Math.max(lo, v)); }
+
+  function currentViewType(){ return Store.state.ui.activeView; }
+
+  function rescaleFixedText(svgEl, vb){
+    if (!svgEl || !vb) return;
+    const rect = svgEl.getBoundingClientRect();
+    if (!rect.width) return;
+    const mmPerPx = vb.w / rect.width;
+    const nodes = svgEl.querySelectorAll("[data-fixed-size]");
+    for (let i = 0; i < nodes.length; i++){
+      const n = nodes[i];
+      const base = parseFloat(n.getAttribute("data-fixed-size")) || 10;
+      n.setAttribute("font-size", (base * mmPerPx).toFixed(3));
+    }
+  }
+
+  function applyViewportToDom(){
+    const svgEl = dom.viewSvgContainer.querySelector("svg");
+    const vt = currentViewType();
+    const vb = viewportByType[vt];
+    if (!svgEl || !vb) return;
+    svgEl.setAttribute("viewBox", vb.x + " " + vb.y + " " + vb.w + " " + vb.h);
+    rescaleFixedText(svgEl, vb);
+  }
+
+  function fitToContent(){
+    const vt = currentViewType();
+    const fit = fitBoxByType[vt];
+    if (!fit) return;
+    viewportByType[vt] = Object.assign({}, fit);
+    applyViewportToDom();
+  }
+
+  function applyZoom(vt, baseVB, factor, midClient, container){
+    const rect = container.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const fracX = (midClient.x - rect.left) / rect.width;
+    const fracY = (midClient.y - rect.top) / rect.height;
+    let newW = baseVB.w * factor;
+    let newH = baseVB.h * factor;
+    const minW = 15, maxW = 4000;
+    if (newW < minW){ const s = minW / newW; newW *= s; newH *= s; }
+    if (newW > maxW){ const s = maxW / newW; newW *= s; newH *= s; }
+    const anchorX = baseVB.x + fracX * baseVB.w;
+    const anchorY = baseVB.y + fracY * baseVB.h;
+    viewportByType[vt] = { x: anchorX - fracX * newW, y: anchorY - fracY * newH, w: newW, h: newH };
+    applyViewportToDom();
+  }
+
+  function applyPan(vt, baseVB, dxPx, dyPx, container){
+    const rect = container.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const mmPerPxX = baseVB.w / rect.width, mmPerPxY = baseVB.h / rect.height;
+    viewportByType[vt] = { x: baseVB.x - dxPx * mmPerPxX, y: baseVB.y - dyPx * mmPerPxY, w: baseVB.w, h: baseVB.h };
+    applyViewportToDom();
+  }
+
+  function selectionFromElement(el){
+    const target = el && el.closest ? el.closest("[data-kind]") : null;
+    if (!target) return null;
+    const kind = target.getAttribute("data-kind");
+    if (kind === "hole") return { kind: "hole", partId: target.getAttribute("data-part-id"), holeId: target.getAttribute("data-hole-id") };
+    if (kind === "component") return { kind: "component", cmpId: target.getAttribute("data-id") };
+    if (kind === "part") return { kind: "part", partId: target.getAttribute("data-part-id") };
+    return null;
+  }
+
+  function handleViewTap(clientX, clientY){
+    const now = Date.now();
+    if (lastTapInfo && (now - lastTapInfo.time) < 350 && distOf({ x: clientX, y: clientY }, lastTapInfo) < 40){
+      lastTapInfo = null;
+      fitToContent();
+      return;
+    }
+    lastTapInfo = { x: clientX, y: clientY, time: now };
+    const el = document.elementFromPoint(clientX, clientY);
+    const sel = selectionFromElement(el);
+    Store.setSelection(sel);
+  }
+
+  function bindViewGestures(){
+    const container = dom.viewSvgContainer;
+
+    container.addEventListener("pointerdown", function(e){
+      if (container.setPointerCapture){
+        try { container.setPointerCapture(e.pointerId); } catch (err){ /* noop */ }
+      }
+      gesturePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      const vt = currentViewType();
+      if (!viewportByType[vt]) return;
+      if (gesturePointers.size === 1){
+        tapCandidate = { x: e.clientX, y: e.clientY, time: Date.now(), moved: false };
+        dragStart = { x: e.clientX, y: e.clientY, vb: Object.assign({}, viewportByType[vt]) };
+      } else if (gesturePointers.size === 2){
+        tapCandidate = null;
+        const pts = Array.from(gesturePointers.values());
+        gestureStartDist = distOf(pts[0], pts[1]);
+        gestureMid = midOf(pts[0], pts[1]);
+        gestureStartVB = Object.assign({}, viewportByType[vt]);
+      }
+    });
+
+    container.addEventListener("pointermove", function(e){
+      if (!gesturePointers.has(e.pointerId)) return;
+      gesturePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      const vt = currentViewType();
+      if (gesturePointers.size >= 2 && gestureStartDist){
+        const pts = Array.from(gesturePointers.values()).slice(0, 2);
+        const d = distOf(pts[0], pts[1]) || 1;
+        const factor = clampNum(gestureStartDist / d, 0.05, 20);
+        applyZoom(vt, gestureStartVB, factor, gestureMid, container);
+      } else if (gesturePointers.size === 1 && dragStart){
+        const dx = e.clientX - dragStart.x, dy = e.clientY - dragStart.y;
+        if (tapCandidate && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) tapCandidate.moved = true;
+        applyPan(vt, dragStart.vb, dx, dy, container);
+      }
+    });
+
+    function endPointer(e){
+      gesturePointers.delete(e.pointerId);
+      if (gesturePointers.size < 2){ gestureStartDist = null; gestureStartVB = null; gestureMid = null; }
+      if (gesturePointers.size === 0){
+        dragStart = null;
+        if (tapCandidate && !tapCandidate.moved && (Date.now() - tapCandidate.time) < 500){
+          handleViewTap(tapCandidate.x, tapCandidate.y);
+        }
+        tapCandidate = null;
+      }
+    }
+    container.addEventListener("pointerup", endPointer);
+    container.addEventListener("pointercancel", endPointer);
+    container.addEventListener("pointerleave", function(e){
+      // マウスがコンテナ外に出たらドラッグ状態のみ解除(タップ判定は行わない)
+      if (gesturePointers.has(e.pointerId) && gesturePointers.size === 1) tapCandidate = null;
+    });
+
+    // デスクトップ検証用: ホイールズーム
+    container.addEventListener("wheel", function(e){
+      e.preventDefault();
+      const vt = currentViewType();
+      const base = viewportByType[vt];
+      if (!base) return;
+      const factor = e.deltaY > 0 ? 1.12 : 0.89;
+      applyZoom(vt, base, factor, { x: e.clientX, y: e.clientY }, container);
+    }, { passive: false });
+  }
+
+  /* ---------- ボトムシート ---------- */
+
+  function openSheet(title, bodyHtml, focusSelector){
+    dom.sheetTitle.textContent = title;
+    dom.sheetBody.innerHTML = bodyHtml;
+    dom.sheetOverlay.classList.remove("hidden");
+    if (focusSelector){
+      requestAnimationFrame(function(){
+        const el = dom.sheetBody.querySelector(focusSelector);
+        if (el && el.focus){
+          el.focus();
+          if (el.select) el.select();
+        }
+      });
+    }
+  }
+
+  /** シートを閉じる。sheetCancelAction が設定されている(=新規作成の仮エンティティが未確定)場合は
+   *  ロールバックしてから閉じる。X・背景タップ・Escいずれの経路でもここを通る。 */
+  function closeSheet(){
+    if (sheetCancelAction){
+      const fn = sheetCancelAction;
+      sheetCancelAction = null;
+      fn();
+    }
+    sheetCtx = null;
+    dom.sheetOverlay.classList.add("hidden");
+    dom.sheetOverlay.style.top = "";
+    dom.sheetOverlay.style.height = "";
+    dom.sheetBody.innerHTML = "";
+  }
+
+  /** 「完了」ボタン専用: ロールバックを無効化してから閉じる(新規作成を確定させる)。 */
+  function completeSheet(){
+    sheetCancelAction = null;
+    closeSheet();
+  }
+
+  /** iOS等でソフトウェアキーボードが出た際、visualViewport に合わせてシートの高さ/位置を追従させる(簡易対応)。 */
+  function bindVisualViewport(){
+    if (!window.visualViewport) return;
+    function onVVChange(){
+      if (dom.sheetOverlay.classList.contains("hidden")) return;
+      const vv = window.visualViewport;
+      dom.sheetOverlay.style.height = vv.height + "px";
+      dom.sheetOverlay.style.top = vv.offsetTop + "px";
+    }
+    window.visualViewport.addEventListener("resize", onVVChange);
+    window.visualViewport.addEventListener("scroll", onVVChange);
+  }
+
+  /* ---------- タスク3: フォーム共通ヘルパー(ステッパー数値入力・種別セレクト・色スウォッチ) ---------- */
+
+  const PART_KIND_OPTIONS = [
+    { v: "acrylic", label: "アクリル板" },
+    { v: "wood", label: "木板" },
+    { v: "aluminum", label: "アルミ板" },
+    { v: "mdf", label: "MDF" },
+    { v: "frame", label: "フレーム(枠)" },
+    { v: "enclosure", label: "筐体(箱)" },
+    { v: "other", label: "その他" }
+  ];
+  const COMPONENT_KIND_OPTIONS = [
+    { v: "pcb", label: "基板(PCB)" },
+    { v: "lcd", label: "LCD" },
+    { v: "switch", label: "スイッチ" },
+    { v: "jack", label: "ジャック" },
+    { v: "led", label: "LED" },
+    { v: "speaker", label: "スピーカー" },
+    { v: "connector", label: "コネクタ" },
+    { v: "other", label: "その他" }
+  ];
+
+  /** 0.5mm刻みに丸め、末尾の.0は省略して表示する(Views.fmtNumと同じ規則をUI側でも踏襲)。 */
+  function fmtStepVal(n){
+    const v = Math.round(n * 10) / 10;
+    return (Math.abs(v - Math.round(v)) < 1e-9) ? String(Math.round(v)) : String(v);
+  }
+
+  /** ステッパー付き数値入力(§11.2): inputmode="decimal" + 左右±ボタン(0.5mm刻み、長押しで連続)。
+   *  ラベル+ステッパー行を1つの field-col に包み、two-col/three-col グリッドの1マスとして並べられるようにする。 */
+  function numberFieldHtml(id, label, value, opts){
+    opts = opts || {};
+    const step = opts.step != null ? opts.step : 0.5;
+    const min = opts.min;
+    return (
+      '<div class="field-col">' +
+        '<label class="field-label" for="' + id + '">' + escapeHtml(label) + '(mm)</label>' +
+        '<div class="stepper-row">' +
+          '<button type="button" class="stepper-btn" data-stepper-target="' + id + '" data-step="' + (-step) + '"' +
+            (min != null ? ' data-stepper-min="' + min + '"' : '') + ' aria-label="' + escapeHtml(label) + 'を減らす">&minus;</button>' +
+          '<input type="text" inputmode="decimal" id="' + id + '" class="number-input stepper-input" value="' + fmtStepVal(value) + '">' +
+          '<button type="button" class="stepper-btn" data-stepper-target="' + id + '" data-step="' + step + '" aria-label="' + escapeHtml(label) + 'を増やす">+</button>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function selectOptionsHtml(options, current){
+    return options.map(function(o){
+      return '<option value="' + o.v + '"' + (o.v === current ? ' selected' : '') + '>' + escapeHtml(o.label) + '</option>';
+    }).join("");
+  }
+
+  function colorSwatchRowHtml(current, action){
+    return '<div class="swatch-row">' + PART_COLOR_PALETTE.map(function(c){
+      return '<button type="button" class="color-swatch' + (current === c ? ' selected' : '') + '" style="background:' + c + '" ' +
+        'data-action="' + action + '" data-color="' + c + '" aria-label="色を選択"></button>';
+    }).join("") + '</div>';
+  }
+
+  /** ステッパーボタンのpointerdown〜長押し連続増減。値の変わり先は data-stepper-target の input要素(id指定)。
+   *  ボトムシート内の要素に対してのみ動作させれば十分だが、以後の再利用も考慮しdocument全体に委譲する。 */
+  function stepOnce(btn){
+    const targetId = btn.getAttribute("data-stepper-target");
+    const input = document.getElementById(targetId);
+    if (!input) return;
+    const step = parseFloat(btn.getAttribute("data-step"));
+    let v = parseFloat(input.value);
+    if (isNaN(v)) v = 0;
+    v = Math.round((v + step) * 100) / 100;
+    const minAttr = btn.getAttribute("data-stepper-min");
+    if (minAttr != null){
+      const min = parseFloat(minAttr);
+      if (!isNaN(min) && v < min) v = min;
+    }
+    input.value = fmtStepVal(v);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
+  function bindStepperEvents(){
+    document.body.addEventListener("pointerdown", function(e){
+      const btn = e.target.closest(".stepper-btn");
+      if (!btn || btn.disabled) return;
+      e.preventDefault();
+      stepOnce(btn);
+      clearTimeout(stepperRepeatTimeout);
+      clearInterval(stepperRepeatInterval);
+      stepperRepeatTimeout = setTimeout(function(){
+        stepperRepeatInterval = setInterval(function(){ stepOnce(btn); }, 90);
+      }, 450);
+      function stop(){
+        clearTimeout(stepperRepeatTimeout);
+        clearInterval(stepperRepeatInterval);
+        document.removeEventListener("pointerup", stop);
+        document.removeEventListener("pointercancel", stop);
+      }
+      document.addEventListener("pointerup", stop);
+      document.addEventListener("pointercancel", stop);
+    });
+  }
+
+  /* ---------- タスク3: PNG書き出し(F-70) ---------- */
+
+  /** クローンしたSVG内の fill/stroke に var(--color-*) が使われている要素を、
+   *  元要素の getComputedStyle() で解決した実色に置き換える(オフスクリーン画像化のため必須)。 */
+  function inlineComputedColors(clone, original){
+    function resolve(o, c){
+      ["fill", "stroke"].forEach(function(attr){
+        const raw = o.getAttribute && o.getAttribute(attr);
+        if (raw && raw.indexOf("var(") !== -1){
+          const resolved = getComputedStyle(o)[attr];
+          if (resolved) c.setAttribute(attr, resolved);
+        }
+      });
+    }
+    resolve(original, clone);
+    const origAll = original.querySelectorAll("*");
+    const cloneAll = clone.querySelectorAll("*");
+    for (let i = 0; i < origAll.length; i++) resolve(origAll[i], cloneAll[i]);
+  }
+
+  function downloadOrSharePng(blob, filename){
+    if (navigator.canShare && window.File){
+      try {
+        const file = new File([blob], filename, { type: "image/png" });
+        if (navigator.canShare({ files: [file] })){
+          navigator.share({ files: [file], title: filename }).catch(function(){ /* ユーザーキャンセル等は無視 */ });
+          return;
+        }
+      } catch (err){ /* File未対応環境などは下のダウンロードへフォールバック */ }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  }
+
+  /** 現在表示中のビューSVGをcanvas経由で2倍解像度PNG化し、共有シート(対応環境)またはダウンロードで書き出す。 */
+  function exportCurrentViewPng(){
+    const svgEl = dom.viewSvgContainer.querySelector("svg");
+    if (!svgEl){
+      showSnackbar("書き出せるビューがありません(パーツ/部品を追加してください)");
+      return;
+    }
+    const vbAttr = svgEl.getAttribute("viewBox") || "0 0 100 100";
+    const vbParts = vbAttr.split(/\s+/).map(Number);
+    const vbX = vbParts[0] || 0, vbY = vbParts[1] || 0;
+    const vbW = vbParts[2] || 100, vbH = vbParts[3] || 100;
+
+    const clone = svgEl.cloneNode(true);
+    clone.setAttribute("width", vbW);
+    clone.setAttribute("height", vbH);
+    inlineComputedColors(clone, svgEl);
+
+    const surfaceColor = (getComputedStyle(document.body).getPropertyValue("--color-surface") || "#ffffff").trim() || "#ffffff";
+    const bgRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    bgRect.setAttribute("x", vbX);
+    bgRect.setAttribute("y", vbY);
+    bgRect.setAttribute("width", vbW);
+    bgRect.setAttribute("height", vbH);
+    bgRect.setAttribute("fill", surfaceColor);
+    clone.insertBefore(bgRect, clone.firstChild);
+
+    const svgStr = new XMLSerializer().serializeToString(clone);
+    const svgBlob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(svgBlob);
+    const img = new Image();
+    img.onload = function(){
+      const scale = 2;
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(vbW * scale));
+      canvas.height = Math.max(1, Math.round(vbH * scale));
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(function(blob){
+        if (!blob){ showSnackbar("PNG生成に失敗しました"); return; }
+        const bundle = Store.getCurrentBundle();
+        const viewLabel = Views.VIEW_LABELS[Store.state.ui.activeView] || "view";
+        const safeName = ((bundle && bundle.project.name) || "fieldcad").replace(/[\\/:*?"<>|]/g, "_");
+        downloadOrSharePng(blob, "fieldcad_" + safeName + "_" + viewLabel + ".png");
+      }, "image/png");
+    };
+    img.onerror = function(){
+      URL.revokeObjectURL(url);
+      showSnackbar("PNG書き出しに失敗しました");
+    };
+    img.src = url;
+  }
+
+  /* ---------- スナックバー ---------- */
+
+  function showSnackbar(message, opts){
+    opts = opts || {};
+    if (snackbarTimer) clearTimeout(snackbarTimer);
+    dom.snackbarText.textContent = message;
+    if (opts.actionLabel){
+      dom.snackbarAction.textContent = opts.actionLabel;
+      dom.snackbarAction.classList.remove("hidden");
+      snackbarActionCb = opts.onAction || null;
+    } else {
+      dom.snackbarAction.classList.add("hidden");
+      snackbarActionCb = null;
+    }
+    dom.snackbar.classList.remove("hidden");
+    snackbarTimer = setTimeout(function(){
+      dom.snackbar.classList.add("hidden");
+      snackbarActionCb = null;
+    }, opts.duration || (opts.actionLabel ? 5000 : 3000));
+  }
+
+  function hideSnackbar(){
+    if (snackbarTimer) clearTimeout(snackbarTimer);
+    dom.snackbar.classList.add("hidden");
+    snackbarActionCb = null;
+  }
+
+  /* ---------- 描画: ホーム ---------- */
+
+  function renderHome(){
+    const projects = Store.state.projects.slice().sort(function(a, b){
+      return new Date(b.project.updatedAt) - new Date(a.project.updatedAt);
+    });
+
+    if (projects.length === 0){
+      dom.projectList.innerHTML = '<div class="empty-state">まだプロジェクトがありません<br>右下の「+ 新規」から作成しましょう</div>';
+      return;
+    }
+
+    dom.projectList.innerHTML = projects.map(function(bundle){
+      const p = bundle.project;
+      const holesCount = bundle.parts.reduce(function(sum, part){ return sum + part.holes.length; }, 0);
+      return (
+        '<div class="project-row" data-id="' + p.id + '" data-action="open-project">' +
+          '<div class="project-thumb" aria-hidden="true">&#128736;&#65039;</div>' +
+          '<div class="project-info">' +
+            '<div class="project-name">' + escapeHtml(p.name) + '</div>' +
+            '<div class="project-meta">更新: ' + formatUpdatedAt(p.updatedAt) + '</div>' +
+            '<div class="project-meta">パーツ' + bundle.parts.length + ' / 穴' + holesCount + '</div>' +
+          '</div>' +
+          '<button class="row-menu-btn" data-action="row-menu" data-id="' + p.id + '" aria-label="メニュー">&#8942;</button>' +
+        '</div>'
+      );
+    }).join("");
+  }
+
+  /* ---------- 描画: ワークスペース ---------- */
+
+  function renderWorkspace(){
+    const bundle = Store.getCurrentBundle();
+    if (!bundle){
+      Store.goHome();
+      return;
+    }
+    dom.wsProjectName.textContent = bundle.project.name;
+    dom.undoBtn.disabled = Store.state.undoStack.length === 0;
+    dom.redoBtn.disabled = Store.state.redoStack.length === 0;
+    dom.viewSwitchBtn.textContent = (Views.VIEW_LABELS[Store.state.ui.activeView] || "正面図") + " ▾";
+
+    const tabs = ["view", "parts", "components", "section"];
+    const contents = {
+      view: dom.tabContentView,
+      parts: dom.tabContentParts,
+      components: dom.tabContentComponents,
+      section: dom.tabContentSection
+    };
+    tabs.forEach(function(t){
+      contents[t].classList.toggle("hidden", Store.state.ui.activeTab !== t);
+    });
+    Array.prototype.forEach.call(dom.tabBar.querySelectorAll("button[data-tab]"), function(btn){
+      btn.classList.toggle("active", btn.dataset.tab === Store.state.ui.activeTab);
+    });
+
+    if (Store.state.ui.activeTab === "view") renderViewTab(bundle);
+    else if (Store.state.ui.activeTab === "parts") renderPartsTab(bundle);
+    else if (Store.state.ui.activeTab === "components") renderComponentsTab(bundle);
+    else if (Store.state.ui.activeTab === "section") renderSectionTab(bundle);
+  }
+
+  function renderViewTab(bundle){
+    dom.layerChips.innerHTML = bundle.parts.map(function(part){
+      return (
+        '<button class="layer-chip" data-action="toggle-part-visible" data-id="' + part.id + '" data-visible="' + part.visible + '">' +
+          '<span class="dot" style="background:' + part.color + '"></span>' +
+          escapeHtml(part.name) +
+          (part.visible ? "" : "(非表示)") +
+        '</button>'
+      );
+    }).join("") || '<span class="section-note">パーツがありません</span>';
+
+    const viewType = Store.state.ui.activeView || "front";
+    const selection = Store.state.ui.selection;
+    const result = Views.renderView(bundle, viewType, { selection: selection });
+
+    dom.viewSvgContainer.className = "view-canvas";
+    if (result.empty){
+      dom.viewSvgContainer.innerHTML = '<div style="padding:24px;text-align:center;color:var(--color-text-2);font-size:13px;line-height:1.7;">表示できるパーツ/部品がありません&#10;パーツタブから追加してください</div>';
+    } else {
+      dom.viewSvgContainer.innerHTML = result.svg;
+      fitBoxByType[viewType] = result.fitViewBox;
+      if (!viewportByType[viewType]) viewportByType[viewType] = Object.assign({}, result.fitViewBox);
+      applyViewportToDom();
+    }
+
+    renderSelectionInfoBar(bundle, selection);
+  }
+
+  function partSizeLabel(part){
+    if (part.shape === "circle") return "φ" + part.size.d + "×" + part.size.t + "mm";
+    return part.size.w + "×" + part.size.h + "×" + part.size.t + "mm";
+  }
+
+  /** 選択情報バー(F-45連携): 名前/種別/寸法/X,Y/加工面 + 編集(タスク3スタブ)/複製 */
+  function renderSelectionInfoBar(bundle, selection){
+    if (!selection){
+      dom.selectionInfoBar.innerHTML = '要素(穴・部品・パーツ)をタップすると詳細がここに表示されます。';
+      return;
+    }
+    let bodyHtml = "";
+    if (selection.kind === "hole"){
+      const part = bundle.parts.find(function(p){ return p.id === selection.partId; });
+      const hole = part && part.holes.find(function(h){ return h.id === selection.holeId; });
+      if (!hole){
+        dom.selectionInfoBar.innerHTML = "選択中の要素が見つかりません(削除された可能性があります)。";
+        return;
+      }
+      const dimLabel = hole.type === "circle" ? ("φ" + hole.dim.d + "mm") : "";
+      const sideLabel = hole.side === "back" ? "裏" : "表";
+      bodyHtml =
+        '<div class="sel-row"><strong>' + escapeHtml(hole.name) + '</strong><span class="sel-type">穴</span></div>' +
+        '<div class="sel-row">' + dimLabel + ' ・ X:' + hole.pos.x + ' Y:' + hole.pos.y + ' ・ 加工面: ' + sideLabel + '(' + escapeHtml(part.name) + ')</div>';
+    } else if (selection.kind === "component"){
+      const cmp = bundle.components.find(function(c){ return c.id === selection.cmpId; });
+      if (!cmp){
+        dom.selectionInfoBar.innerHTML = "選択中の要素が見つかりません(削除された可能性があります)。";
+        return;
+      }
+      const plc = bundle.placements.find(function(p){ return p.targetType === "component" && p.targetId === cmp.id; });
+      bodyHtml =
+        '<div class="sel-row"><strong>' + escapeHtml(cmp.name) + '</strong><span class="sel-type">部品</span></div>' +
+        '<div class="sel-row">' + cmp.size.w + '×' + cmp.size.h + '×' + cmp.size.d + 'mm' +
+          (plc ? (' ・ X:' + plc.pos.x + ' Y:' + plc.pos.y + ' Z:' + plc.pos.z) : ' ・ 未配置') + '</div>';
+    } else if (selection.kind === "part"){
+      const part = bundle.parts.find(function(p){ return p.id === selection.partId; });
+      if (!part){
+        dom.selectionInfoBar.innerHTML = "選択中の要素が見つかりません(削除された可能性があります)。";
+        return;
+      }
+      bodyHtml =
+        '<div class="sel-row"><strong>' + escapeHtml(part.name) + '</strong><span class="sel-type">パーツ</span></div>' +
+        '<div class="sel-row">' + partSizeLabel(part) + ' ・ 穴' + part.holes.length + '個</div>';
+    }
+    bodyHtml += '<div class="sel-actions">' +
+      '<button class="btn" data-action="edit-selection">&#9999;&#65039; 編集</button>' +
+      '<button class="btn" data-action="duplicate-selection">&#10697; 複製</button>' +
+      '</div>';
+    dom.selectionInfoBar.innerHTML = bodyHtml;
+  }
+
+  /** 穴一覧テーブル(F-27): 名前/φ/X/Y/加工面。裏加工は橙バッジ、加工面混在パーツは見出しに注意アイコン。 */
+  function holeTableHtml(part){
+    if (!part.holes.length){
+      return '<div class="section-note">穴はまだありません。「+穴」から追加してください。</div>';
+    }
+    const hasFront = part.holes.some(function(h){ return h.side !== "back"; });
+    const hasBack = part.holes.some(function(h){ return h.side === "back"; });
+    const mixed = hasFront && hasBack;
+    const rows = part.holes.map(function(h){
+      const isBack = h.side === "back";
+      const dimLabel = h.type === "circle" ? ("&#966;" + h.dim.d) : "";
+      const badge = isBack
+        ? '<span class="side-badge side-back">裏</span>'
+        : '<span class="side-badge side-front">表</span>';
+      return (
+        '<tr data-action="edit-hole" data-part-id="' + part.id + '" data-hole-id="' + h.id + '">' +
+          '<td>' + escapeHtml(h.name) + '</td>' +
+          '<td>' + dimLabel + '</td>' +
+          '<td>' + h.pos.x + '</td>' +
+          '<td>' + h.pos.y + '</td>' +
+          '<td>' + badge + '</td>' +
+        '</tr>'
+      );
+    }).join("");
+    return (
+      '<div class="hole-table-wrap">' +
+        '<table class="hole-table">' +
+          '<thead><tr><th>名前</th><th>&#966;</th><th>X</th><th>Y</th><th>' + (mixed ? '&#9888;&#65039;面' : '面') + '</th></tr></thead>' +
+          '<tbody>' + rows + '</tbody>' +
+        '</table>' +
+      '</div>'
+    );
+  }
+
+  function renderPartsTab(bundle){
+    if (bundle.parts.length === 0){
+      dom.partsCardList.innerHTML = '<div class="empty-state">まだパーツがありません<br>→ 下の「+ パーツを追加」から</div>';
+      return;
+    }
+    dom.partsCardList.innerHTML = bundle.parts.map(function(part){
+      return (
+        '<div class="entity-card" data-action="edit-part" data-id="' + part.id + '">' +
+          '<div class="entity-card-row">' +
+            '<span class="entity-color-dot" style="background:' + part.color + '"></span>' +
+            '<span class="entity-title">' + escapeHtml(part.name) + '</span>' +
+            '<div class="entity-actions">' +
+              '<button class="visible-toggle" data-action="toggle-part-visible" data-id="' + part.id + '" aria-label="表示切替">' + (part.visible ? "&#128065;" : "&#128065;&#65039;&#8203;") + '</button>' +
+              '<button class="btn small-btn" data-action="add-hole" data-part-id="' + part.id + '">&#65291;穴</button>' +
+            '</div>' +
+          '</div>' +
+          '<div class="entity-sub">' + partSizeLabel(part) + " ・ 穴" + part.holes.length + "個" + '</div>' +
+          holeTableHtml(part) +
+        '</div>'
+      );
+    }).join("");
+  }
+
+  function renderComponentsTab(bundle){
+    if (bundle.components.length === 0){
+      dom.componentsCardList.innerHTML = '<div class="empty-state">まだ部品がありません<br>→ 下の「+ 部品を追加」から</div>';
+      return;
+    }
+    dom.componentsCardList.innerHTML = bundle.components.map(function(cmp){
+      const plc = bundle.placements.find(function(p){ return p.targetType === "component" && p.targetId === cmp.id; });
+      const posLabel = plc ? ("X:" + plc.pos.x + " Y:" + plc.pos.y + " Z:" + plc.pos.z) : "未配置";
+      return (
+        '<div class="entity-card" data-action="edit-component" data-id="' + cmp.id + '">' +
+          '<div class="entity-card-row">' +
+            '<span class="entity-color-dot" style="background:' + cmp.color + '"></span>' +
+            '<span class="entity-title">' + escapeHtml(cmp.name) + '</span>' +
+          '</div>' +
+          '<div class="entity-sub">' + cmp.size.w + "×" + cmp.size.h + "×" + cmp.size.d + "mm ・ " + escapeHtml(cmp.kind) + '</div>' +
+          '<div class="entity-sub">' + posLabel + '</div>' +
+        '</div>'
+      );
+    }).join("");
+  }
+
+  function renderSectionTab(bundle){
+    const warnMm = (bundle.project.settings && bundle.project.settings.clearanceWarnMm != null) ? bundle.project.settings.clearanceWarnMm : 5;
+    const result = Geometry.stackIntervals(bundle.zstack.items, bundle.zstack.totalDepth, warnMm);
+    const totalDepth = bundle.zstack.totalDepth || 1;
+
+    const segColors = ["#4FC3F7", "#B0BEC5", "#81C784", "#FFB74D", "#BA68C8", "#4DD0E1"];
+    const barSegHtml = result.segments.map(function(seg, i){
+      const pct = Math.max(0, (seg.mm / totalDepth) * 100);
+      return '<div class="zstack-seg" style="width:' + pct + '%; background:' + segColors[i % segColors.length] + '" title="' + escapeHtml(seg.label) + " " + seg.mm + 'mm">' + seg.mm + '</div>';
+    }).join("");
+    const remainingPct = Math.max(0, (result.remaining / totalDepth) * 100);
+    const remainingBarHtml = '<div class="zstack-seg remaining-' + result.status + '" style="width:' + remainingPct + '%">' + (result.remaining >= 0 ? result.remaining.toFixed(1) : "") + '</div>';
+
+    const legendHtml = result.segments.map(function(seg, i){
+      return (
+        '<div class="zstack-legend-row">' +
+          '<span class="zstack-legend-swatch" style="background:' + segColors[i % segColors.length] + '"></span>' +
+          '<span>' + escapeHtml(seg.label) + ' ' + seg.mm + 'mm</span>' +
+        '</div>'
+      );
+    }).join("");
+
+    const statusIcon = result.status === "ok" ? "&#9989;" : (result.status === "warn" ? "&#9888;&#65039;" : "&#9940;");
+    const statusText = result.status === "ok" ? "余裕あり" : (result.status === "warn" ? "余裕わずか" : "干渉の可能性");
+
+    // タスク3: 積み上げ項目リスト(編集/削除はボトムシート、並べ替えは上へ/下へボタンで直接操作)
+    const itemCount = bundle.zstack.items.length;
+    const itemRowsHtml = bundle.zstack.items.map(function(item, idx){
+      return (
+        '<div class="zitem-row">' +
+          '<button type="button" class="zitem-main" data-action="edit-zitem" data-index="' + idx + '">' +
+            '<span class="zitem-label">' + escapeHtml(item.label) + '</span>' +
+            '<span class="zitem-mm">' + fmtStepVal(item.mm) + 'mm</span>' +
+          '</button>' +
+          '<div class="zitem-controls">' +
+            '<button class="icon-btn small" data-action="move-zitem-up" data-index="' + idx + '" aria-label="上へ"' + (idx === 0 ? " disabled" : "") + '>&#8593;</button>' +
+            '<button class="icon-btn small" data-action="move-zitem-down" data-index="' + idx + '" aria-label="下へ"' + (idx === itemCount - 1 ? " disabled" : "") + '>&#8595;</button>' +
+          '</div>' +
+        '</div>'
+      );
+    }).join("");
+
+    dom.zstackContainer.innerHTML = (
+      '<div class="zstack-box">' +
+        '<div class="entity-card-row" style="margin-bottom:8px;">' +
+          '<div class="entity-sub" style="margin:0;flex:1;">Z積み上げ(奥行き' + bundle.zstack.totalDepth + 'mm)</div>' +
+          '<button class="btn small-btn" data-action="edit-zdepth">奥行きを編集</button>' +
+        '</div>' +
+        '<div class="zstack-bar">' + barSegHtml + remainingBarHtml + '</div>' +
+        '<div class="zstack-legend">' + legendHtml +
+          '<div class="zstack-legend-row"><span class="zstack-legend-swatch remaining-' + result.status + '" style="background:var(--color-' + (result.status === "ok" ? "ok" : (result.status === "warn" ? "warn" : "danger")) + ')"></span><span>残り空間 ' + result.remaining.toFixed(1) + 'mm</span></div>' +
+        '</div>' +
+        '<div class="zstack-status-line remaining-' + result.status + '">' + statusIcon + ' ' + statusText + '(残り' + result.remaining.toFixed(1) + 'mm / しきい値' + warnMm + 'mm)</div>' +
+      '</div>' +
+      '<div class="zitem-list-box">' +
+        '<label class="field-label" style="margin-top:0;">積み上げ項目(スペーサー等は厚みだけの行として追加できます)</label>' +
+        (itemRowsHtml || '<div class="section-note">まだ項目がありません<br>→ 下の「+ 項目を追加」から</div>') +
+        '<button class="add-btn" data-action="add-zitem">&#65291; 項目を追加</button>' +
+      '</div>'
+    );
+
+    // ★タスク2: 側面から見た積層断面SVG(切断位置スライダーはv1.0スコープにつき未実装)
+    dom.sectionViewPlaceholder.className = "section-canvas";
+    dom.sectionViewPlaceholder.innerHTML = Views.renderSectionSVG(bundle);
+  }
+
+  function render(){
+    dom.storageBanner.classList.toggle("hidden", Store.state.storageMode !== "memory");
+    const isHome = Store.state.ui.screen === "home";
+    dom.screenHome.classList.toggle("hidden", !isHome);
+    dom.screenWorkspace.classList.toggle("hidden", isHome);
+    if (isHome) renderHome();
+    else renderWorkspace();
+  }
+
+  /* ---------- シート内容ビルダー ---------- */
+
+  function newProjectSheetHtml(){
+    return (
+      '<label class="field-label" for="new-project-name-input">プロジェクト名</label>' +
+      '<input type="text" id="new-project-name-input" class="text-input" value="新規プロジェクト" autocomplete="off">' +
+      '<div class="sheet-actions">' +
+        '<button class="btn btn-primary" style="flex:1" data-action="confirm-new-project">作成して開く</button>' +
+      '</div>'
+    );
+  }
+
+  function renameSheetHtml(bundle){
+    return (
+      '<label class="field-label" for="rename-input">プロジェクト名</label>' +
+      '<input type="text" id="rename-input" class="text-input" value="' + escapeHtml(bundle.project.name) + '" autocomplete="off">' +
+      '<div class="sheet-actions">' +
+        '<button class="btn btn-primary" style="flex:1" data-action="confirm-rename" data-id="' + bundle.project.id + '">保存</button>' +
+      '</div>'
+    );
+  }
+
+  function projectMenuSheetHtml(id){
+    return (
+      '<div class="action-list">' +
+        '<button class="action-item" data-action="menu-rename" data-id="' + id + '">&#9999;&#65039; 名称変更</button>' +
+        '<button class="action-item" data-action="menu-duplicate" data-id="' + id + '">&#10697; 複製</button>' +
+        '<button class="action-item" data-action="menu-export" data-id="' + id + '">&#11014;&#65039; JSON書き出し</button>' +
+        '<button class="action-item danger" data-action="menu-delete" data-id="' + id + '">&#128465;&#65039; 削除</button>' +
+      '</div>'
+    );
+  }
+
+  function settingsSheetHtml(){
+    return (
+      '<p class="sheet-hint">単位は mm 固定です。</p>' +
+      '<label class="field-label" for="settings-clearance-input">クリアランス警告しきい値(新規プロジェクトの既定値・mm)</label>' +
+      '<input type="text" inputmode="decimal" id="settings-clearance-input" class="number-input" value="' + Store.state.defaultClearanceWarnMm + '">' +
+      '<div class="sheet-actions">' +
+        '<button class="btn btn-primary" style="flex:1" data-action="confirm-settings">保存</button>' +
+      '</div>' +
+      '<label class="field-label">バックアップ</label>' +
+      '<button class="btn" style="width:100%" data-action="trigger-import">JSONファイルを読み込む(インポート)</button>'
+    );
+  }
+
+  /** ビュー切替パレット(タスク2): 正面/背面/上面(MVP)+ 左右側面(投影関数は対応済みのため有効化) */
+  function viewSwitchSheetHtml(){
+    const order = ["front", "back", "top", "left", "right"];
+    const current = Store.state.ui.activeView;
+    return '<div class="action-list">' + order.map(function(v){
+      const mark = (v === current) ? " ✓" : "";
+      return '<button class="action-item" data-action="select-view" data-view="' + v + '">' + Views.VIEW_LABELS[v] + mark + '</button>';
+    }).join("") + '</div>';
+  }
+
+  /* ---------- タスク3: 穴編集ボトムシート(DESIGN.md §7.3準拠) ---------- */
+
+  function holeSheetBodyHtml(part, hole){
+    const isBack = hole.side === "back";
+    return (
+      '<label class="field-label" for="hole-name-input">名前</label>' +
+      '<input type="text" id="hole-name-input" class="text-input" value="' + escapeHtml(hole.name) + '" autocomplete="off">' +
+
+      '<label class="field-label">タイプ</label>' +
+      '<div class="segmented">' +
+        '<button type="button" class="segmented-btn active" disabled>丸穴</button>' +
+        '<button type="button" class="segmented-btn" disabled>長穴 <span class="badge-v1">v1.0</span></button>' +
+        '<button type="button" class="segmented-btn" disabled>角穴 <span class="badge-v1">v1.0</span></button>' +
+      '</div>' +
+
+      numberFieldHtml("hole-dim-d", "直径 φ", hole.dim.d, { min: 0.5 }) +
+
+      '<div class="two-col">' +
+        numberFieldHtml("hole-pos-x", "位置 X", hole.pos.x) +
+        numberFieldHtml("hole-pos-y", "位置 Y", hole.pos.y) +
+      '</div>' +
+
+      '<label class="field-label">加工面(' + escapeHtml(part.name) + ')</label>' +
+      '<div class="segmented">' +
+        '<button type="button" class="segmented-btn' + (!isBack ? " active" : "") + '" data-action="set-hole-side" data-side="front">表</button>' +
+        '<button type="button" class="segmented-btn' + (isBack ? " active" : "") + '" data-action="set-hole-side" data-side="back">裏</button>' +
+      '</div>' +
+
+      '<div class="sheet-actions">' +
+        '<button class="btn danger" data-action="delete-hole">&#128465;&#65039; 削除</button>' +
+        '<button class="btn" style="flex:1" data-action="duplicate-next-hole">&#10697; 複製して次へ</button>' +
+      '</div>' +
+      '<div class="sheet-actions">' +
+        '<button class="btn btn-primary" style="flex:1" data-action="complete-sheet">完了</button>' +
+      '</div>'
+    );
+  }
+
+  function bindHoleSheetEvents(){
+    const ctx = sheetCtx;
+    const nameInput = document.getElementById("hole-name-input");
+    if (nameInput) nameInput.addEventListener("input", function(){
+      Store.updateHole(ctx.partId, ctx.holeId, { name: nameInput.value });
+    });
+    const dInput = document.getElementById("hole-dim-d");
+    if (dInput) dInput.addEventListener("input", function(){
+      const v = parseFloat(dInput.value);
+      if (isNaN(v) || v <= 0) return;
+      Store.updateHole(ctx.partId, ctx.holeId, { dim: { d: v } });
+    });
+    const xInput = document.getElementById("hole-pos-x");
+    const yInput = document.getElementById("hole-pos-y");
+    function syncPos(){
+      const xv = parseFloat(xInput.value), yv = parseFloat(yInput.value);
+      if (isNaN(xv) || isNaN(yv)) return;
+      Store.updateHole(ctx.partId, ctx.holeId, { pos: { x: xv, y: yv } });
+    }
+    if (xInput) xInput.addEventListener("input", syncPos);
+    if (yInput) yInput.addEventListener("input", syncPos);
+  }
+
+  /** 穴編集シートを開く(新規作成時は isNew:true。閉じずにキャンセルすると仮穴を削除する)。 */
+  function openHoleSheetFor(partId, holeId, isNew){
+    const bundle = Store.getCurrentBundle();
+    const part = bundle && bundle.parts.find(function(p){ return p.id === partId; });
+    const hole = part && part.holes.find(function(h){ return h.id === holeId; });
+    if (!part || !hole){ closeSheet(); return; }
+    sheetCtx = { kind: "hole", partId: partId, holeId: holeId, isNew: !!isNew };
+    sheetCancelAction = isNew ? function(){ Store.deleteHole(partId, holeId); } : null;
+    openSheet(isNew ? "穴を追加" : "穴を編集", holeSheetBodyHtml(part, hole), "#hole-name-input");
+    bindHoleSheetEvents();
+  }
+
+  /* ---------- タスク3: パーツ編集ボトムシート ---------- */
+
+  function partSheetBodyHtml(part){
+    const isCircle = part.shape === "circle";
+    const showInner = part.kind === "frame" || part.kind === "enclosure";
+    const sizeFieldsHtml = isCircle
+      ? ('<div class="two-col">' +
+          numberFieldHtml("part-size-d", "直径", part.size.d, { min: 1 }) +
+          numberFieldHtml("part-size-t", "厚み", part.size.t, { min: 0.1 }) +
+        '</div>')
+      : ('<div class="three-col">' +
+          numberFieldHtml("part-size-w", "幅 W", part.size.w, { min: 1 }) +
+          numberFieldHtml("part-size-h", "高さ H", part.size.h, { min: 1 }) +
+          numberFieldHtml("part-size-t", "厚み T", part.size.t, { min: 0.1 }) +
+        '</div>');
+
+    return (
+      '<label class="field-label" for="part-name-input">名前</label>' +
+      '<input type="text" id="part-name-input" class="text-input" value="' + escapeHtml(part.name) + '" autocomplete="off">' +
+
+      '<label class="field-label" for="part-kind-select">種別</label>' +
+      '<select id="part-kind-select" class="select-input">' + selectOptionsHtml(PART_KIND_OPTIONS, part.kind) + '</select>' +
+
+      '<label class="field-label">形状</label>' +
+      '<div class="segmented">' +
+        '<button type="button" class="segmented-btn' + (!isCircle ? " active" : "") + '" data-action="set-part-shape" data-shape="rect">矩形</button>' +
+        '<button type="button" class="segmented-btn' + (isCircle ? " active" : "") + '" data-action="set-part-shape" data-shape="circle">円形</button>' +
+      '</div>' +
+
+      sizeFieldsHtml +
+
+      (showInner ?
+        (numberFieldHtml("part-inner-d", "内寸深さ(筐体/フレーム内側)", (part.innerSize && part.innerSize.d) || 0, { min: 0 }) +
+         '<button type="button" class="btn" style="width:100%;margin-top:8px;" data-action="apply-inner-depth-to-zstack">この深さをZスタック合計に反映</button>')
+        : "") +
+
+      '<label class="field-label">色</label>' +
+      colorSwatchRowHtml(part.color, "set-part-color") +
+
+      '<div class="sheet-actions">' +
+        '<button class="btn danger" data-action="delete-part">&#128465;&#65039; 削除</button>' +
+      '</div>' +
+      '<div class="sheet-actions">' +
+        '<button class="btn btn-primary" style="flex:1" data-action="complete-sheet">完了</button>' +
+      '</div>'
+    );
+  }
+
+  function bindPartSheetEvents(){
+    const ctx = sheetCtx;
+    function currentPart(){
+      const bundle = Store.getCurrentBundle();
+      return bundle && bundle.parts.find(function(p){ return p.id === ctx.partId; });
+    }
+    const nameInput = document.getElementById("part-name-input");
+    if (nameInput) nameInput.addEventListener("input", function(){ Store.updatePart(ctx.partId, { name: nameInput.value }); });
+
+    const kindSelect = document.getElementById("part-kind-select");
+    if (kindSelect) kindSelect.addEventListener("change", function(){
+      Store.updatePart(ctx.partId, { kind: kindSelect.value });
+      openPartSheetFor(ctx.partId, ctx.isNew); // 内寸深さ欄の表示/非表示が変わるため再描画
+    });
+
+    const wIn = document.getElementById("part-size-w"), hIn = document.getElementById("part-size-h");
+    const tIn = document.getElementById("part-size-t"), dIn = document.getElementById("part-size-d");
+    function syncRectSize(){
+      const part = currentPart(); if (!part) return;
+      const w = parseFloat(wIn.value), h = parseFloat(hIn.value), t = parseFloat(tIn.value);
+      if (isNaN(w) || isNaN(h) || isNaN(t)) return;
+      Store.updatePart(ctx.partId, { size: { w: w, h: h, t: t } });
+    }
+    function syncCircleSize(){
+      const part = currentPart(); if (!part) return;
+      const d = parseFloat(dIn.value), t = parseFloat(tIn.value);
+      if (isNaN(d) || isNaN(t)) return;
+      Store.updatePart(ctx.partId, { size: { d: d, t: t } });
+    }
+    if (wIn) wIn.addEventListener("input", syncRectSize);
+    if (hIn) hIn.addEventListener("input", syncRectSize);
+    if (tIn) tIn.addEventListener("input", function(){ if (dIn) syncCircleSize(); else syncRectSize(); });
+    if (dIn) dIn.addEventListener("input", syncCircleSize);
+
+    const innerDIn = document.getElementById("part-inner-d");
+    if (innerDIn) innerDIn.addEventListener("input", function(){
+      const v = parseFloat(innerDIn.value); if (isNaN(v)) return;
+      const part = currentPart(); if (!part) return;
+      const w = (part.innerSize && part.innerSize.w) || part.size.w || part.size.d;
+      const h = (part.innerSize && part.innerSize.h) || part.size.h || part.size.d;
+      Store.updatePart(ctx.partId, { innerSize: { w: w, h: h, d: v } });
+    });
+  }
+
+  function openPartSheetFor(partId, isNew){
+    const bundle = Store.getCurrentBundle();
+    const part = bundle && bundle.parts.find(function(p){ return p.id === partId; });
+    if (!part){ closeSheet(); return; }
+    sheetCtx = { kind: "part", partId: partId, isNew: !!isNew };
+    sheetCancelAction = isNew ? function(){ Store.deletePart(partId); } : null;
+    openSheet(isNew ? "パーツを追加" : "パーツを編集", partSheetBodyHtml(part), "#part-name-input");
+    bindPartSheetEvents();
+  }
+
+  /* ---------- タスク3: 部品(コンポーネント)編集ボトムシート ---------- */
+
+  function componentSheetBodyHtml(cmp, plc){
+    const pos = plc ? plc.pos : { x: 0, y: 0, z: 0 };
+    return (
+      '<label class="field-label" for="cmp-name-input">名前</label>' +
+      '<input type="text" id="cmp-name-input" class="text-input" value="' + escapeHtml(cmp.name) + '" autocomplete="off">' +
+
+      '<label class="field-label" for="cmp-kind-select">種別</label>' +
+      '<select id="cmp-kind-select" class="select-input">' + selectOptionsHtml(COMPONENT_KIND_OPTIONS, cmp.kind) + '</select>' +
+
+      '<div class="three-col">' +
+        numberFieldHtml("cmp-size-w", "幅 W", cmp.size.w, { min: 0.5 }) +
+        numberFieldHtml("cmp-size-h", "高さ H", cmp.size.h, { min: 0.5 }) +
+        numberFieldHtml("cmp-size-d", "奥行 D", cmp.size.d, { min: 0.5 }) +
+      '</div>' +
+
+      '<label class="field-label" style="margin-top:16px;">配置(アセンブリ座標)</label>' +
+      '<div class="three-col">' +
+        numberFieldHtml("cmp-pos-x", "X", pos.x) +
+        numberFieldHtml("cmp-pos-y", "Y", pos.y) +
+        numberFieldHtml("cmp-pos-z", "Z", pos.z, { min: 0 }) +
+      '</div>' +
+
+      '<label class="field-label">色</label>' +
+      colorSwatchRowHtml(cmp.color, "set-cmp-color") +
+
+      '<div class="sheet-actions">' +
+        '<button class="btn danger" data-action="delete-component">&#128465;&#65039; 削除</button>' +
+      '</div>' +
+      '<div class="sheet-actions">' +
+        '<button class="btn btn-primary" style="flex:1" data-action="complete-sheet">完了</button>' +
+      '</div>'
+    );
+  }
+
+  function bindComponentSheetEvents(){
+    const ctx = sheetCtx;
+    function currentPlc(){
+      const bundle = Store.getCurrentBundle();
+      return bundle && bundle.placements.find(function(p){ return p.targetType === "component" && p.targetId === ctx.cmpId; });
+    }
+    const nameInput = document.getElementById("cmp-name-input");
+    if (nameInput) nameInput.addEventListener("input", function(){ Store.updateComponent(ctx.cmpId, { name: nameInput.value }); });
+
+    const kindSelect = document.getElementById("cmp-kind-select");
+    if (kindSelect) kindSelect.addEventListener("change", function(){ Store.updateComponent(ctx.cmpId, { kind: kindSelect.value }); });
+
+    const wIn = document.getElementById("cmp-size-w"), hIn = document.getElementById("cmp-size-h"), dIn = document.getElementById("cmp-size-d");
+    function syncSize(){
+      const w = parseFloat(wIn.value), h = parseFloat(hIn.value), d = parseFloat(dIn.value);
+      if (isNaN(w) || isNaN(h) || isNaN(d)) return;
+      Store.updateComponent(ctx.cmpId, { size: { w: w, h: h, d: d } });
+    }
+    [wIn, hIn, dIn].forEach(function(inp){ if (inp) inp.addEventListener("input", syncSize); });
+
+    const xIn = document.getElementById("cmp-pos-x"), yIn = document.getElementById("cmp-pos-y"), zIn = document.getElementById("cmp-pos-z");
+    function syncPos(){
+      const plc = currentPlc(); if (!plc) return;
+      const x = parseFloat(xIn.value), y = parseFloat(yIn.value), z = parseFloat(zIn.value);
+      if (isNaN(x) || isNaN(y) || isNaN(z)) return;
+      Store.updatePlacement(plc.id, { pos: { x: x, y: y, z: z } });
+    }
+    [xIn, yIn, zIn].forEach(function(inp){ if (inp) inp.addEventListener("input", syncPos); });
+  }
+
+  function openComponentSheetFor(cmpId, isNew){
+    const bundle = Store.getCurrentBundle();
+    const cmp = bundle && bundle.components.find(function(c){ return c.id === cmpId; });
+    if (!cmp){ closeSheet(); return; }
+    let plc = bundle.placements.find(function(p){ return p.targetType === "component" && p.targetId === cmpId; });
+    if (!plc){
+      // 防御的フォールバック(通常は add-component が必ずセットで作成するため発生しない)
+      Store.addPlacement({ targetType: "component", targetId: cmpId, pos: { x: 0, y: 0, z: 0 }, orientation: "xy" });
+      plc = Store.getCurrentBundle().placements.find(function(p){ return p.targetType === "component" && p.targetId === cmpId; });
+    }
+    sheetCtx = { kind: "component", cmpId: cmpId, isNew: !!isNew };
+    sheetCancelAction = isNew ? function(){ Store.deleteComponent(cmpId); } : null;
+    openSheet(isNew ? "部品を追加" : "部品を編集", componentSheetBodyHtml(cmp, plc), "#cmp-name-input");
+    bindComponentSheetEvents();
+  }
+
+  /* ---------- タスク3: Zスタック(断面タブ)編集ボトムシート ---------- */
+
+  function zitemSheetBodyHtml(item){
+    return (
+      '<label class="field-label" for="zitem-label-input">ラベル</label>' +
+      '<input type="text" id="zitem-label-input" class="text-input" value="' + escapeHtml(item.label) + '" autocomplete="off">' +
+      numberFieldHtml("zitem-mm-input", "厚み", item.mm, { min: 0 }) +
+      '<div class="sheet-actions">' +
+        '<button class="btn danger" data-action="delete-zitem" data-index="' + '__CTX__' + '">&#128465;&#65039; 削除</button>' +
+      '</div>' +
+      '<div class="sheet-actions">' +
+        '<button class="btn btn-primary" style="flex:1" data-action="complete-sheet">完了</button>' +
+      '</div>'
+    );
+  }
+
+  function bindZItemSheetEvents(){
+    const ctx = sheetCtx;
+    const labelInput = document.getElementById("zitem-label-input");
+    if (labelInput) labelInput.addEventListener("input", function(){ Store.updateZStackItem(ctx.index, { label: labelInput.value }); });
+    const mmInput = document.getElementById("zitem-mm-input");
+    if (mmInput) mmInput.addEventListener("input", function(){
+      const v = parseFloat(mmInput.value);
+      if (isNaN(v) || v < 0) return;
+      Store.updateZStackItem(ctx.index, { mm: v });
+    });
+  }
+
+  function openZItemSheetFor(index, isNew){
+    const bundle = Store.getCurrentBundle();
+    const item = bundle && bundle.zstack.items[index];
+    if (!item){ closeSheet(); return; }
+    sheetCtx = { kind: "zitem", index: index, isNew: !!isNew };
+    sheetCancelAction = isNew ? function(){ Store.removeZStackItem(index); } : null;
+    const html = zitemSheetBodyHtml(item).replace('data-index="__CTX__"', 'data-index="' + index + '"');
+    openSheet(isNew ? "項目を追加" : "項目を編集", html, "#zitem-label-input");
+    bindZItemSheetEvents();
+  }
+
+  function totalDepthSheetBodyHtml(bundle){
+    return (
+      numberFieldHtml("zstack-total-depth-input", "奥行き合計", bundle.zstack.totalDepth, { min: 0 }) +
+      '<div class="sheet-actions">' +
+        '<button class="btn btn-primary" style="flex:1" data-action="complete-sheet">完了</button>' +
+      '</div>'
+    );
+  }
+
+  function openTotalDepthSheet(){
+    sheetCtx = { kind: "zdepth" };
+    sheetCancelAction = null;
+    const bundle = Store.getCurrentBundle();
+    openSheet("奥行き合計を編集", totalDepthSheetBodyHtml(bundle), "#zstack-total-depth-input");
+    const input = document.getElementById("zstack-total-depth-input");
+    if (input) input.addEventListener("input", function(){
+      const v = parseFloat(input.value);
+      if (isNaN(v) || v < 0) return;
+      Store.setZStackTotalDepth(v);
+    });
+  }
+
+  /* ---------- アクションディスパッチ ---------- */
+
+  function handleAction(action, el){
+    const id = el.dataset.id;
+    switch (action){
+      case "noop":
+        break;
+      case "close-sheet":
+        closeSheet();
+        break;
+      case "snackbar-action":
+        if (snackbarActionCb){ const cb = snackbarActionCb; hideSnackbar(); cb(); }
+        break;
+
+      case "new-project":
+        openSheet("新規プロジェクト", newProjectSheetHtml(), "#new-project-name-input");
+        break;
+      case "confirm-new-project": {
+        const input = document.getElementById("new-project-name-input");
+        const name = input ? input.value : "";
+        const newId = Store.createProject(name);
+        closeSheet();
+        Store.openProject(newId);
+        break;
+      }
+
+      case "open-project":
+        if (!longPressFired) Store.openProject(id);
+        longPressFired = false;
+        break;
+      case "row-menu":
+        openSheet("プロジェクト操作", projectMenuSheetHtml(id));
+        break;
+      case "menu-rename": {
+        const bundle = Store.findBundle(id);
+        if (bundle) openSheet("名称変更", renameSheetHtml(bundle), "#rename-input");
+        break;
+      }
+      case "confirm-rename": {
+        const input = document.getElementById("rename-input");
+        Store.renameProject(id, input ? input.value : "");
+        closeSheet();
+        break;
+      }
+      case "menu-duplicate":
+        Store.duplicateProject(id);
+        closeSheet();
+        showSnackbar("複製しました");
+        break;
+      case "menu-export":
+        Store.exportProject(id);
+        closeSheet();
+        break;
+      case "menu-delete": {
+        const bundle = Store.findBundle(id);
+        const name = bundle ? bundle.project.name : "";
+        closeSheet();
+        Store.deleteProject(id);
+        showSnackbar('削除しました: ' + name, {
+          actionLabel: "元に戻す",
+          onAction: function(){ Store.undoDeleteProject(); },
+          duration: 5000
+        });
+        break;
+      }
+
+      case "open-settings":
+        openSheet("設定", settingsSheetHtml());
+        break;
+      case "confirm-settings": {
+        const input = document.getElementById("settings-clearance-input");
+        if (input) Store.setDefaultClearanceWarnMm(input.value);
+        closeSheet();
+        showSnackbar("設定を保存しました");
+        break;
+      }
+      case "trigger-import":
+        closeSheet();
+        dom.importFileInput.click();
+        break;
+
+      case "go-home":
+        Store.goHome();
+        break;
+      case "undo":
+        Store.undo();
+        break;
+      case "redo":
+        Store.redo();
+        break;
+      case "view-switch":
+        openSheet("ビューを切り替え", viewSwitchSheetHtml());
+        break;
+      case "select-view":
+        Store.setActiveView(el.dataset.view);
+        closeSheet();
+        break;
+      case "set-tab":
+        Store.setActiveTab(el.dataset.tab);
+        break;
+      case "toggle-part-visible":
+        Store.togglePartVisible(id);
+        break;
+
+      /* ---- タスク3: 選択情報バー ---- */
+      case "edit-selection": {
+        const sel = Store.state.ui.selection;
+        if (!sel) break;
+        if (sel.kind === "hole") openHoleSheetFor(sel.partId, sel.holeId, false);
+        else if (sel.kind === "part") openPartSheetFor(sel.partId, false);
+        else if (sel.kind === "component") openComponentSheetFor(sel.cmpId, false);
+        break;
+      }
+      case "duplicate-selection": {
+        const sel = Store.state.ui.selection;
+        if (!sel) break;
+        if (sel.kind === "hole"){
+          Store.duplicateHole(sel.partId, sel.holeId);
+          showSnackbar("穴を複製しました");
+        } else if (sel.kind === "part"){
+          Store.duplicatePart(sel.partId);
+          showSnackbar("パーツを複製しました");
+        } else if (sel.kind === "component"){
+          Store.duplicateComponent(sel.cmpId);
+          showSnackbar("部品を複製しました");
+        }
+        break;
+      }
+
+      /* ---- タスク3: パーツ編集 ---- */
+      case "add-part": {
+        const newId = Store.addPart({});
+        Store.addPlacement({ targetType: "part", targetId: newId, pos: { x: 0, y: 0, z: 0 }, orientation: "xy" });
+        openPartSheetFor(newId, true);
+        break;
+      }
+      case "edit-part":
+        openPartSheetFor(id, false);
+        break;
+      case "delete-part": {
+        sheetCancelAction = null;
+        const bundle = Store.getCurrentBundle();
+        const part = bundle && bundle.parts.find(function(p){ return p.id === sheetCtx.partId; });
+        const label = part ? part.name : "パーツ";
+        const partId = sheetCtx.partId;
+        closeSheet();
+        Store.deletePart(partId);
+        showSnackbar("削除しました: " + label, { actionLabel: "元に戻す", onAction: function(){ Store.undo(); }, duration: 5000 });
+        break;
+      }
+      case "set-part-shape": {
+        if (!sheetCtx || sheetCtx.kind !== "part") break;
+        const bundle = Store.getCurrentBundle();
+        const part = bundle.parts.find(function(p){ return p.id === sheetCtx.partId; });
+        if (!part) break;
+        const shape = el.dataset.shape;
+        const patch = { shape: shape };
+        if (shape === "circle"){
+          patch.size = { d: part.size.d || part.size.w || 100, t: part.size.t || 3 };
+        } else {
+          patch.size = { w: part.size.w || part.size.d || 100, h: part.size.h || part.size.d || 100, t: part.size.t || 3 };
+        }
+        Store.updatePart(sheetCtx.partId, patch);
+        openPartSheetFor(sheetCtx.partId, sheetCtx.isNew);
+        break;
+      }
+      case "set-part-color":
+        if (sheetCtx && sheetCtx.kind === "part"){
+          Store.updatePart(sheetCtx.partId, { color: el.dataset.color });
+          openPartSheetFor(sheetCtx.partId, sheetCtx.isNew);
+        }
+        break;
+      case "apply-inner-depth-to-zstack": {
+        if (!sheetCtx || sheetCtx.kind !== "part") break;
+        const bundle = Store.getCurrentBundle();
+        const part = bundle.parts.find(function(p){ return p.id === sheetCtx.partId; });
+        if (part && part.innerSize){
+          Store.setZStackTotalDepth(part.innerSize.d);
+          showSnackbar("Zスタック合計を更新しました: " + fmtStepVal(part.innerSize.d) + "mm");
+        }
+        break;
+      }
+
+      /* ---- タスク3: 部品(コンポーネント)編集 ---- */
+      case "add-component": {
+        const newId = Store.addComponent({});
+        Store.addPlacement({ targetType: "component", targetId: newId, pos: { x: 0, y: 0, z: 0 }, orientation: "xy" });
+        openComponentSheetFor(newId, true);
+        break;
+      }
+      case "edit-component":
+        openComponentSheetFor(id, false);
+        break;
+      case "delete-component": {
+        sheetCancelAction = null;
+        const bundle = Store.getCurrentBundle();
+        const cmp = bundle && bundle.components.find(function(c){ return c.id === sheetCtx.cmpId; });
+        const label = cmp ? cmp.name : "部品";
+        const cmpId = sheetCtx.cmpId;
+        closeSheet();
+        Store.deleteComponent(cmpId);
+        showSnackbar("削除しました: " + label, { actionLabel: "元に戻す", onAction: function(){ Store.undo(); }, duration: 5000 });
+        break;
+      }
+      case "set-cmp-color":
+        if (sheetCtx && sheetCtx.kind === "component"){
+          Store.updateComponent(sheetCtx.cmpId, { color: el.dataset.color });
+          openComponentSheetFor(sheetCtx.cmpId, sheetCtx.isNew);
+        }
+        break;
+
+      /* ---- タスク3: 穴編集 ---- */
+      case "add-hole": {
+        const partId = el.dataset.partId;
+        const newId = Store.addHole(partId);
+        if (newId) openHoleSheetFor(partId, newId, true);
+        break;
+      }
+      case "edit-hole":
+        openHoleSheetFor(el.dataset.partId, el.dataset.holeId, false);
+        break;
+      case "set-hole-side": {
+        if (!sheetCtx || sheetCtx.kind !== "hole") break;
+        Store.updateHole(sheetCtx.partId, sheetCtx.holeId, { side: el.dataset.side });
+        openHoleSheetFor(sheetCtx.partId, sheetCtx.holeId, sheetCtx.isNew);
+        break;
+      }
+      case "delete-hole": {
+        if (!sheetCtx || sheetCtx.kind !== "hole") break;
+        sheetCancelAction = null;
+        const bundle = Store.getCurrentBundle();
+        const part = bundle.parts.find(function(p){ return p.id === sheetCtx.partId; });
+        const hole = part && part.holes.find(function(h){ return h.id === sheetCtx.holeId; });
+        const label = hole ? hole.name : "穴";
+        const partId = sheetCtx.partId, holeId = sheetCtx.holeId;
+        closeSheet();
+        Store.deleteHole(partId, holeId);
+        showSnackbar("削除しました: " + label, { actionLabel: "元に戻す", onAction: function(){ Store.undo(); }, duration: 5000 });
+        break;
+      }
+      case "duplicate-next-hole": {
+        if (!sheetCtx || sheetCtx.kind !== "hole") break;
+        sheetCancelAction = null;
+        const partId = sheetCtx.partId;
+        const newId = Store.duplicateHole(partId, sheetCtx.holeId);
+        if (newId) openHoleSheetFor(partId, newId, false);
+        break;
+      }
+
+      /* ---- タスク3: Zスタック(断面タブ) ---- */
+      case "edit-zdepth":
+        openTotalDepthSheet();
+        break;
+      case "add-zitem": {
+        Store.addZStackItem({ label: "新しい項目", mm: 0 });
+        const bundle = Store.getCurrentBundle();
+        openZItemSheetFor(bundle.zstack.items.length - 1, true);
+        break;
+      }
+      case "edit-zitem":
+        openZItemSheetFor(parseInt(el.dataset.index, 10), false);
+        break;
+      case "delete-zitem": {
+        sheetCancelAction = null;
+        const idx = parseInt(el.dataset.index, 10);
+        closeSheet();
+        Store.removeZStackItem(idx);
+        showSnackbar("項目を削除しました", { actionLabel: "元に戻す", onAction: function(){ Store.undo(); }, duration: 5000 });
+        break;
+      }
+      case "move-zitem-up":
+        Store.moveZStackItem(parseInt(el.dataset.index, 10), -1);
+        break;
+      case "move-zitem-down":
+        Store.moveZStackItem(parseInt(el.dataset.index, 10), 1);
+        break;
+
+      /* ---- タスク3: 共通完了ボタン・PNG書き出し ---- */
+      case "complete-sheet":
+        completeSheet();
+        break;
+      case "export-view-png":
+        exportCurrentViewPng();
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  function bindGlobalEvents(){
+    document.body.addEventListener("click", function(e){
+      const el = e.target.closest("[data-action]");
+      if (!el) return;
+      handleAction(el.dataset.action, el);
+    });
+
+    document.body.addEventListener("keydown", function(e){
+      if (e.key !== "Enter") return;
+      if (e.target && e.target.id === "new-project-name-input"){
+        e.preventDefault();
+        handleAction("confirm-new-project", { dataset: {} });
+      } else if (e.target && e.target.id === "rename-input"){
+        e.preventDefault();
+        const btn = dom.sheetBody.querySelector('[data-action="confirm-rename"]');
+        if (btn) handleAction("confirm-rename", btn);
+      }
+    });
+
+    // 長押しでプロジェクト行のメニューを開く
+    dom.projectList.addEventListener("pointerdown", function(e){
+      const row = e.target.closest(".project-row");
+      if (!row) return;
+      longPressFired = false;
+      clearTimeout(longPressTimer);
+      longPressTimer = setTimeout(function(){
+        longPressFired = true;
+        openSheet("プロジェクト操作", projectMenuSheetHtml(row.dataset.id));
+      }, 550);
+    });
+    ["pointerup", "pointercancel", "pointerleave"].forEach(function(evt){
+      dom.projectList.addEventListener(evt, function(){ clearTimeout(longPressTimer); });
+    });
+
+    dom.importFileInput.addEventListener("change", function(e){
+      const file = e.target.files && e.target.files[0];
+      e.target.value = "";
+      if (file) Store.importProjectFromFile(file);
+    });
+
+    bindViewGestures();
+    bindStepperEvents();
+    bindVisualViewport();
+
+    Store.subscribe(render);
+  }
+
+  return {
+    cacheDom: cacheDom,
+    bindGlobalEvents: bindGlobalEvents,
+    render: render,
+    showSnackbar: showSnackbar
+  };
+})();
+
+/* ============================================================
+   App起動
+============================================================ */
+const App = {
+  Geometry: Geometry,
+  IO: IO,
+  Presets: Presets,
+  Views: Views,
+  Store: Store,
+  UI: UI,
+
+  async init(){
+    UI.cacheDom();
+    UI.bindGlobalEvents();
+
+    const mode = await IO.init();
+    Store.state.storageMode = mode;
+
+    if (mode === "indexeddb"){
+      try {
+        Store.state.projects = await IO.getAllProjects();
+      } catch (err){
+        console.error("FieldCAD: failed to load projects", err);
+        Store.state.projects = [];
+      }
+    }
+
+    if (Store.state.projects.length === 0){
+      const sample = Presets.buildSampleProject();
+      Store.state.projects.push(sample);
+      try { await IO.putProjectNow(sample); } catch (err){ console.error("FieldCAD: failed to save sample project", err); }
+    }
+
+    UI.render();
+  }
+};
+
+// デバッグ・後続タスク連携用に window へ公開(グローバル汚染は App 単一オブジェクトのみ)
+window.FieldCAD = App;
+
+document.addEventListener("DOMContentLoaded", function(){ App.init(); });
+
+})();
+</script>
+</body>
+</html>
