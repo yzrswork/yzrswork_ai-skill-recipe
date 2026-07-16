@@ -161,92 +161,143 @@
     margin: 0 0 8px;
   }
 
-  /* ── Works list ─────────────────────────────── */
+  /* ── Category quick-nav ─────────────────────── */
+  .cat-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: -28px 0 52px;
+    position: relative;
+    z-index: 2;
+  }
+  .cat-nav a {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    color: var(--ink-soft);
+    border: 1px solid var(--rule-soft, rgba(58,52,44,0.28));
+    border-radius: 999px;
+    padding: 6px 13px;
+    white-space: nowrap;
+    transition: border-color 160ms ease, color 160ms ease;
+  }
+  .cat-nav a:hover,
+  .cat-nav a:focus-visible {
+    border-color: var(--terracotta);
+    color: var(--terracotta);
+    outline: none;
+  }
+
+  /* ── Category section ───────────────────────── */
+  .category {
+    margin-bottom: 52px;
+    scroll-margin-top: 18px;
+  }
+
+  /* ── Works grid (column layout) ─────────────── */
   .works {
     list-style: none;
     padding: 0;
-    margin: 0 0 80px;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
   .work {
-    border-bottom: 1px solid rgba(58, 52, 44, 0.35);
+    border: none;
   }
   .work a {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    column-gap: 18px;
-    row-gap: 6px;
-    align-items: baseline;
-    padding: 26px 4px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    height: 100%;
+    padding: 15px 14px 14px;
     text-decoration: none;
     color: var(--ink);
-    transition: padding-left 220ms ease, background-color 220ms ease;
+    border: 1px solid rgba(58, 52, 44, 0.28);
+    border-radius: 13px;
+    background: rgba(255, 253, 248, 0.4);
+    transition: border-color 200ms ease, transform 160ms ease, background-color 200ms ease;
     position: relative;
   }
   .work a:hover,
   .work a:focus-visible {
-    padding-left: 14px;
-    background-color: rgba(181, 69, 27, 0.04);
+    border-color: var(--terracotta);
+    background-color: rgba(181, 69, 27, 0.05);
+    transform: translateY(-2px);
     outline: none;
+  }
+  .work .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
   }
   .work .num {
     font-family: var(--mono);
-    font-size: 13px;
+    font-size: 11px;
     color: var(--terracotta);
     letter-spacing: 0.05em;
-    align-self: start;
-    padding-top: 6px;
-    min-width: 28px;
+  }
+  .work .new-badge {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    color: var(--terracotta-deep);
+    background: rgba(181, 69, 27, 0.12);
+    border-radius: 999px;
+    padding: 2px 7px;
   }
   .work .title {
     font-family: var(--jp);
     font-weight: 700;
-    font-size: clamp(22px, 4.5vw, 28px);
-    line-height: 1.25;
+    font-size: clamp(14.5px, 4vw, 16px);
+    line-height: 1.3;
     letter-spacing: 0.01em;
     color: var(--ink);
   }
   .work .title .en {
+    display: block;
     font-family: var(--serif);
     font-style: italic;
     font-weight: 400;
-    font-size: 0.78em;
+    font-size: 0.76em;
     color: var(--muted);
-    margin-left: 10px;
-    letter-spacing: 0.04em;
-  }
-  .work .arrow {
-    font-family: var(--mono);
-    font-size: 16px;
-    color: var(--terracotta);
-    align-self: start;
-    padding-top: 10px;
-    transition: transform 220ms ease;
-  }
-  .work a:hover .arrow {
-    transform: translateX(6px);
+    margin-top: 3px;
+    letter-spacing: 0.02em;
   }
   .work .caption {
-    grid-column: 2 / 3;
     font-family: var(--jp);
-    font-size: 13.5px;
+    font-size: 11.5px;
     font-weight: 400;
     color: var(--muted);
-    line-height: 1.7;
-    letter-spacing: 0.03em;
-    max-width: 46ch;
+    line-height: 1.55;
+    letter-spacing: 0.02em;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   .work .tag {
-    grid-column: 2 / 3;
+    margin-top: auto;
+    padding-top: 6px;
     font-family: var(--mono);
-    font-size: 10.5px;
+    font-size: 9px;
     text-transform: uppercase;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.1em;
     color: var(--ink-soft);
-    margin-top: 4px;
   }
   .work .tag .sep {
     color: var(--terracotta);
-    margin: 0 8px;
+    margin: 0 5px;
+  }
+  .work .arrow { display: none; }
+
+  @media (min-width: 600px) {
+    .works { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 350px) {
+    .works { grid-template-columns: 1fr; }
   }
 
   /* ── Colophon / footer ──────────────────────── */
@@ -344,10 +395,8 @@
     .page { padding: 36px 22px 36px; }
     header { margin-bottom: 56px; }
     .mark { font-size: 78px; top: 30px; right: 16px; }
-    .work a { column-gap: 14px; padding: 22px 2px 20px; }
-    .work .num { padding-top: 4px; font-size: 12px; min-width: 22px; }
-    .work .title .en { display: block; margin-left: 0; margin-top: 4px; }
-    .work .arrow { padding-top: 8px; }
+    .works { gap: 10px; }
+    .work a { padding: 13px 12px 12px; }
     .colophon-row { flex-direction: column; align-items: flex-start; gap: 10px; }
   }
 </style>
@@ -390,10 +439,18 @@
       <span style="font-family:var(--mono);color:var(--terracotta);font-size:18px;">→</span>
     </a>
 
-    <section>
+    <nav class="cat-nav" aria-label="カテゴリ">
+      <a href="#cat-play">遊び・ゲーム</a>
+      <a href="#cat-sound">音・音楽</a>
+      <a href="#cat-art">アート</a>
+      <a href="#cat-tool">ツール・実用</a>
+      <a href="#cat-record">記録・実務</a>
+    </nav>
+
+    <section class="category" id="cat-play">
       <div class="section-head">
-        <span class="label-jp">作 品 一 覧</span>
-        <span class="label-en">— Selected Works</span>
+        <span class="label-jp">遊 び ・ ゲ ー ム</span>
+        <span class="label-en">— Play & Games</span>
       </div>
       <hr class="section-rule" />
 
@@ -401,201 +458,220 @@
 
         <li class="work">
           <a href="asobi.html">
-            <span class="num">00</span>
-            <span class="title">おにさん ダンス！<span class="en">— Oni Dance Party</span></span>
-            <span class="arrow">→</span>
-            <span class="caption">赤鬼が音楽に合わせてカニさんチョキチョキダンス。 指でドラッグして動かし、タッチでジャンプ回転。 3歳が直感で遊べる、青鬼・緑鬼との踊りパーティー。</span>
+            <span class="card-top"><span class="num">00</span></span>
+            <span class="title">おにさん ダンス！<span class="en">Oni Dance Party</span></span>
+            <span class="caption">赤鬼が音楽に合わせてカニさんチョキチョキダンス。指でドラッグして動かし、タッチでジャンプ回転。3歳が直感で遊べる踊りパーティー。</span>
             <span class="tag">iPhone <span class="sep">/</span> Kids <span class="sep">/</span> Dance</span>
           </a>
         </li>
 
         <li class="work">
-          <a href="yzrsynth.html">
-            <span class="num">01</span>
-            <span class="title">YZRsynth_v3.1<span class="en">— Rhythm Composer</span></span>
-            <span class="arrow">→</span>
-            <span class="caption">16ステップシーケンサー・5音色シンセ・2小節ルーパーを1台にまとめた、ダークでミニマルなリズムマシン。 スケールロックで誰でも気持ちよく弾けます。</span>
-            <span class="tag">iPhone <span class="sep">/</span> Sound <span class="sep">/</span> Synth</span>
-          </a>
-        </li>
-
-        <li class="work">
-          <a href="grid.html">
-            <span class="num">02</span>
-            <span class="title">Grid Instrument<span class="en">— Tap Music</span></span>
-            <span class="arrow">→</span>
-            <span class="caption">タップで鳴らす音楽グリッド。 仕組みは単純、出てくる音は意外と複雑。</span>
-            <span class="tag">Music <span class="sep">/</span> Grid <span class="sep">/</span> Web</span>
-          </a>
-        </li>
-
-        <li class="work">
           <a href="fireworks.html">
-            <span class="num">03</span>
-            <span class="title">花火<span class="en">— Hanabi</span></span>
-            <span class="arrow">→</span>
-            <span class="caption">画面のどこを触っても、ちゃんと夏になる。 幼児向けのタップゲーム。火薬は使っていません。</span>
+            <span class="card-top"><span class="num">01</span></span>
+            <span class="title">花火<span class="en">Hanabi</span></span>
+            <span class="caption">画面のどこを触っても、ちゃんと夏になる。幼児向けのタップゲーム。火薬は使っていません。</span>
             <span class="tag">Kids <span class="sep">/</span> Tap <span class="sep">/</span> Seasonal</span>
           </a>
         </li>
 
         <li class="work">
           <a href="project/index.html">
-            <span class="num">04</span>
-            <span class="title">あそぼう<span class="en">— Let's Play</span></span>
-            <span class="arrow">→</span>
-            <span class="caption">モンテッソーリ風の知育ゲーム集。 親はそっと隣で見ていてください。</span>
+            <span class="card-top"><span class="num">02</span></span>
+            <span class="title">あそぼう<span class="en">Let's Play</span></span>
+            <span class="caption">モンテッソーリ風の知育ゲーム集。親はそっと隣で見ていてください。</span>
             <span class="tag">Kids <span class="sep">/</span> Learning <span class="sep">/</span> Suite</span>
           </a>
         </li>
 
         <li class="work">
+          <a href="virus-busters.html">
+            <span class="card-top"><span class="num">03</span></span>
+            <span class="title">ウィルスバスターズ<span class="en">Virus Busters</span></span>
+            <span class="caption">白血球の群れを操り、ウィルスの大軍を撃退する縦持ちディフェンス。全20ステージ、図鑑50種、スーファミ風ビット感。</span>
+            <span class="tag">iPhone <span class="sep">/</span> Game <span class="sep">/</span> Defense</span>
+          </a>
+        </li>
+
+        <li class="work">
+          <a href="bikey/index.html">
+            <span class="card-top"><span class="num">04</span><span class="new-badge">NEW</span></span>
+            <span class="title">bikey<span class="en">Bike Commute Action</span></span>
+            <span class="caption">毎朝の通学路を自転車で駆け抜ける横スクロールアクション。日を追うごとに道が険しくなる。</span>
+            <span class="tag">Game <span class="sep">/</span> Bike <span class="sep">/</span> Web</span>
+          </a>
+        </li>
+
+      </ol>
+    </section>
+
+    <section class="category" id="cat-sound">
+      <div class="section-head">
+        <span class="label-jp">音 ・ 音 楽</span>
+        <span class="label-en">— Sound & Music</span>
+      </div>
+      <hr class="section-rule" />
+
+      <ol class="works">
+
+        <li class="work">
+          <a href="yzrsynth.html">
+            <span class="card-top"><span class="num">05</span></span>
+            <span class="title">YZRsynth_v3.1<span class="en">Rhythm Composer</span></span>
+            <span class="caption">16ステップシーケンサー・5音色シンセ・2小節ルーパーを1台にまとめたリズムマシン。スケールロックで誰でも気持ちよく弾けます。</span>
+            <span class="tag">iPhone <span class="sep">/</span> Sound <span class="sep">/</span> Synth</span>
+          </a>
+        </li>
+
+        <li class="work">
+          <a href="grid.html">
+            <span class="card-top"><span class="num">06</span></span>
+            <span class="title">Grid Instrument<span class="en">Tap Music</span></span>
+            <span class="caption">タップで鳴らす音楽グリッド。仕組みは単純、出てくる音は意外と複雑。</span>
+            <span class="tag">Music <span class="sep">/</span> Grid <span class="sep">/</span> Web</span>
+          </a>
+        </li>
+
+        <li class="work">
+          <a href="otamatone.html">
+            <span class="card-top"><span class="num">07</span></span>
+            <span class="title">オタマトーン WEB<span class="en">Ribbon Synth</span></span>
+            <span class="caption">しっぽのリボンをなぞって鳴らす、白いオタマトーン。TR-808のエフェクトとルーパーをそのまま積んでいます。</span>
+            <span class="tag">iPhone <span class="sep">/</span> Sound <span class="sep">/</span> Ribbon</span>
+          </a>
+        </li>
+
+        <li class="work">
+          <a href="metronome-watch.html">
+            <span class="card-top"><span class="num">08</span></span>
+            <span class="title">Metronome Watch<span class="en">Neon Click</span></span>
+            <span class="caption">サイバー空間に浮かぶ青いネオンの時計型メトロノーム。16小節×4拍の64目盛、透明な振り子が8小節で一往復。</span>
+            <span class="tag">iPhone <span class="sep">/</span> Sound <span class="sep">/</span> Metronome</span>
+          </a>
+        </li>
+
+      </ol>
+    </section>
+
+    <section class="category" id="cat-art">
+      <div class="section-head">
+        <span class="label-jp">ア ー ト</span>
+        <span class="label-en">— Art</span>
+      </div>
+      <hr class="section-rule" />
+
+      <ol class="works">
+
+        <li class="work">
+          <a href="grid_v2.html">
+            <span class="card-top"><span class="num">09</span></span>
+            <span class="title">Mizu<span class="en">Watercolor Trace</span></span>
+            <span class="caption">指でなぞって描く、水多めの水彩画。黒・青・橙の絵具がにじんで重なると自然に混ざり、なぞるたびに水の音が落ちる。</span>
+            <span class="tag">Watercolor <span class="sep">/</span> Sound <span class="sep">/</span> Web</span>
+          </a>
+        </li>
+
+      </ol>
+    </section>
+
+    <section class="category" id="cat-tool">
+      <div class="section-head">
+        <span class="label-jp">ツ ー ル ・ 実 用</span>
+        <span class="label-en">— Utility</span>
+      </div>
+      <hr class="section-rule" />
+
+      <ol class="works">
+
+        <li class="work">
+          <a href="prompt-forge.html">
+            <span class="card-top"><span class="num">10</span></span>
+            <span class="title">Prompt Forge<span class="en">Character Prompt Generator</span></span>
+            <span class="caption">マネキン2体のキャラを、どの画像生成AIでもブレずに一撃でコピペ生成。ヘッド・背景・アクションを選ぶだけ。</span>
+            <span class="tag">Tool <span class="sep">/</span> Prompt <span class="sep">/</span> AI Art</span>
+          </a>
+        </li>
+
+        <li class="work">
           <a href="news.html">
-            <span class="num">05</span>
-            <span class="title">電子工作通信<span class="en">— Tech News Feed</span></span>
-            <span class="arrow">→</span>
+            <span class="card-top"><span class="num">11</span></span>
+            <span class="title">電子工作通信<span class="en">Tech News Feed</span></span>
             <span class="caption">Hackaday と Qiita の電子工作記事をまとめて流す、自分用のRSSリーダー。</span>
             <span class="tag">RSS <span class="sep">/</span> 電子工作 <span class="sep">/</span> News</span>
           </a>
         </li>
 
         <li class="work">
-          <a href="otamatone.html">
-            <span class="num">06</span>
-            <span class="title">オタマトーン WEB<span class="en">— Ribbon Synth</span></span>
-            <span class="arrow">→</span>
-            <span class="caption">しっぽのリボンをなぞって鳴らす、白いオタマトーン。 TR-808のエフェクトとルーパーをそのまま積んでいます。</span>
-            <span class="tag">iPhone <span class="sep">/</span> Sound <span class="sep">/</span> Ribbon</span>
-          </a>
-        </li>
-
-        <li class="work">
-          <a href="virus-busters.html">
-            <span class="num">07</span>
-            <span class="title">ウィルスバスターズ<span class="en">— Virus Busters</span></span>
-            <span class="arrow">→</span>
-            <span class="caption">白血球の群れを操り、ウィルスの大軍を撃退する縦持ちディフェンス。 全20ステージ、図鑑50種、スーファミ風ビット感。</span>
-            <span class="tag">iPhone <span class="sep">/</span> Game <span class="sep">/</span> Defense</span>
-          </a>
-        </li>
-
-        <li class="work">
-          <a href="metronome-watch.html">
-            <span class="num">08</span>
-            <span class="title">Metronome Watch<span class="en">— Neon Click</span></span>
-            <span class="arrow">→</span>
-            <span class="caption">サイバー空間に浮かぶ青いネオンの時計型メトロノーム。 文字盤は16小節×4拍の64目盛、背後では透明な振り子が8小節かけて一往復します。</span>
-            <span class="tag">iPhone <span class="sep">/</span> Sound <span class="sep">/</span> Metronome</span>
-          </a>
-        </li>
-
-        <li class="work">
           <a href="x-bookmark-logger.html">
-            <span class="num">09</span>
-            <span class="title">X Bookmark Logger<span class="en">— Bookmark to Vault</span></span>
-            <span class="arrow">→</span>
-            <span class="caption">Xでブックマークしたツイートを、自動でGitHubのObsidian VaultにMarkdown保存。 APIキー不要のユーザースクリプトです。</span>
+            <span class="card-top"><span class="num">12</span></span>
+            <span class="title">X Bookmark Logger<span class="en">Bookmark to Vault</span></span>
+            <span class="caption">Xでブックマークしたツイートを、自動でGitHubのObsidian VaultにMarkdown保存。APIキー不要のユーザースクリプトです。</span>
             <span class="tag">Tool <span class="sep">/</span> Userscript <span class="sep">/</span> Obsidian</span>
           </a>
         </li>
 
         <li class="work">
           <a href="note-pv-logger.html">
-            <span class="num">10</span>
-            <span class="title">note PV Logger<span class="en">— Pageviews to Sheet</span></span>
-            <span class="arrow">→</span>
-            <span class="caption">noteの全記事のビュー数を、ダッシュボードからまとめて取得。 CSV・スプレッドシート・Obsidian用Markdownで書き出せます。トークン不要。</span>
+            <span class="card-top"><span class="num">13</span></span>
+            <span class="title">note PV Logger<span class="en">Pageviews to Sheet</span></span>
+            <span class="caption">noteの全記事のビュー数を、ダッシュボードからまとめて取得。CSV・スプレッドシート・Obsidian用Markdownで書き出し。</span>
             <span class="tag">Tool <span class="sep">/</span> Userscript <span class="sep">/</span> note</span>
           </a>
         </li>
 
         <li class="work">
-          <a href="grid_v2.html">
-            <span class="num">11</span>
-            <span class="title">Mizu — Watercolor Trace<span class="en">— Watercolor</span></span>
-            <span class="arrow">→</span>
-            <span class="caption">指でなぞって描く、水多めの水彩画。 黒・青・橙の絵具がにじんで重なると自然に混ざり、なぞるたびに水の音が落ちる。</span>
-            <span class="tag">Watercolor <span class="sep">/</span> Sound <span class="sep">/</span> Web</span>
+          <a href="memo.html">
+            <span class="card-top"><span class="num">14</span><span class="new-badge">NEW</span></span>
+            <span class="title">Memo<span class="en">Tagged Notes</span></span>
+            <span class="caption">work / private のタグで仕分けるだけの、身軽なメモ帳。ログの書き出しつき。</span>
+            <span class="tag">Tool <span class="sep">/</span> Memo <span class="sep">/</span> Web</span>
           </a>
         </li>
 
         <li class="work">
-          <a href="prompt-forge.html">
-            <span class="num">12</span>
-            <span class="title">Prompt Forge<span class="en">— Character Prompt Generator</span></span>
-            <span class="arrow">→</span>
-            <span class="caption">マネキン2体のキャラを、どの画像生成AIでもブレずに一撃でコピペ生成。 ヘッド・背景・アクションを選ぶだけで完成プロンプトが組み上がる、テラコッタ配色のジェネレーター。</span>
-            <span class="tag">Tool <span class="sep">/</span> Prompt <span class="sep">/</span> AI Art</span>
+          <a href="connection-os.html">
+            <span class="card-top"><span class="num">15</span><span class="new-badge">NEW</span></span>
+            <span class="title">Connection OS<span class="en">Daily Check-in Log</span></span>
+            <span class="caption">今の状態を一言で残し、「接続パケット」を送ったかを記録する、関係を保つための日々のログ。</span>
+            <span class="tag">Life <span class="sep">/</span> Log <span class="sep">/</span> Web</span>
+          </a>
+        </li>
+
+      </ol>
+    </section>
+
+    <section class="category" id="cat-record">
+      <div class="section-head">
+        <span class="label-jp">記 録 ・ 実 務</span>
+        <span class="label-en">— Records & Fieldwork</span>
+      </div>
+      <hr class="section-rule" />
+
+      <ol class="works">
+
+        <li class="work">
+          <a href="jitsumu450/index.html">
+            <span class="card-top"><span class="num">16</span><span class="new-badge">NEW</span></span>
+            <span class="title">実務メーター450<span class="en">Surveyor Hours Recorder</span></span>
+            <span class="caption">測量士登録申請（450日）に向けた実務時間の現場記録PWA。8時間=1日換算メーターとObsidian書き出し。データは端末内のみ。</span>
+            <span class="tag">仕事 <span class="sep">/</span> 測量 <span class="sep">/</span> PWA</span>
           </a>
         </li>
 
         <li class="work">
-          <a href="bench/index.html">
-            <span class="num">13</span>
-            <span class="title">工房の電卓<span class="en">— Maker's Bench</span></span>
-            <span class="arrow">→</span>
-            <span class="caption">電子工作の作業台に常駐する計算ツール集。オームの法則・LED抵抗・カラーコード・555・電池駆動時間をオフラインで。部品はそのまま購入リンクへ。</span>
-            <span class="tag">iPhone <span class="sep">/</span> 電子工作 <span class="sep">/</span> PWA</span>
+          <a href="bousai/index.html">
+            <span class="card-top"><span class="num">17</span><span class="new-badge">NEW</span></span>
+            <span class="title">家族防災カード<span class="en">Family Disaster Card</span></span>
+            <span class="caption">発災直後の初動とタイムライン、持ち出しチェック、171安否確認の手順をまとめたポケットカード。オフライン、端末内保存。</span>
+            <span class="tag">Life <span class="sep">/</span> 防災 <span class="sep">/</span> PWA</span>
           </a>
         </li>
 
         <li class="work">
-          <a href="fixit/index.html">
-            <span class="num">14</span>
-            <span class="title">直し方ナビ<span class="en">— Fix-it Navigator</span></span>
-            <span class="arrow">→</span>
-            <span class="caption">「何もしてないのに急に動かない」を質問に答えるだけで切り分ける診断ナビ。 Yahoo!メール、Windows11 24H2共有、自作PCのビープ音、iPhone版Obsidian同期の4件を収録。オフライン対応。</span>
-            <span class="tag">Tool <span class="sep">/</span> Troubleshoot <span class="sep">/</span> PWA</span>
-          </a>
-        </li>
-
-        <li class="work">
-          <a href="kit/index.html">
-            <span class="num">15</span>
-            <span class="title">装備ナビ<span class="en">— Maker's Starter Kit</span></span>
-            <span class="arrow">→</span>
-            <span class="caption">電子工作、まず何を買えばいい？ 工具と部品ストックをステップ別にチェックして、Amazonの買い物リストに集約。 「持ってる」で消し込め、調達先の使い分けガイドつき。</span>
-            <span class="tag">電子工作 <span class="sep">/</span> Shopping <span class="sep">/</span> PWA</span>
-          </a>
-        </li>
-
-        <li class="work">
-          <a href="lab/index.html">
-            <span class="num">16</span>
-            <span class="title">e-photoframe ラボ<span class="en">— Modules & Power Planner</span></span>
-            <span class="arrow">→</span>
-            <span class="caption">e-photoframeシリーズで使ったモジュールの図鑑と、5V単一電源の配電プランナー。 消費電流を積み上げてACアダプタ容量とポート数の余裕を確認。「12Vは入れない」前提を内蔵。</span>
-            <span class="tag">電子工作 <span class="sep">/</span> Power <span class="sep">/</span> PWA</span>
-          </a>
-        </li>
-
-        <li class="work">
-          <a href="hdd/index.html">
-            <span class="num">17</span>
-            <span class="title">HDD選びナビ<span class="en">— WD Color & CMR/SMR</span></span>
-            <span class="arrow">→</span>
-            <span class="caption">Western DigitalのHDDを用途から色で選び、CMR/SMRを型番末尾で判定する選び方ナビ。 RAID/NASにSMRを選ばないための早見と、型番チェッカーつき。</span>
-            <span class="tag">自作PC <span class="sep">/</span> Storage <span class="sep">/</span> PWA</span>
-          </a>
-        </li>
-
-        <li class="work">
-          <a href="mem/index.html">
-            <span class="num">18</span>
-            <span class="title">メモリ選びナビ<span class="en">— DDR Spec & Capacity</span></span>
-            <span class="arrow">→</span>
-            <span class="caption">自作PCのメモリ選び。ソケットからDDR規格を確認し、用途から容量を選び、2枚構成（デュアルチャネル）で組むための早見。 2026年のソケット対応（AM5/LGA1851はDDR5専用 等）を反映。</span>
-            <span class="tag">自作PC <span class="sep">/</span> Memory <span class="sep">/</span> PWA</span>
-          </a>
-        </li>
-
-        <li class="work">
-          <a href="build/index.html">
-            <span class="num">19</span>
-            <span class="title">自作PC 構成プランナー<span class="en">— Build Planner</span></span>
-            <span class="arrow">→</span>
-            <span class="caption">ソケットからDDR規格、用途からRAM容量、ストレージ、GPUから電源容量の目安までを順に選ぶと、構成サマリーと買い物リンクが揃う。 組み立て＆初回起動チェックリストつき。</span>
-            <span class="tag">自作PC <span class="sep">/</span> Planner <span class="sep">/</span> PWA</span>
+          <a href="fieldcad/index.html">
+            <span class="card-top"><span class="num">18</span><span class="new-badge">NEW</span></span>
+            <span class="title">FieldCAD<span class="en">Field Layout Sketch</span></span>
+            <span class="caption">現場の寸法を記録し、その場でレイアウトを可視化するフィールドCADツール。</span>
+            <span class="tag">仕事 <span class="sep">/</span> CAD <span class="sep">/</span> Tool</span>
           </a>
         </li>
 
