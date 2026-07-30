@@ -32,7 +32,7 @@
 | `mem/` | メモリ選びナビ / DDR Spec & Capacity | 本体は https://apps.yzrswork.com/mem/ へ移設済み。ここはハッシュ保持型のリダイレクトのみ（旧PWAキャッシュ解除つき）。 |
 | `jitsumu450/index.html` | 実務メーター450 / Surveyor Hours Recorder | 測量士登録申請（測量法第50条第3号、450日）に向けた実務時間の現場記録PWA。案件IDと実務時間をタップ記録、8時間=1日換算の達成メーター、判定チートシート、Obsidian実務記録テンプレ準拠のMarkdown/TSV書き出し。データは端末のlocalStorageのみ。オフライン対応。 |
 | `bousai/index.html` | 家族防災カード / Family Disaster Card | 家族の防災ポケットカードPWA。発災直後の初動3か条、時間帯別タイムライン（0-10分/1時間/24時間/1週間）、持ち出し・停電・断水チェックリスト、171安否確認の手順、避難訓練の実施記録と期限アラート。集合場所などの家族情報は各端末で入力（アプリにデータは含まない）。オフライン対応。 |
-| `fieldcad/index.html` | FieldCAD / Field Layout Sketch | 現場の寸法を入力するだけで正面図、背面図、断面図を自動生成するフィールドCAD PWA。穴はパーツローカルの2D座標で保持し、配置のみ90度単位回転のアセンブリ座標を持つ設計で、投影と断面と干渉判定を軸平行境界箱の演算に単純化。iPhone Safariファースト、SVG描画、IndexedDB永続化。設計の正は `fieldcad/DESIGN.md`。 |
+| `fieldcad/index.html` | FieldCAD / Field Layout Sketch | 現場の寸法を入力するだけで正面図、背面図、断面図を自動生成するフィールドCAD Webアプリ（manifestとService Workerは未実装。PWA化は `fieldcad/DESIGN.md` の第2フェーズ予定）。穴はパーツローカルの2D座標で保持し、配置のみ90度単位回転のアセンブリ座標を持つ設計で、投影と断面と干渉判定を軸平行境界箱の演算に単純化。iPhone Safariファースト、SVG描画、IndexedDB永続化。設計の正は `fieldcad/DESIGN.md`。 |
 
 ## ローカルで動かす
 
