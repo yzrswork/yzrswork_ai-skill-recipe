@@ -15,7 +15,7 @@ self.addEventListener('activate', (event) => {
     await Promise.all(
       windows
         .filter((client) => client.url.startsWith(self.registration.scope))
-        .map((client) => client.navigate(RETIRED_URL))
+        .map((client) => client.navigate(RETIRED_URL + new URL(client.url).hash))
     );
   })());
 });

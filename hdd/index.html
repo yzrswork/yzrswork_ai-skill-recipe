@@ -10,12 +10,16 @@
 <script>
   (function () {
     var target = 'https://apps.yzrswork.com/hdd/' + (location.hash || '');
+    var scope = location.href.replace(/[^/]*$/, '');
+    var go = function () { location.replace(target); };
     if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
       navigator.serviceWorker.getRegistrations().then(function (rs) {
-        rs.forEach(function (r) { r.unregister(); });
-      });
+        return Promise.all(rs.filter(function (r) { return r.scope === scope; }).map(function (r) { return r.unregister(); }));
+      }).then(go, go);
+      setTimeout(go, 400);
+    } else {
+      go();
     }
-    location.replace(target);
   })();
 </script>
 <style>
