@@ -13,6 +13,10 @@
 
 ## 1. 現状分析サマリー
 
+> **この節は 2026-06-11 時点のスナップショット。見積りや優先順位付けの根拠には使えない。**
+> 以後リポジトリは大きく変わっている（TR-808系3本は `yzrsynth/` へ統合、`grid` `fireworks` `otamatone` `news` `virus-busters` `metronome` `prompt-forge` `mizu` `asobou` は yzrswork_apps から受け入れたディレクトリ形式へ移行し旧フラットHTMLはリダイレクト、`bench` `kit` `fixit` `build` `hdd` `mem` は apps.yzrswork.com へ昇格しリダイレクトのみ、`memo.html` はポータル掲載済み、`connection-os.html` は削除、README と index.html の不一致も解消）。
+> 現状は live な `index.html` と `README.md` を正とする。完了済みフェーズの判断根拠を残すため、以下の記述は当時のまま保持している。
+
 ### 1.1 コードベースの構成
 
 | 分類 | ファイル | 行数 | 状態 |
@@ -23,7 +27,7 @@
 | ゲーム | `virus-busters.html` | 1,380 | 稼働中 |
 | 情報系 | `news.html` | 763 | 稼働中 |
 | PWAデモ | `memo.html` + `sw.js` + `manifest.json` + `icons/` | 計約1,270 | index未掲載（READMEでPWAデモとして言及） |
-| **孤立** | `connection-os.html` | 808 | **どこからもリンクされていない** |
+| ~~**孤立**~~ | ~~`connection-os.html`~~ | ~~808~~ | ~~**どこからもリンクされていない**~~ **2026-07-30に削除（PR #64、`386af0d`）。復元は `git show abc39ef:connection-os.html`** |
 | ツール | `generate_icons.py` | 93 | 手動実行のみ |
 | 記録 | `logs/` | — | 作業日誌（意図的にトラッキング） |
 
@@ -42,7 +46,7 @@
    - カラーパレット（`--paper`/`--ink`/`--terracotta`）が5ファイルで重複定義
 
 3. **デッドコード・整合性の欠如**
-   - `connection-os.html`（808行）が完全に孤立
+   - ~~`connection-os.html`（808行）が完全に孤立~~ **2026-07-30に削除済み（PR #64）。以後この808行はデッドコードの計上対象外**
    - `memo.html` は index.html にも README の収録作品表にも未掲載
    - README の収録作品表（6作品）と index.html の掲載作品（9作品）が**不一致**
    - `.gitignore` がNode.js用ボイラープレート139行（本プロジェクトにnpm/webpackは無い）
