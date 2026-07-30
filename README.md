@@ -8,6 +8,7 @@
 
 | ファイル | タイトル | 概要 |
 |---|---|---|
+| `asobi.html` | おにさんダンス！ / Oni Dance Party | 赤鬼が音楽に合わせて踊る幼児向けの踊りパーティー。指でドラッグして動かし、タッチでジャンプ回転。単一HTML（PWA非対応）。 |
 | `yzrsynth/` | YZRsynth_v3.1 | 16ステップドラムシーケンサー・5音色シンセ・ルーパー搭載のiPhone向けリズムマシン（TR-909風UI）。ルートの `yzrsynth.html` `tr808.html` はリダイレクトのみ |
 | `grid/` | Grid Instrument | タッチで音が鳴るグリッド楽器。ルートの `grid.html` はリダイレクトのみ |
 | `fireworks/` | 花火 | タッチで打ち上げ花火を楽しむ。ルートの `fireworks.html` はリダイレクトのみ |
@@ -18,10 +19,12 @@
 | `metronome/` | Metronome Watch | ネオン時計型メトロノーム（16小節×4拍）。ルートの `metronome-watch.html` はリダイレクトのみ |
 | `mizu/` | Mizu | 指でなぞって描く水彩トレース。旧`grid_v2.html`は同じ作品への転送のみ |
 | `virus-busters/` | ウィルスバスターズ | iPhone向け縦持ちディフェンスゲーム（全20ステージ・図鑑50種）。ルートの `virus-busters.html` はリダイレクトのみ |
+| `bikey/index.html` | bikey / Bike Commute Action | 毎朝の通学路を自転車で駆け抜ける横スクロールアクション。日を追うごとに道が険しくなる。単一HTML（PWA非対応）。企画メモは `bikey/PLAN.md`。 |
 | `x-bookmark-logger.html` | X Bookmark Logger | Xのブックマークを自動でGitHub上のObsidian VaultにMarkdown保存するユーザースクリプト（導入ガイド + `x-bookmark-logger.user.js` / `x-bookmark-uploader.user.js`） |
 | `note-pv-logger.html` | note PV Logger | noteの全記事のビュー数をダッシュボードAPIから取得し、CSV/TSV/Markdownで書き出すユーザースクリプトの導入ガイド（`note-pv-logger.user.js` / `note-pv-md-logger.user.js`）。トークン不要 |
 | `note-pv-logger.user.js` | note PV Logger | noteのダッシュボードAPIから全記事のビュー・スキ・コメント数を取得し、CSVダウンロード/TSVコピーできるユーザースクリプト。noteにログインした状態でページ右下の「📊 PV」ボタンから使う |
 | `note-pv-md-logger.user.js` | note PV Markdown Logger | 同じくnoteの全記事ビュー数を取得し、Obsidian向けに「1スナップショット=1ファイル」のMarkdown（frontmatter付き表）としてダウンロード/コピーできるユーザースクリプト。右下の「📝 PV→MD」ボタンから使う |
+| `memo.html` | Memo / Tagged Notes | work / private のタグで仕分ける身軽なメモ帳。全文検索、タグフィルタ、ピン留め、Obsidian形式で1日単位の書き出し。ルート直下の `manifest.json` と `sw.js` でPWA対応（オフライン動作、ホーム画面追加）。 |
 | `tools/index.html` | 道具箱 / The Toolbox | ランチャーPWA。工房の電卓・装備ナビ・直し方ナビ・HDD選びナビ・自作PC構成プランナー・メモリ選びナビの6本は本体がappsへ移設済みのため `https://apps.yzrswork.com/<slug>/` へ直リンク。e-photoframe ラボと迷惑電話ブロッカーはASR固有のためフルアプリのまま掲載。Web Share共有・ホーム画面追加対応。 |
 | `bench/` | 工房の電卓 / Maker's Bench | 本体は https://apps.yzrswork.com/bench/ へ移設済み。ここはハッシュ保持型のリダイレクトのみ（旧PWAキャッシュ解除つき）。 |
 | `fixit/` | 直し方ナビ / Fix-it Navigator | 本体は https://apps.yzrswork.com/fixit/ へ移設済み（`#yahoo-mail` `#win-share` `#pc-boot` `#obsidian-sync` の直リンクもapps側で有効）。ここはハッシュ保持型のリダイレクトのみ（旧PWAキャッシュ解除つき）。 |
