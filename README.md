@@ -8,12 +8,16 @@
 
 | ファイル | タイトル | 概要 |
 |---|---|---|
-| `yzrsynth.html` | YZRsynth_v3.1 | 16ステップドラムシーケンサー・5音色シンセ・ルーパー搭載のiPhone向けリズムマシン（TR-909風UI）。旧 `tr808.html` はリダイレクトのみ |
-| `grid.html` | Grid Instrument | タッチで音が鳴るグリッド楽器 |
-| `fireworks.html` | 花火 | タッチで打ち上げ花火を楽しむ |
-| `project/index.html` | あそぼう | インタラクティブな遊び場 |
-| `news.html` | 電子工作通信 | 電子工作の記録・ニュース |
-| `virus-busters.html` | ウィルスバスターズ | iPhone向け縦持ちディフェンスゲーム（全20ステージ・図鑑50種） |
+| `yzrsynth/` | YZRsynth_v3.1 | 16ステップドラムシーケンサー・5音色シンセ・ルーパー搭載のiPhone向けリズムマシン（TR-909風UI）。ルートの `yzrsynth.html` `tr808.html` はリダイレクトのみ |
+| `grid/` | Grid Instrument | タッチで音が鳴るグリッド楽器。ルートの `grid.html` はリダイレクトのみ |
+| `fireworks/` | 花火 | タッチで打ち上げ花火を楽しむ。ルートの `fireworks.html` はリダイレクトのみ |
+| `asobou/` | あそぼう | インタラクティブな遊び場。ルートの `project/index.html` はリダイレクトのみ |
+| `news/` | 電子工作通信 | 電子工作の記録・ニュース。ルートの `news.html` はリダイレクトのみ |
+| `otamatone/` | オタマトーン WEB | しっぽのリボンをなぞって鳴らす白いオタマトーン。TR-808エフェクトとルーパー搭載。ルートの `otamatone.html` はリダイレクトのみ |
+| `prompt-forge/` | Prompt Forge | マネキン2体のキャラクターでプロンプトを生成する画像生成AI向けツール。ルートの `prompt-forge.html` はリダイレクトのみ |
+| `metronome/` | Metronome Watch | ネオン時計型メトロノーム（16小節×4拍）。ルートの `metronome-watch.html` はリダイレクトのみ |
+| `mizu/` | Mizu | 指でなぞって描く水彩トレース |
+| `virus-busters/` | ウィルスバスターズ | iPhone向け縦持ちディフェンスゲーム（全20ステージ・図鑑50種）。ルートの `virus-busters.html` はリダイレクトのみ |
 | `x-bookmark-logger.html` | X Bookmark Logger | Xのブックマークを自動でGitHub上のObsidian VaultにMarkdown保存するユーザースクリプト（導入ガイド + `x-bookmark-logger.user.js` / `x-bookmark-uploader.user.js`） |
 | `note-pv-logger.html` | note PV Logger | noteの全記事のビュー数をダッシュボードAPIから取得し、CSV/TSV/Markdownで書き出すユーザースクリプトの導入ガイド（`note-pv-logger.user.js` / `note-pv-md-logger.user.js`）。トークン不要 |
 | `note-pv-logger.user.js` | note PV Logger | noteのダッシュボードAPIから全記事のビュー・スキ・コメント数を取得し、CSVダウンロード/TSVコピーできるユーザースクリプト。noteにログインした状態でページ右下の「📊 PV」ボタンから使う |
