@@ -1,83 +1,21 @@
-const CACHE_NAME = 'fixit-v6';
-const ASSETS = [
-  './',
-  './index.html',
-  './manifest.webmanifest',
-  '../icons/icon-192.png',
-  '../icons/icon-512.png',
-  '../icons/icon-512-maskable.png'
-];
-
-// ASSETSを絶対URLに正規化したSet（fetch判定で使用）
-const FIXIT_ASSET_URLS = new Set(
-  ASSETS.map(path => new URL(path, self.location.href).href)
-);
+const CACHE_RE = /^fixit-v\d+$/;
+const RETIRED_URL = new URL('./index.html', self.registration.scope).href;
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
-  );
-  self.skipWaiting();
+  event.waitUntil(self.skipWaiting());
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
-      )
-    )
-  );
-  self.clients.claim();
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter((key) => CACHE_RE.test(key)).map((key) => caches.delete(key)));
+
+    await self.registration.unregister();
+    const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    await Promise.all(
+      windows
+        .filter((client) => client.url.startsWith(self.registration.scope))
+        .map((client) => client.navigate(RETIRED_URL))
+    );
+  })());
 });
-
-self.addEventListener('fetch', (event) => {
-  const request = event.request;
-  const url = new URL(request.url);
-
-  // クロスオリジン（Google Fonts等）は素通り
-  if (url.origin !== self.location.origin) {
-    return;
-  }
-
-  // GET以外は素通り
-  if (request.method !== 'GET') {
-    return;
-  }
-
-  // fixitアプリの既知アセット以外は素通り（他ページに介入しない）
-  if (!FIXIT_ASSET_URLS.has(url.href)) {
-    return;
-  }
-
-  // Cache First + ネットワークフォールバック
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) return cached;
-
-      return fetch(request)
-        .then((response) => {
-          if (response.ok && response.type === 'basic') {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, clone);
-            });
-          }
-          return response;
-        })
-        .catch(() => {
-          if (request.destination === 'document') {
-            return caches.match('./index.html');
-          }
-        });
-    })
-  );
-});
-
-// === キャッシュ更新ルール ===
-// index.html や manifest.webmanifest を更新したら CACHE_NAME を bump すること
-// 例: 'fixit-v1' → 'fixit-v2'
-//
-// === キャッシュ範囲 ===
-// このSWは /fixit/ スコープで、ASSETS配列に列挙された既知アセットのみキャッシュする。
-// 他ページ（memo.html, bench/ 等）には介入しない。

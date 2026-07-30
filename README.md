@@ -22,14 +22,14 @@
 | `note-pv-logger.html` | note PV Logger | noteの全記事のビュー数をダッシュボードAPIから取得し、CSV/TSV/Markdownで書き出すユーザースクリプトの導入ガイド（`note-pv-logger.user.js` / `note-pv-md-logger.user.js`）。トークン不要 |
 | `note-pv-logger.user.js` | note PV Logger | noteのダッシュボードAPIから全記事のビュー・スキ・コメント数を取得し、CSVダウンロード/TSVコピーできるユーザースクリプト。noteにログインした状態でページ右下の「📊 PV」ボタンから使う |
 | `note-pv-md-logger.user.js` | note PV Markdown Logger | 同じくnoteの全記事ビュー数を取得し、Obsidian向けに「1スナップショット=1ファイル」のMarkdown（frontmatter付き表）としてダウンロード/コピーできるユーザースクリプト。右下の「📝 PV→MD」ボタンから使う |
-| `tools/index.html` | 道具箱 / The Toolbox | 実用ツール（工房の電卓・装備ナビ・e-photoframe ラボ・直し方ナビ・HDD選びナビ・メモリ選びナビ）をまとめたランチャーPWA。各ツールへ直リンク、Web Share共有・ホーム画面追加対応。全ツールにOGP/Twitterカードを付与しnote/Xでの共有時にリッチ表示。 |
-| `bench/index.html` | 工房の電卓 / Maker's Bench | 電子工作の作業台に常駐するオフライン計算ツール集（オームの法則・LED直列抵抗・カラーコード・555タイマー・電池駆動時間・エンジニア表記パーサ）。Amazonアフィリエイト対応PWA。 |
-| `fixit/index.html` | 直し方ナビ / Fix-it Navigator | よくあるトラブルを質問に答えるだけで切り分ける対話式診断ウィザードPWA。Yahoo!メール（IMAP/SMTP遮断）・Windows11 24H2共有フォルダ・自作PCのビープ音／起動不良・iPhone版Obsidian同期の4件を収録。note記事から `#yahoo-mail` `#win-share` `#pc-boot` `#obsidian-sync` で直リンク可。オフライン対応・Amazonアフィリエイト対応。 |
-| `kit/index.html` | 装備ナビ / Maker's Starter Kit | 電子工作の工具・部品ストックをステップ別にチェックし、Amazonの買い物リストに集約するPWA。「持ってる」消し込み・調達先ガイド（Amazon/AliExpress/秋月千石/aitendo）つき。note「電子工作部品の話」vol.1〜3の選定がベース。オフライン対応・Amazonアフィリエイト対応。 |
-| `lab/index.html` | e-photoframe ラボ / Modules & Power Planner | e-photoframeシリーズで使ったモジュール（ZN02B/TM1637/XY-WRBT/HW-104/Digispark/TP4056/SPL-2等）の図鑑と、5V単一電源（PDB-1構成）の配電プランナーを2タブで収録するPWA。消費電流を積み上げてACアダプタ容量・ポート数の余裕を確認。各モジュールは出典note記事つき。オフライン対応・Amazonアフィリエイト対応。 |
-| `hdd/index.html` | HDD選びナビ / WD Color & CMR/SMR | Western DigitalのHDDを用途から色（Blue/Red Plus/Red/Purple/Black）で選び、CMR/SMRをシリーズ別早見と型番末尾チェッカー（EFPX/EFZX/EFRX/EFAX/EARZ/EZAZ/EZBX）で判定するPWA。RAID/NASにSMRを避けるための注意つき。note「WDの色の選び方ガイド」＋最新公式情報がベース。オフライン対応・Amazonアフィリエイト対応。 |
-| `build/index.html` | 自作PC 構成プランナー / PC Build Planner | CPUソケット→DDR規格、用途→RAM容量、ストレージ用途、GPUクラス→電源容量の目安を順に選んで構成サマリーと買い物リンクを出すPWA。LGA1700のDDR分岐・RTX50系の新コネクタ注意・組み立て/初回起動チェックリストつき。HDD選び/メモリ選び/起動診断へ相互リンク。オフライン対応・Amazonアフィリエイト対応。 |
-| `mem/index.html` | メモリ選びナビ / DDR Spec & Capacity | 自作PCのメモリを、ソケット（AM5/AM4/LGA1700/LGA1851）からDDR規格を確認し、用途から容量を選び、2枚構成（デュアルチャネル）で組むための選び方PWA。XMP/EXPO・JEDEC定格・ノッチ非互換の注意つき。note「DDR3〜DDR5の話」＋2026年の最新ソケット対応がベース。オフライン対応・Amazonアフィリエイト対応。 |
+| `tools/index.html` | 道具箱 / The Toolbox | ランチャーPWA。工房の電卓・装備ナビ・直し方ナビ・HDD選びナビ・自作PC構成プランナー・メモリ選びナビの6本は本体がappsへ移設済みのため `https://apps.yzrswork.com/<slug>/` へ直リンク。e-photoframe ラボと迷惑電話ブロッカーはASR固有のためフルアプリのまま掲載。Web Share共有・ホーム画面追加対応。 |
+| `bench/` | 工房の電卓 / Maker's Bench | 本体は https://apps.yzrswork.com/bench/ へ移設済み。ここはハッシュ保持型のリダイレクトのみ（旧PWAキャッシュ解除つき）。 |
+| `fixit/` | 直し方ナビ / Fix-it Navigator | 本体は https://apps.yzrswork.com/fixit/ へ移設済み（`#yahoo-mail` `#win-share` `#pc-boot` `#obsidian-sync` の直リンクもapps側で有効）。ここはハッシュ保持型のリダイレクトのみ（旧PWAキャッシュ解除つき）。 |
+| `kit/` | 装備ナビ / Maker's Starter Kit | 本体は https://apps.yzrswork.com/kit/ へ移設済み。ここはハッシュ保持型のリダイレクトのみ（旧PWAキャッシュ解除つき）。 |
+| `lab/index.html` | e-photoframe ラボ / Modules & Power Planner | e-photoframeシリーズで使ったモジュール（ZN02B/TM1637/XY-WRBT/HW-104/Digispark/TP4056/SPL-2等）の図鑑と、5V単一電源（PDB-1構成）の配電プランナーを2タブで収録するPWA。消費電流を積み上げてACアダプタ容量・ポート数の余裕を確認。各モジュールは出典note記事つき。オフライン対応・Amazonアフィリエイト対応。ASR固有のためフルアプリのまま。 |
+| `hdd/` | HDD選びナビ / WD Color & CMR/SMR | 本体は https://apps.yzrswork.com/hdd/ へ移設済み。ここはハッシュ保持型のリダイレクトのみ（旧PWAキャッシュ解除つき）。 |
+| `build/` | 自作PC 構成プランナー / PC Build Planner | 本体は https://apps.yzrswork.com/build/ へ移設済み。ここはハッシュ保持型のリダイレクトのみ（旧PWAキャッシュ解除つき）。 |
+| `mem/` | メモリ選びナビ / DDR Spec & Capacity | 本体は https://apps.yzrswork.com/mem/ へ移設済み。ここはハッシュ保持型のリダイレクトのみ（旧PWAキャッシュ解除つき）。 |
 | `jitsumu450/index.html` | 実務メーター450 / Surveyor Hours Recorder | 測量士登録申請（測量法第50条第3号、450日）に向けた実務時間の現場記録PWA。案件IDと実務時間をタップ記録、8時間=1日換算の達成メーター、判定チートシート、Obsidian実務記録テンプレ準拠のMarkdown/TSV書き出し。データは端末のlocalStorageのみ。オフライン対応。 |
 | `bousai/index.html` | 家族防災カード / Family Disaster Card | 家族の防災ポケットカードPWA。発災直後の初動3か条、時間帯別タイムライン（0-10分/1時間/24時間/1週間）、持ち出し・停電・断水チェックリスト、171安否確認の手順、避難訓練の実施記録と期限アラート。集合場所などの家族情報は各端末で入力（アプリにデータは含まない）。オフライン対応。 |
 
