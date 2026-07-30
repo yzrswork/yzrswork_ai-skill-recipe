@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tools-v5';
+const CACHE_NAME = 'tools-v6';
 const ASSETS = [
   './',
   './index.html',
@@ -24,7 +24,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
-        keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
+        keys.filter((k) => k.startsWith('tools-') && k !== CACHE_NAME).map((k) => caches.delete(k))
       )
     )
   );

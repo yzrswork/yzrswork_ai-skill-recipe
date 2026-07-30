@@ -16,7 +16,7 @@
 | `otamatone/` | オタマトーン WEB | しっぽのリボンをなぞって鳴らす白いオタマトーン。TR-808エフェクトとルーパー搭載。ルートの `otamatone.html` はリダイレクトのみ |
 | `prompt-forge/` | Prompt Forge | マネキン2体のキャラクターでプロンプトを生成する画像生成AI向けツール。ルートの `prompt-forge.html` はリダイレクトのみ |
 | `metronome/` | Metronome Watch | ネオン時計型メトロノーム（16小節×4拍）。ルートの `metronome-watch.html` はリダイレクトのみ |
-| `mizu/` | Mizu | 指でなぞって描く水彩トレース |
+| `mizu/` | Mizu | 指でなぞって描く水彩トレース。旧`grid_v2.html`は同じ作品への転送のみ |
 | `virus-busters/` | ウィルスバスターズ | iPhone向け縦持ちディフェンスゲーム（全20ステージ・図鑑50種）。ルートの `virus-busters.html` はリダイレクトのみ |
 | `x-bookmark-logger.html` | X Bookmark Logger | Xのブックマークを自動でGitHub上のObsidian VaultにMarkdown保存するユーザースクリプト（導入ガイド + `x-bookmark-logger.user.js` / `x-bookmark-uploader.user.js`） |
 | `note-pv-logger.html` | note PV Logger | noteの全記事のビュー数をダッシュボードAPIから取得し、CSV/TSV/Markdownで書き出すユーザースクリプトの導入ガイド（`note-pv-logger.user.js` / `note-pv-md-logger.user.js`）。トークン不要 |
