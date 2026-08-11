@@ -6,8 +6,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="theme-color" content="#0d0a12" />
-<title>ピノくん — PINO-KUN</title>
+<title>ピノくん</title>
 <meta name="description" content="ピノくんが「はり」を取って敵を食べ返すドットイートアクション。スワイプでも十字キーでも遊べるiPhone向けWebゲーム。" />
+<meta name="apple-mobile-web-app-title" content="ピノくん" />
+<link rel="apple-touch-icon" href="../icons/icon-192.png" />
+<link rel="apple-touch-icon" sizes="192x192" href="../icons/icon-192.png" />
+<link rel="apple-touch-icon" sizes="512x512" href="../icons/icon-512.png" />
 <link rel="manifest" href="./manifest.json" />
 <link rel="stylesheet" href="../shared/tokens.css" />
 <style>
@@ -22,12 +26,14 @@
     --jp:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  html,body{margin:0;padding:0;height:100%;overflow:hidden;background:var(--bg);}
+  html,body{margin:0;padding:0;overflow:hidden;background:var(--bg);}
+  /* iOS Safari のアドレスバー出し入れで高さが変わるため、実測値(--app-h)を優先して使う */
   body{
     font-family:var(--jp); color:var(--cream);
-    touch-action:none; user-select:none; -webkit-user-select:none;
+    touch-action:manipulation; user-select:none; -webkit-user-select:none;
     display:flex; align-items:center; justify-content:center;
-    width:100vw; height:100vh; height:100dvh;
+    position:fixed; top:0; left:0; width:100%;
+    height:100vh; height:100dvh; height:var(--app-h, 100dvh);
   }
 
   #app{
@@ -41,6 +47,7 @@
   #hud{
     flex:0 0 auto; display:flex; align-items:center; gap:8px;
     padding:4px 6px 8px; font-size:12px; letter-spacing:.06em;
+    touch-action:none;
   }
   #hud .cell{display:flex; flex-direction:column; gap:2px; line-height:1;}
   #hud .k{font-size:9px; color:#8f86a8; letter-spacing:.18em;}
@@ -73,6 +80,7 @@
     position:relative; flex:1 1 auto; min-height:0;
     display:flex; align-items:center; justify-content:center;
   }
+  /* 盤面はスクロール・拡大させない。オーバーレイ側は縦スクロールを許す */
   #cv{
     display:block; border-radius:12px; background:#08060d;
     box-shadow:0 0 0 1px rgba(95,208,255,.18), 0 10px 40px rgba(0,0,0,.6);
@@ -81,10 +89,10 @@
 
   /* ── 画面オーバーレイ ──────────────────────────── */
   .screen{
-    position:absolute; inset:0; display:none;
+    position:absolute; top:0; right:0; bottom:0; left:0; display:none;
     flex-direction:column; align-items:center; justify-content:flex-start;
     padding:10px; text-align:center; overflow-y:auto; -webkit-overflow-scrolling:touch;
-    overscroll-behavior:contain;
+    overscroll-behavior:contain; touch-action:pan-y;
   }
   .screen.on{display:flex;}
   .screen.dim{background:rgba(8,6,13,.82);}
@@ -94,7 +102,7 @@
     width:100%;
     background:linear-gradient(180deg, rgba(38,26,20,.94), rgba(24,15,12,.96));
     border:2.5px solid var(--gold-deep); border-radius:14px;
-    padding:14px; margin:5px 0;
+    padding:14px; margin:4px 0;
     box-shadow:0 6px 0 rgba(0,0,0,.45), inset 0 0 0 1.5px rgba(240,178,60,.22);
   }
   h1.title{
@@ -105,7 +113,7 @@
   .subtitle{
     margin-top:8px; font-size:11px; letter-spacing:.34em; color:var(--enemy-2);
   }
-  .lede{margin:10px 0 0; font-size:12.5px; line-height:1.75; color:#e8d9c3;}
+  .lede{margin:8px 0 0; font-size:12.5px; line-height:1.75; color:#e8d9c3;}
   h2.hl{
     margin:0 0 9px; font-size:14px; letter-spacing:.1em; color:var(--gold);
   }
@@ -141,7 +149,7 @@
   .how{margin:0; padding:0; list-style:none; text-align:left;}
   .how li{
     display:flex; gap:9px; align-items:center;
-    padding:7px 0; border-top:1px solid rgba(240,178,60,.18);
+    padding:6px 0; border-top:1px solid rgba(240,178,60,.18);
     font-size:12px; line-height:1.55; color:#e8d9c3;
   }
   .how li:first-child{border-top:0;}
@@ -182,7 +190,7 @@
     display:inline-block; margin-top:8px; padding:4px 12px; border-radius:99px;
     background:var(--gold); color:#2a1708; font-size:12px; font-weight:800; letter-spacing:.1em;
   }
-  .foot{margin-top:12px; font-size:10px; letter-spacing:.16em; color:#6e6483;}
+  .foot{margin-top:10px; font-size:10px; letter-spacing:.16em; color:#6e6483;}
   .foot a{color:#8f86a8;}
 
   /* READY / カウントダウン。操作を邪魔しないよう透過させる */
@@ -217,7 +225,7 @@
     display:grid; grid-template-columns:repeat(3, 72px); grid-template-rows:repeat(3, 62px); gap:6px;
   }
   .dpad button{
-    border-radius:12px; cursor:pointer; color:var(--cream); font-size:20px;
+    border-radius:12px; cursor:pointer; color:var(--cream); font-size:20px; touch-action:none;
     background:linear-gradient(180deg, rgba(255,233,201,.13), rgba(255,233,201,.05));
     border:1.5px solid rgba(255,233,201,.26);
     display:flex; align-items:center; justify-content:center;
@@ -235,6 +243,23 @@
     .dpad{grid-template-columns:repeat(3, 58px); grid-template-rows:repeat(3, 46px);}
     .lede{font-size:11.5px;}
     h1.title{font-size:clamp(32px,11vw,52px);}
+  }
+
+  /* iPhoneを横向きにしたとき。盤面は縦幅で決まるので、余る横のすき間に十字キーを逃がす */
+  @media (orientation:landscape) and (max-height:560px){
+    #app{max-width:none; padding-left:calc(env(safe-area-inset-left) + 8px);
+         padding-right:calc(env(safe-area-inset-right) + 8px);}
+    #hud{padding-bottom:4px;}
+    #pad{
+      position:absolute; right:calc(env(safe-area-inset-right) + 10px); bottom:10px;
+      padding:0; z-index:6;
+    }
+    .dpad{grid-template-columns:repeat(3, 54px); grid-template-rows:repeat(3, 42px); gap:5px;}
+    .screen{padding:6px;}
+    .panel{padding:10px 12px; margin:4px 0;}
+    h1.title{font-size:36px;}
+    .lede{font-size:11px; line-height:1.6;}
+    .how li{padding:5px 0; font-size:11px;}
   }
 </style>
 </head>
@@ -301,7 +326,10 @@
               </ul>
             </div>
           </details>
-          <p class="foot">とちゅうでやめたいときは右上の ❚❚ から</p>
+          <p class="foot">
+            とちゅうでやめたいときは右上の ❚❚ から<br />
+            iPhoneで音が出ないときは本体のサイレントスイッチを確認
+          </p>
         </div>
       </div>
     </div>
@@ -1665,6 +1693,19 @@ el.stage.addEventListener('touchmove', (e) => {
 }, { passive: false });
 el.stage.addEventListener('touchend', () => { touchStart = null; }, { passive: true });
 
+/* iOS Safari 対策：ピンチ拡大とダブルタップ拡大、ページのゴムスクロールを止める。
+   ただし説明パネル（.screen）の縦スクロールだけは通す。 */
+for (const type of ['gesturestart', 'gesturechange', 'gestureend']) {
+  document.addEventListener(type, (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+}
+document.addEventListener('touchmove', (e) => {
+  if (e.touches.length > 1) { if (e.cancelable) e.preventDefault(); return; }
+  const t = e.target;
+  if (t && t.closest && t.closest('.screen.on')) return;
+  if (e.cancelable) e.preventDefault();
+}, { passive: false });
+document.addEventListener('dblclick', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+
 // 十字キー
 for (const b of document.querySelectorAll('.dpad button')) {
   const fire = (e) => {
@@ -1714,8 +1755,16 @@ document.addEventListener('visibilitychange', () => {
 
 /* ============================================================
    表示サイズ
+   iOS Safari はアドレスバーの出し入れで 100vh が実際の表示領域と
+   ずれるため、innerHeight の実測値を CSS 変数に流し込んで使う。
    ============================================================ */
+function setAppHeight() {
+  const h = Math.round(window.innerHeight);
+  if (h > 0) document.documentElement.style.setProperty('--app-h', h + 'px');
+}
+
 function resize() {
+  setAppHeight();
   const box = el.stage.getBoundingClientRect();
   const availW = Math.max(120, box.width), availH = Math.max(120, box.height);
   const scale = Math.min(availW / W, availH / H);
@@ -1730,7 +1779,9 @@ function resize() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 addEventListener('resize', resize);
-addEventListener('orientationchange', () => setTimeout(resize, 250));
+addEventListener('orientationchange', () => { resize(); setTimeout(resize, 250); setTimeout(resize, 600); });
+addEventListener('pageshow', resize);
+if (window.visualViewport) window.visualViewport.addEventListener('resize', resize);
 
 /* ============================================================
    メインループ

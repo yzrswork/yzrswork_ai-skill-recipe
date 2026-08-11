@@ -20,7 +20,7 @@
 | `mizu/` | Mizu | 指でなぞって描く水彩トレース。旧`grid_v2.html`は同じ作品への転送のみ |
 | `virus-busters/` | ウィルスバスターズ | iPhone向け縦持ちディフェンスゲーム（全20ステージ・図鑑50種）。ルートの `virus-busters.html` はリダイレクトのみ |
 | `bikey/index.html` | bikey / Bike Commute Action | 毎朝の通学路を自転車で駆け抜ける横スクロールアクション。日を追うごとに道が険しくなる。単一HTML（PWA非対応）。企画メモは `bikey/PLAN.md`。 |
-| `pinokun/` | ピノくん / Pino-kun | 茶色いチョコの主人公ピノくんが、赤ベース配色の敵4体から逃げる iPhone向け縦持ちドットイートアクション。四隅の「はり」を取ったあいだだけピノが金色に発光し（衝撃波・火花・オーラ・残像の演出つき）敵を食べ返せる。スタート画面で難易度3段階・音・十字キーを選択、スワイプ／十字キー／矢印キー操作、ポーズとハイスコア保存に対応。オフライン対応。 |
+| `pinokun/` | ピノくん / Pino-kun | 茶色いチョコの主人公ピノくんが、赤ベース配色の敵4体から逃げる iPhone向け縦持ちドットイートアクション。四隅の「はり」を取ったあいだだけピノが金色に発光し（衝撃波・火花・オーラ・残像の演出つき）敵を食べ返せる。スタート画面で難易度3段階・音・十字キーを選択、スワイプ／十字キー／矢印キー操作、ポーズとハイスコア保存に対応。iPhone Safariファースト（`innerHeight` 実測でアドレスバーの高さ変動に追従、ダブルタップ／ピンチ拡大とゴムスクロールを抑止、セーフエリア対応、横向きでは十字キーを盤面横の余白へ退避）。ホーム画面追加・オフライン対応。 |
 | `x-bookmark-logger.html` | X Bookmark Logger | Xのブックマークを自動でGitHub上のObsidian VaultにMarkdown保存するユーザースクリプト（導入ガイド + `x-bookmark-logger.user.js` / `x-bookmark-uploader.user.js`） |
 | `note-pv-logger.html` | note PV Logger | noteの全記事のビュー数をダッシュボードAPIから取得し、CSV/TSV/Markdownで書き出すユーザースクリプトの導入ガイド（`note-pv-logger.user.js` / `note-pv-md-logger.user.js`）。トークン不要 |
 | `note-pv-logger.user.js` | note PV Logger | noteのダッシュボードAPIから全記事のビュー・スキ・コメント数を取得し、CSVダウンロード/TSVコピーできるユーザースクリプト。noteにログインした状態でページ右下の「📊 PV」ボタンから使う |
