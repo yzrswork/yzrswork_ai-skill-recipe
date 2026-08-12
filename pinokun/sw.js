@@ -1,4 +1,4 @@
-const CACHE = 'yapps-pinokun-v3';
+const CACHE = 'yapps-pinokun-v4';
 const ASSETS = ['./', './index.html', './manifest.json', '../shared/tokens.css'];
 
 self.addEventListener('install', (e) => {

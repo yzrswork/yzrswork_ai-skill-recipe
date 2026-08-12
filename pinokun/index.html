@@ -72,6 +72,9 @@
     background:linear-gradient(90deg, var(--gold), #fff6d8, var(--gold));
     box-shadow:0 0 12px var(--pino-glow);
   }
+  #power-bar.urgent{height:8px; padding:1px; background:rgba(255,233,201,.18);}
+  #power-bar.urgent #power-fill{animation:powerPulse .8s ease-in-out infinite;}
+  @keyframes powerPulse{0%,100%{filter:brightness(1); transform:scaleY(1)}50%{filter:brightness(1.35); transform:scaleY(1.18)}}
 
   /* ── ステージ ───────────────────────────────────── */
   #stage{
@@ -199,6 +202,9 @@
     text-shadow:0 0 30px rgba(199,211,245,.6);
     animation:pop .5s ease-out;
   }
+  #sc-ready .room-intro{margin-top:14px; max-width:88%; color:#fff6d8; text-shadow:0 2px 8px rgba(0,0,0,.45);}
+  #sc-ready .room-intro .room-name{font-size:clamp(23px,7vw,34px); font-weight:900; letter-spacing:.12em; color:var(--gold);}
+  #sc-ready .room-intro .room-note{margin-top:5px; font-size:12px; line-height:1.5; color:#e8d9c3;}
   @keyframes pop{from{transform:scale(1.9); opacity:0;} to{transform:scale(1); opacity:1;}}
 
   /* トースト（獲得アイテムの案内） */
@@ -411,6 +417,10 @@
 
     <!-- READY -->
     <div class="screen" id="sc-ready">
+      <div class="room-intro" aria-live="polite">
+        <div class="room-name" id="ready-room-name">リビング</div>
+        <div class="room-note" id="ready-room-note">ぴの君をうごかして、棒をさがそう</div>
+      </div>
       <div class="count" id="ready-text">3</div>
     </div>
 
@@ -538,6 +548,7 @@ const clampNum = (v, a, b) => (v < a ? a : (v > b ? b : v));
 const ROOMS = [
   { // 0: リビング
     name:'リビング',
+    gimmick:'basic', note:'ぴの君をうごかして、棒をさがそう',
     wallA:'#f5e6c8', wallB:'#ecd8ae', frameFill:'#fff8ea', frameLine:'#6b4426',
     floorPattern:'planks', floorA:'#c9955a', floorB:'#b47f45',
     furniture:[
@@ -548,6 +559,7 @@ const ROOMS = [
   },
   { // 1: キッチン
     name:'キッチン',
+    gimmick:'slippery', note:'床がすこしすべるよ。ゆっくり曲がろう',
     wallA:'#f7ecc4', wallB:'#f0dfa2', frameFill:'#fffaf0', frameLine:'#5c4023',
     floorPattern:'tiles', floorA:'#d8c9a4', floorB:'#c4b189',
     furniture:[
@@ -558,6 +570,7 @@ const ROOMS = [
   },
   { // 2: こどもべや
     name:'こどもべや',
+    gimmick:'toy', note:'うごくおもちゃに気をつけよう',
     wallA:'#eaf5ea', wallB:'#d9ecd8', frameFill:'#fbfff6', frameLine:'#3d6b4a',
     floorPattern:'rug', floorA:'#f0c9d4', floorB:'#e3aebd',
     furniture:[
@@ -568,6 +581,7 @@ const ROOMS = [
   },
   { // 3: おふろば
     name:'おふろば',
+    gimmick:'steam', note:'ゆげの向こうにも、敵がいるかも',
     wallA:'#def0f2', wallB:'#c9e6ea', frameFill:'#f2fdff', frameLine:'#25596b',
     floorPattern:'tiles2', floorA:'#a9c9d9', floorB:'#8fb4c7',
     furniture:[
@@ -614,7 +628,7 @@ const el = {
   uiDefeat: $('ui-defeat'), uiPino: $('ui-pino'),
   btnSettings: $('btn-settings'), btnPause: $('btn-pause'),
   powerBar: $('power-bar'), powerFill: $('power-fill'), toast: $('toast'),
-  readyText: $('ready-text'),
+  readyText: $('ready-text'), readyRoomName: $('ready-room-name'), readyRoomNote: $('ready-room-note'),
   homePinoCount: $('home-pino-count'), gachaProgressHome: $('gacha-progress-home'),
   gachaHintHome: $('gacha-hint-home'), collectionCount: $('collection-count'),
   collectionGrid: $('collection-grid'),
@@ -694,6 +708,7 @@ const audio = {
   stickGet() { this.tone(520, 0.14, 'triangle', 0.1, 1150); setTimeout(() => this.tone(880, 0.22, 'triangle', 0.09, 1600), 90); },
   defeat() { this.tone(300, 0.16, 'sawtooth', 0.09, 950); },
   fallCollect() { [660, 880, 1180].forEach((f, i) => setTimeout(() => this.tone(f, 0.12, 'triangle', 0.09), i * 70)); },
+  powerWarn() { this.tone(420, 0.11, 'sine', 0.055, 360); setTimeout(() => this.tone(360, 0.1, 'sine', 0.045, 300), 120); },
   hit() { this.tone(440, 0.7, 'sawtooth', 0.1, 60); },
   fanfare() { [523, 659, 784, 1046, 1318, 1568].forEach((f, i) => setTimeout(() => this.tone(f, 0.18, 'square', 0.09), i * 120)); },
   shield() { this.tone(220, 0.3, 'sine', 0.1, 520); },
@@ -710,11 +725,11 @@ const game = {
   state: S.HOME, stateT: 0, t: 0,
   diff: DIFF[save.diff] || DIFF.normal,
   room: ROOMS[save.totalClears % ROOMS.length],
-  pino: null, enemies: [], stick: null, stickTimer: null,
+  pino: null, enemies: [], stick: null, stickTimer: null, toy: null,
   fallItem: null, fallTimer: 8,
   defeatedCount: 0, spawnedCount: 0, spawnSchedule: [],
   sessionPino: 0, barrierUsed: false, invulnT: 0,
-  shake: 0, readyStep: 3,
+  shake: 0, readyStep: 3, freezeT: 0,
   clearReward: 0, clearDefeats: 0, clearPino: 0,
 };
 
@@ -723,9 +738,15 @@ const CONFETTI_COLORS = ['#ffd97a', '#ff9fb0', '#9fe0ff', '#b6f29c', '#fff6d8'];
 
 function arenaCenter() { return { x: (ARENA.x0 + ARENA.x1) / 2, y: (ARENA.y0 + ARENA.y1) / 2 }; }
 function makePino() {
-  const c = arenaCenter();
+  // 部屋ごとの家具配置が異なるため、固定の中央座標は使わない。
+  // findFreePoint は家具・壁・移動おもちゃ・既存敵を有限試行し、
+  // 候補探索へフォールバックする安全な生成地点を返す。
+  const c = (game.room && typeof findFreePoint === 'function')
+    ? findFreePoint(PINO_R, null, 0)
+    : arenaCenter();
   return { x:c.x, y:c.y, vx:0, vy:0, dirx:0, diry:1, moving:false, bobPhase:0,
-           powered:false, powerT:0, powerMax:0, celebrate:0 };
+           idlePhase:Math.random() * Math.PI * 2, powered:false, powerT:0, powerMax:0,
+           powerWarningPlayed:false, celebrate:0 };
 }
 
 /* ============================================================
@@ -760,12 +781,36 @@ function resolveObstacles(ent, r) {
       ent.y += (dy / d) * (r - d);
     }
   }
+  // こどもべやのおもちゃは、ゆっくり動く円形の障害物。重なったら
+  // 最短方向へ押し出すだけにして、プレイヤーを閉じ込めない。
+  if (game.toy && game.room && game.room.gimmick === 'toy') {
+    const dx = ent.x - game.toy.x, dy = ent.y - game.toy.y;
+    const minD = r + game.toy.r;
+    const d2 = dx * dx + dy * dy;
+    if (d2 < minD * minD) {
+      const d = Math.sqrt(d2) || 1;
+      ent.x = game.toy.x + (dx / d) * minD;
+      ent.y = game.toy.y + (dy / d) * minD;
+    }
+  }
 }
 function collidesFurniture(x, y, r) {
   for (const f of game.room.furniture) {
     const cx = clampNum(x, f.x, f.x + f.w), cy = clampNum(y, f.y, f.y + f.h);
     const dx = x - cx, dy = y - cy;
     if (dx * dx + dy * dy < (r + 6) * (r + 6)) return true;
+  }
+  if (game.toy && game.room && game.room.gimmick === 'toy') {
+    const dx = x - game.toy.x, dy = y - game.toy.y;
+    const rr = r + game.toy.r + 4;
+    if (dx * dx + dy * dy < rr * rr) return true;
+  }
+  return false;
+}
+function collidesActors(x, y, r, avoidPt, avoidDist) {
+  if (avoidPt && Math.hypot(x - avoidPt.x, y - avoidPt.y) < avoidDist + r) return true;
+  for (const e of game.enemies || []) {
+    if (Math.hypot(x - e.x, y - e.y) < r + ENEMY_R + 10) return true;
   }
   return false;
 }
@@ -777,22 +822,49 @@ function randomArenaPoint(r) {
   };
 }
 function findFreePoint(r, avoidPt, avoidDist) {
-  for (let i = 0; i < 24; i++) {
+  // 乱数だけに任せない有限試行。特に部屋の家具が多い端では、
+  // 安全地点を見つけられないまま内部へ湧くことがあった。
+  for (let i = 0; i < 48; i++) {
     const p = randomArenaPoint(r);
     if (collidesFurniture(p.x, p.y, r)) continue;
-    if (avoidPt) { const dx = p.x - avoidPt.x, dy = p.y - avoidPt.y; if (dx * dx + dy * dy < avoidDist * avoidDist) continue; }
+    if (collidesActors(p.x, p.y, r, avoidPt, avoidDist)) continue;
     return p;
   }
-  return randomArenaPoint(r);
+  const margin = BORDER + r + 6;
+  const candidates = [
+    { x:ARENA.x0 + margin, y:ARENA.y0 + margin },
+    { x:ARENA.x1 - margin, y:ARENA.y0 + margin },
+    { x:ARENA.x0 + margin, y:ARENA.y1 - margin },
+    { x:ARENA.x1 - margin, y:ARENA.y1 - margin },
+    arenaCenter(),
+  ];
+  for (const p of candidates) {
+    if (collidesFurniture(p.x, p.y, r)) continue;
+    if (collidesActors(p.x, p.y, r, avoidPt, avoidDist)) continue;
+    return p;
+  }
+  for (let y = ARENA.y0 + margin; y <= ARENA.y1 - margin; y += 36) {
+    for (let x = ARENA.x0 + margin; x <= ARENA.x1 - margin; x += 36) {
+      if (!collidesFurniture(x, y, r) && !collidesActors(x, y, r, avoidPt, avoidDist)) return { x, y };
+    }
+  }
+  // 全候補が塞がる異常時も、アリーナ内の既知の中心へ戻す。
+  // 呼び出し側で即死しないことを優先する安全弁。
+  const c = arenaCenter();
+  return { x:clampNum(c.x, ARENA.x0 + margin, ARENA.x1 - margin), y:clampNum(c.y, ARENA.y0 + margin, ARENA.y1 - margin) };
 }
 function pickEdgePoint() {
   const margin = BORDER + ENEMY_R + 2;
   const x0 = ARENA.x0 + margin, x1 = ARENA.x1 - margin, y0 = ARENA.y0 + margin, y1 = ARENA.y1 - margin;
-  const edge = (Math.random() * 4) | 0;
-  if (edge === 0) return { x: x0 + Math.random() * (x1 - x0), y: y0 };
-  if (edge === 1) return { x: x0 + Math.random() * (x1 - x0), y: y1 };
-  if (edge === 2) return { x: x0, y: y0 + Math.random() * (y1 - y0) };
-  return { x: x1, y: y0 + Math.random() * (y1 - y0) };
+  for (let i = 0; i < 24; i++) {
+    const edge = (Math.random() * 4) | 0;
+    const p = edge === 0 ? { x:x0 + Math.random() * (x1 - x0), y:y0 }
+      : edge === 1 ? { x:x0 + Math.random() * (x1 - x0), y:y1 }
+      : edge === 2 ? { x:x0, y:y0 + Math.random() * (y1 - y0) }
+      : { x:x1, y:y0 + Math.random() * (y1 - y0) };
+    if (!collidesFurniture(p.x, p.y, ENEMY_R) && !collidesActors(p.x, p.y, ENEMY_R, game.pino, 110)) return p;
+  }
+  return findFreePoint(ENEMY_R, game.pino, 110);
 }
 
 /* ============================================================
@@ -839,7 +911,14 @@ function getInputVector() {
 addEventListener('keydown', (e) => {
   const k = e.key.toLowerCase();
   if (KEYMAP[k]) { e.preventDefault(); keys.add(KEYMAP[k]); return; }
-  if (k === ' ' || k === 'enter') { e.preventDefault(); handleConfirmKey(); return; }
+  if (k === ' ' || k === 'enter') {
+    // ボタンや入力欄にフォーカスがあるときはブラウザの標準操作を優先。
+    // ここで横取りすると、ガチャ・設定・確認ボタンが二重実行される。
+    const target = e.target;
+    const interactive = target && target.closest && target.closest('button, input, select, textarea, a, [role="button"]');
+    if (interactive) return;
+    e.preventDefault(); handleConfirmKey(); return;
+  }
   if (k === 'p' || k === 'escape') { togglePause(); }
 });
 addEventListener('keyup', (e) => {
@@ -912,7 +991,7 @@ for (const b of document.querySelectorAll('.dpad button[data-dir]')) bindPadButt
 let enemySeq = 0;
 function spawnEnemy() {
   const p = pickEdgePoint();
-  game.enemies.push({ x:p.x, y:p.y, vx:0, vy:0, frozenT:0, state:'chase', spawnFx:0.5, id:enemySeq++, wobble:Math.random() * 10 });
+  game.enemies.push({ x:p.x, y:p.y, vx:0, vy:0, frozenT:0, state:'chase', surpriseT:0, spawnFx:0.5, id:enemySeq++, wobble:Math.random() * 10 });
   game.spawnedCount++;
   fx.rings.push({ x:p.x, y:p.y, rad:2, max:30, life:0.5, mx:0.5, color:'#ffffff', width:2, delay:0 });
 }
@@ -925,9 +1004,21 @@ function maintainEnemies(dt) {
     }
   }
 }
+function updateToy(dt) {
+  if (!game.toy || !game.room || game.room.gimmick !== 'toy') return;
+  game.toy.phase += dt * 1.35;
+  // 家具にぶつからない、横一列の短い巡回。進路を予告できる速度にする。
+  game.toy.x = 250 + Math.sin(game.toy.phase) * 72;
+  game.toy.y = 382 + Math.sin(game.toy.phase * 0.5) * 8;
+}
 function updateEnemy(e, dt) {
   if (e.spawnFx > 0) e.spawnFx = Math.max(0, e.spawnFx - dt);
   if (e.frozenT > 0) { e.frozenT = Math.max(0, e.frozenT - dt); e.vx = 0; e.vy = 0; e.state = 'frozen'; return; }
+  if (e.surpriseT > 0) {
+    e.surpriseT = Math.max(0, e.surpriseT - dt);
+    e.vx = 0; e.vy = 0; e.state = 'surprise';
+    return;
+  }
   const p = game.pino;
   const fleeing = p.powered;
   const spd = fleeing ? game.diff.enemySpd * FLEE_MUL : game.diff.enemySpd;
@@ -974,7 +1065,10 @@ function takeStick() {
   game.pino.powered = true;
   game.pino.powerMax = powerDuration();
   game.pino.powerT = game.pino.powerMax;
+  game.pino.powerWarningPlayed = false;
   game.stickTimer = game.diff.stickRespawn;
+  game.freezeT = 0.13;
+  for (const e of game.enemies) { e.surpriseT = 0.38; e.state = 'surprise'; }
   audio.stickGet();
   toast('アイスの棒！ いまなら敵をたおせる');
   fx.flash = 1; game.shake = Math.max(game.shake, 0.3);
@@ -1052,11 +1146,24 @@ function updatePino(dt) {
   const p = game.pino;
   const iv = getInputVector();
   const spd = pinoSpeed();
+  const slippery = game.room && game.room.gimmick === 'slippery';
   if (iv.x || iv.y) {
-    p.vx = iv.x * spd; p.vy = iv.y * spd; p.moving = true;
+    if (slippery) {
+      // キッチンだけ、目標速度へ少し遅れて追いつく。入力はそのままなので
+      // 子どもが「少しすべる」と感じる程度で、操作不能にはしない。
+      p.vx += (iv.x * spd - p.vx) * Math.min(1, dt * 8);
+      p.vy += (iv.y * spd - p.vy) * Math.min(1, dt * 8);
+    } else {
+      p.vx = iv.x * spd; p.vy = iv.y * spd;
+    }
+    p.moving = true;
     p.dirx = iv.x; p.diry = iv.y;
     p.bobPhase += dt * 10;
+  } else if (slippery) {
+    p.vx *= Math.max(0, 1 - dt * 7.5); p.vy *= Math.max(0, 1 - dt * 7.5);
+    p.moving = Math.hypot(p.vx, p.vy) > 8;
   } else { p.vx = 0; p.vy = 0; p.moving = false; }
+  p.idlePhase += dt * (p.moving ? 1.6 : 0.8);
   p.x += p.vx * dt; p.y += p.vy * dt;
   resolveObstacles(p, PINO_R);
   clampToArena(p, PINO_R);
@@ -1087,13 +1194,15 @@ function setupStage() {
   audio.init(); audio.resume(); audio.start();
   game.diff = DIFF[save.diff] || DIFF.normal;
   game.room = ROOMS[save.totalClears % ROOMS.length];
+  game.toy = game.room.gimmick === 'toy' ? { x:250, y:382, r:18, phase:Math.random() * Math.PI * 2 } : null;
+  // room/toy を確定してから、家具とおもちゃを避けた開始地点を選ぶ。
   game.pino = makePino();
   game.enemies = [];
   game.stick = null; game.stickTimer = null;
   game.fallItem = null; scheduleFallingPino();
   game.defeatedCount = 0; game.spawnedCount = 0; game.spawnSchedule = [];
   game.sessionPino = 0; game.barrierUsed = false; game.invulnT = 0;
-  game.shake = 0;
+  game.shake = 0; game.freezeT = 0;
   fx.parts.length = 0; fx.rings.length = 0; fx.pops.length = 0; fx.trail.length = 0; fx.confetti.length = 0; fx.flash = 0;
   const initialN = Math.min(game.diff.cap, game.diff.total);
   for (let i = 0; i < initialN; i++) game.spawnSchedule.push(INITIAL_SPAWN_DELAY + i * 0.35);
@@ -1104,6 +1213,8 @@ function setupStage() {
 function enterReady() {
   game.state = S.READY; game.stateT = 0; game.readyStep = 3;
   el.readyText.textContent = '3'; el.readyText.className = 'count';
+  if (el.readyRoomName) el.readyRoomName.textContent = game.room.name;
+  if (el.readyRoomNote) el.readyRoomNote.textContent = game.room.note || '';
   showScreen('ready'); syncHud();
 }
 function enterPlay() { game.state = S.PLAY; game.stateT = 0; showScreen(null); }
@@ -1192,8 +1303,9 @@ function animateCountUp(node, from, to, dur) {
 function backToHome() {
   game.state = S.HOME; game.stateT = 0;
   game.enemies = []; game.stick = null; game.stickTimer = null; game.fallItem = null;
-  game.pino = makePino();
   game.room = ROOMS[save.totalClears % ROOMS.length];
+  game.toy = game.room.gimmick === 'toy' ? { x:250, y:382, r:18, phase:Math.random() * Math.PI * 2 } : null;
+  game.pino = makePino();
   fx.parts.length = 0; fx.rings.length = 0; fx.pops.length = 0; fx.trail.length = 0; fx.confetti.length = 0; fx.flash = 0;
   syncHud(); refreshHomeUI();
   showScreen('home');
@@ -1232,13 +1344,23 @@ function closeSettings() { showScreen(settingsReturn === 'pause' ? 'pause' : 'ho
 function resetGachaPanel() {
   el.gachaCapsule.style.display = ''; el.gachaCapsule.classList.remove('shake', 'open');
   el.gachaResult.style.display = 'none';
-  el.btnGachaAgain.disabled = save.pino < 1;
+  el.btnGachaAgain.disabled = save.pino < 1 || allOwned();
 }
 function openGacha() { showScreen('gacha'); resetGachaPanel(); }
 function closeGacha() { showScreen('home'); refreshHomeUI(); }
 function startGachaFlow() {
   openGacha();
-  if (save.pino >= 1) setTimeout(() => spinGacha(), 120);
+  if (save.pino >= 1 && !allOwned()) setTimeout(() => spinGacha(), 120);
+  else if (allOwned()) {
+    el.gachaCapsule.style.display = 'none';
+    el.gachaResult.style.display = '';
+    el.gachaResult.className = 'gacha-result r3';
+    el.gachaStars.textContent = '★★★';
+    el.gachaIcon.textContent = '✨';
+    el.gachaName.textContent = 'コレクションかんせい';
+    el.gachaDesc.textContent = '7つのお助けアイテムがそろったよ';
+    el.gachaMsg.textContent = 'ぜんぶ そろった！';
+  }
 }
 function pickRarity() {
   const r = Math.random();
@@ -1247,21 +1369,14 @@ function pickRarity() {
   return 3;
 }
 function spinGacha() {
-  if (save.pino < 1) return;
+  if (save.pino < 1 || allOwned()) return;
   save.pino -= 1;
-  const rarity = pickRarity();
-  const pool = GACHA_ITEMS.filter((it) => it.star === rarity && !save.items[it.id]);
-  let item, isNew;
-  if (pool.length > 0) {
-    item = pool[(Math.random() * pool.length) | 0];
-    save.items[item.id] = true;
-    isNew = true;
-  } else {
-    const tier = GACHA_ITEMS.filter((it) => it.star === rarity);
-    item = tier[(Math.random() * tier.length) | 0];
-    save.pino += 1;
-    isNew = false;
-  }
+  // レアリティ演出は残しつつ、コンプ前は必ず未所持から選ぶ。
+  // 旧セーブの「ダブり返却」ルールはここで自然に置き換わる。
+  const pool = GACHA_ITEMS.filter((it) => !save.items[it.id]);
+  const item = pool[(Math.random() * pool.length) | 0];
+  save.items[item.id] = true;
+  const isNew = true;
   persistSave();
   audio.gachaSpin();
   playGachaAnimation(item, isNew);
@@ -1282,13 +1397,11 @@ function playGachaAnimation(item, isNew) {
     el.gachaName.textContent = item.name;
     el.gachaDesc.textContent = item.desc;
     const complete = allOwned();
-    let msg;
-    if (isNew) msg = complete ? 'ぜんぶ そろった！' : 'NEW！';
-    else msg = complete ? 'コンプリート！ ピノ+1' : 'ダブり！ ピノが1こもどってきた';
+    const msg = complete ? 'ぜんぶ そろった！' : 'NEW！';
     el.gachaMsg.textContent = msg;
     spawnGachaSparkle(item.star);
     refreshHomeUI();
-    el.btnGachaAgain.disabled = save.pino < 1;
+    el.btnGachaAgain.disabled = save.pino < 1 || allOwned();
   }, 950);
 }
 function spawnGachaSparkle(star) {
@@ -1388,8 +1501,8 @@ function refreshHomeUI() {
   const owned = GACHA_ITEMS.filter((it) => save.items[it.id]).length;
   el.gachaProgressHome.textContent = 'コレクション ' + owned + ' / ' + GACHA_ITEMS.length;
   el.collectionCount.textContent = owned + ' / ' + GACHA_ITEMS.length;
-  el.btnGachaSpin.disabled = save.pino < 1;
-  el.gachaHintHome.style.display = save.pino < 1 ? 'block' : 'none';
+  el.btnGachaSpin.disabled = save.pino < 1 || allOwned();
+  el.gachaHintHome.style.display = (save.pino < 1 && !allOwned()) ? 'block' : 'none';
   refreshCollectionGrid();
   for (const b of document.querySelectorAll('button[data-diff]')) b.setAttribute('aria-pressed', String(b.dataset.diff === save.diff));
   for (const b of document.querySelectorAll('button[data-control]')) b.setAttribute('aria-pressed', String(b.dataset.control === save.control));
@@ -1436,13 +1549,26 @@ function update(dt) {
   if (game.state === S.CLEAR) { if (game.pino && game.pino.celebrate > 0) game.pino.celebrate = Math.max(0, game.pino.celebrate - dt * 0.8); return; }
   if (game.state !== S.PLAY) return;
 
+  // 棒取得の「一瞬止まる」演出。描画と音だけ先に見せ、移動・追跡は短く保留する。
+  if (game.freezeT > 0) {
+    game.freezeT = Math.max(0, game.freezeT - dt);
+    syncPowerBar();
+    return;
+  }
+
   if (game.pino.powered) {
     game.pino.powerT -= dt;
+    if (game.pino.powerT <= 3 && !game.pino.powerWarningPlayed) {
+      game.pino.powerWarningPlayed = true;
+      audio.powerWarn();
+      fx.pops.push({ x:game.pino.x, y:game.pino.y - 38, text:'あと3びょう！', life:0.9, max:0.9, color:'#fff6d8', size:11 });
+    }
     if (game.pino.powerT <= 0) { game.pino.powered = false; game.pino.powerT = 0; }
   }
   if (game.invulnT > 0) game.invulnT = Math.max(0, game.invulnT - dt);
   syncPowerBar();
 
+  updateToy(dt);
   updatePino(dt);
   for (const e of game.enemies) updateEnemy(e, dt);
   checkCollisions();
@@ -1453,6 +1579,7 @@ function update(dt) {
 function syncPowerBar() {
   const on = game.pino && game.pino.powered;
   el.powerBar.classList.toggle('on', !!on);
+  el.powerBar.classList.toggle('urgent', !!(on && game.pino.powerT <= 3));
   if (on) el.powerFill.style.width = Math.max(0, (game.pino.powerT / game.pino.powerMax) * 100) + '%';
 }
 function spawnConfetti(n) {
@@ -1594,6 +1721,43 @@ function drawFurniture(room) {
     ctx.strokeStyle = 'rgba(0,0,0,.18)'; ctx.lineWidth = 1.4; ctx.stroke();
   }
 }
+function drawToy() {
+  if (!game.toy || !game.room || game.room.gimmick !== 'toy') return;
+  const t = game.toy;
+  const nextX = 250 + Math.sin(t.phase + 0.55) * 72;
+  ctx.save();
+  // 進路を先に見せる点線。おもちゃの動きを予測できる。
+  ctx.globalAlpha = 0.28; ctx.strokeStyle = '#fff6d8'; ctx.lineWidth = 2;
+  ctx.setLineDash([5, 7]);
+  ctx.beginPath(); ctx.moveTo(Math.min(t.x, nextX) - 28, t.y + 25); ctx.lineTo(Math.max(t.x, nextX) + 28, t.y + 25); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.globalAlpha = 0.2; ctx.fillStyle = '#000';
+  ctx.beginPath(); ctx.ellipse(t.x, t.y + 18, 22, 6, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+  ctx.save(); ctx.translate(t.x, t.y); ctx.rotate(Math.sin(t.phase * 2) * .12);
+  const g = ctx.createLinearGradient(-16, -16, 16, 16);
+  g.addColorStop(0, '#ffcf6a'); g.addColorStop(1, '#e87c45');
+  ctx.fillStyle = g; roundRectPath(-17, -15, 34, 30, 9); ctx.fill();
+  ctx.strokeStyle = '#8c482b'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = '#fff6d8'; ctx.beginPath(); ctx.arc(-6, -2, 3, 0, Math.PI * 2); ctx.arc(6, -2, 3, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#4b2714'; ctx.beginPath(); ctx.arc(-6, -2, 1.3, 0, Math.PI * 2); ctx.arc(6, -2, 1.3, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#8c482b'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(0, 3, 6, 0.15, Math.PI - .15); ctx.stroke();
+  ctx.restore();
+}
+function drawSteam() {
+  if (!game.room || game.room.gimmick !== 'steam') return;
+  const wave = game.t * 0.65;
+  ctx.save(); ctx.globalAlpha = 0.12;
+  const g = ctx.createLinearGradient(0, ARENA.y0, 0, ARENA.y1);
+  g.addColorStop(0, 'rgba(255,255,255,.72)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g; ctx.fillRect(ARENA.x0, ARENA.y0, ARENA.x1 - ARENA.x0, ARENA.y1 - ARENA.y0);
+  ctx.globalAlpha = 0.22; ctx.strokeStyle = '#fff'; ctx.lineWidth = 7; ctx.lineCap = 'round';
+  for (let i = 0; i < 4; i++) {
+    const x = 92 + i * 91 + Math.sin(wave + i) * 12;
+    ctx.beginPath(); ctx.moveTo(x, 300 + i * 13); ctx.quadraticCurveTo(x - 14, 350, x + 8, 400); ctx.quadraticCurveTo(x + 20, 445, x - 4, 500); ctx.stroke();
+  }
+  ctx.restore();
+}
 function drawStick() {
   const s = game.stick; if (!s) return;
   const bob = Math.sin(game.t * 3) * 3;
@@ -1611,7 +1775,7 @@ function drawStick() {
   ctx.strokeStyle = '#c9a86b'; ctx.lineWidth = 1.2; ctx.stroke();
   ctx.restore();
 }
-function drawPinoShape(x, y, scale, powered, dirx, diry) {
+function drawPinoShape(x, y, scale, powered, dirx, diry, stretchX = 1, stretchY = 1, celebrate = false) {
   // 床の木目に沈まないよう、足元に影を落としてから本体を描く
   ctx.save();
   ctx.globalAlpha = 0.22; ctx.fillStyle = '#000';
@@ -1619,6 +1783,7 @@ function drawPinoShape(x, y, scale, powered, dirx, diry) {
   ctx.restore();
   ctx.save();
   ctx.translate(x, y);
+  ctx.scale(stretchX, stretchY);
   if (powered) { ctx.shadowColor = '#ffd97a'; ctx.shadowBlur = 16 * scale; }
   const topW = 9 * scale, botW = 17 * scale, topY = -19 * scale, botY = 19 * scale;
   ctx.beginPath();
@@ -1649,6 +1814,14 @@ function drawPinoShape(x, y, scale, powered, dirx, diry) {
     ctx.fillStyle = '#2a1708';
     ctx.beginPath(); ctx.arc(s * eyeDX + dirx * 1.6 * scale, eyeY + diry * 1.6 * scale, 1.9 * scale, 0, Math.PI * 2); ctx.fill();
   }
+  // 表情を状態に合わせて少しだけ変える。通常時も口を描くことで、
+  // 基本図形の組み合わせではなく「生きているキャラクター」に見せる。
+  ctx.strokeStyle = powered || celebrate ? '#3b1d0e' : '#4b2714';
+  ctx.lineWidth = 1.7 * scale; ctx.lineCap = 'round';
+  ctx.beginPath();
+  if (celebrate) ctx.arc(0, 2 * scale, 5.5 * scale, 0.15, Math.PI - 0.15);
+  else ctx.arc(0, 2 * scale, 3.2 * scale, 0.22, Math.PI - 0.22);
+  ctx.stroke();
   ctx.restore();
 }
 function drawFallingPino() {
@@ -1672,7 +1845,7 @@ function drawFallingPino() {
 function drawPino() {
   const p = game.pino;
   const hop = p.celebrate > 0 ? -Math.sin(clampNum(p.celebrate, 0, 1) * Math.PI) * 18 : 0;
-  const bobY = (p.moving ? Math.sin(p.bobPhase) * 2.4 : 0) + hop;
+  const bobY = (p.moving ? Math.sin(p.bobPhase) * 2.4 : Math.sin(p.idlePhase) * 0.8) + hop;
   const x = p.x, y = p.y + bobY;
   const r = 23;
   const powered = p.powered;
@@ -1692,7 +1865,10 @@ function drawPino() {
     ctx.beginPath(); ctx.ellipse(x, y, r * 1.6, r * 0.65, -game.t * 2.4 + 1.1, 0, Math.PI * 2); ctx.stroke();
     ctx.restore();
   }
-  drawPinoShape(x, y, PINO_SCALE, powered, p.dirx || 0, p.diry || 0);
+  const step = p.moving ? Math.sin(p.bobPhase) : 0;
+  const stretchX = p.moving ? 1 + step * 0.055 : 1 + Math.sin(p.idlePhase) * 0.012;
+  const stretchY = p.moving ? 1 - step * 0.055 : 1 - Math.sin(p.idlePhase) * 0.012;
+  drawPinoShape(x, y, PINO_SCALE, powered, p.dirx || 0, p.diry || 0, stretchX, stretchY, p.celebrate > 0);
   if (powered) {
     ctx.save();
     ctx.translate(x + r * 0.85, y - r * 0.1);
@@ -1722,7 +1898,7 @@ function drawPinoDying() {
   ctx.translate(p.x, p.y + t * 14);
   ctx.rotate(t * 2.2);
   ctx.scale(1 + t * 0.35, 1 - t * 0.5);
-  drawPinoShape(0, 0, 1 - t * 0.5, false, 0, 0);
+  drawPinoShape(0, 0, 1 - t * 0.5, false, 0, 0, 1, 1, false);
   ctx.restore();
   if (t < 0.9 && Math.random() < 0.35) {
     fx.parts.push({ x:p.x + (Math.random() - 0.5) * 10, y:p.y, vx:(Math.random() - 0.5) * 30, vy:40 + Math.random() * 40,
@@ -1736,7 +1912,8 @@ function drawEnemy(e) {
   ctx.globalAlpha = 0.2; ctx.fillStyle = '#000';
   ctx.beginPath(); ctx.ellipse(x, y + r * 0.95, r * 0.85, r * 0.3, 0, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
-  const flee = !frozen && game.pino.powered;
+  const surprise = !frozen && e.state === 'surprise';
+  const flee = !frozen && !surprise && game.pino.powered;
   ctx.save();
   ctx.translate(x, y);
   if (e.spawnFx > 0) { const s = clampNum(1 - e.spawnFx * 2, 0.2, 1); ctx.scale(s, s); }
@@ -1763,7 +1940,19 @@ function drawEnemy(e) {
   ctx.shadowBlur = 0;
   ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.stroke();
 
-  if (flee) {
+  if (surprise) {
+    // 棒を取った直後の一瞬だけ全員が驚く。これが「逆転した」ことを
+    // 文字なしでも伝えるための短いリアクション。
+    ctx.fillStyle = '#fff6e6';
+    for (const s of [-1, 1]) {
+      ctx.beginPath(); ctx.arc(s * r * .36, -r * .3, r * .28, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#2a1708'; ctx.beginPath(); ctx.arc(s * r * .36, -r * .3, r * .12, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#fff6e6';
+    }
+    ctx.strokeStyle = '#4b3a61'; ctx.lineWidth = 1.8;
+    ctx.beginPath(); ctx.arc(0, r * .24, r * .27, 0, Math.PI * 2); ctx.stroke();
+    ctx.font = '900 11px sans-serif'; ctx.fillStyle = '#5a6ea8'; ctx.textAlign = 'center'; ctx.fillText('!', 0, -r * 1.26);
+  } else if (flee) {
     ctx.strokeStyle = '#5a6ea8'; ctx.lineWidth = 1.4; ctx.lineCap = 'round';
     ctx.beginPath();
     ctx.moveTo(-r * 0.62, -r * 0.42); ctx.lineTo(-r * 0.2, -r * 0.1);
@@ -1944,10 +2133,12 @@ function render() {
     ctx.translate((Math.random() - 0.5) * s, (Math.random() - 0.5) * s);
   }
   drawFurniture(game.room);
+  drawToy();
   drawStick();
   drawFallingPino();
   for (const e of game.enemies) drawEnemy(e);
   if (game.state !== S.HIT) drawPino(); else drawPinoDying();
+  drawSteam();
   drawOverlayFx();
   drawRadarArrow();
   drawJoystick();
