@@ -21,7 +21,7 @@
 | `virus-busters/` | ウィルスバスターズ | iPhone向け縦持ちディフェンスゲーム（全20ステージ・図鑑50種）。ルートの `virus-busters.html` はリダイレクトのみ |
 | `bikey/index.html` | bikey / Bike Commute Action | 毎朝の通学路を自転車で駆け抜ける横スクロールアクション。日を追うごとに道が険しくなる。単一HTML（PWA非対応）。企画メモは `bikey/PLAN.md`。 |
 | `pinokun/` | ぴの君 / Pino-kun | 茶色いアイスのピノの姿をした「ぴの君」が、家の中の部屋を舞台に白い敵と戦う枠内バトルアクション。落ちている「アイスの棒」を取った10秒間だけ敵をたおせ、持っていないと触れられた時点でゲームオーバー。ときどき天井から降ってくるアイスのピノを取ると敵が1秒止まる。規定数（やさしい2体／ふつう5体／むずかしい10体）をたおすとクリア演出のあとホーム画面へ戻り、報酬の「ピノ」でトップ画面左のガチャを回してお助けアイテム全7種を集められる。部屋はクリアごとにローテーション。フローティングスティック／十字キー／矢印キー操作、設定で難易度・音・操作方法を変更可。iPhone Safariファースト、ホーム画面追加・オフライン対応。 |
-| `kuku/` | 九九クエスト / Kuku Quest | 小学2年生向けの九九3択アプリ。2〜9の段から10問を出題し、誤答後も選び直せる。一発正解数・連続正解・端末内の自己ベストを記録。iPhone Safari対応、効果音は任意でON。 |
+| `kuku/` | 九九クエスト / Kuku Quest | 小学2年生向けの九九3択アプリ。2〜9の段から10問を出題し、誤答後も選び直せる。九九の塔の10ステップ、クリスタル・ランク・称号、1〜3つ星のクリア結果、一発正解数・連続正解・端末内の自己ベストを記録。iPhone Safari対応、効果音は任意でON。 |
 | `x-bookmark-logger.html` | X Bookmark Logger | Xのブックマークを自動でGitHub上のObsidian VaultにMarkdown保存するユーザースクリプト（導入ガイド + `x-bookmark-logger.user.js` / `x-bookmark-uploader.user.js`） |
 | `note-pv-logger.html` | note PV Logger | noteの全記事のビュー数をダッシュボードAPIから取得し、CSV/TSV/Markdownで書き出すユーザースクリプトの導入ガイド（`note-pv-logger.user.js` / `note-pv-md-logger.user.js`）。トークン不要 |
 | `note-pv-logger.user.js` | note PV Logger | noteのダッシュボードAPIから全記事のビュー・スキ・コメント数を取得し、CSVダウンロード/TSVコピーできるユーザースクリプト。noteにログインした状態でページ右下の「📊 PV」ボタンから使う |
