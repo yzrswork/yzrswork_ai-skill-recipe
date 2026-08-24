@@ -8,13 +8,27 @@
   const FACTOR_MAX = 9;
   const ANSWER_REVEAL_MS = 920;
 
-  const RANKS = [
-    { level: 1, title: "塔のぼり見習い", start: 0 },
-    { level: 2, title: "石だんランナー", start: 10 },
-    { level: 3, title: "九九の探検家", start: 25 },
-    { level: 4, title: "テラコッタ騎士", start: 45 },
-    { level: 5, title: "塔の守り人", start: 70 },
-    { level: 6, title: "九九の王さま", start: 100 },
+  const TITLE_BADGES = [
+    { id: "first-step", level: 1, title: "はじめの いっぽ", start: 0, symbol: "badge-sprout", tone: "#79a866", accent: "#31563f" },
+    { id: "idea-rookie", level: 2, title: "ひらめき ルーキー", start: 6, symbol: "badge-spark", tone: "#f2bd4b", accent: "#a6482f" },
+    { id: "answer-finder", level: 3, title: "こたえ みつけ", start: 14, symbol: "badge-key", tone: "#d17956", accent: "#7e3525" },
+    { id: "crystal-picker", level: 4, title: "クリスタル ひろい", start: 24, symbol: "badge-crystal", tone: "#70a9b7", accent: "#315b68" },
+    { id: "streak-star", level: 5, title: "れんぞく スター", start: 36, symbol: "badge-flame", tone: "#e8834f", accent: "#8b3129" },
+    { id: "chest-finder", level: 6, title: "たからばこ はっけん", start: 50, symbol: "badge-chest", tone: "#e8a93b", accent: "#81511c" },
+    { id: "tower-fighter", level: 7, title: "とうのぼり せんし", start: 66, symbol: "badge-tower", tone: "#c57858", accent: "#713425" },
+    { id: "kuku-wizard", level: 8, title: "九九の まほうつかい", start: 84, symbol: "badge-wand", tone: "#8c78bd", accent: "#4d3b7b" },
+    { id: "idea-knight", level: 9, title: "ひらめき ナイト", start: 105, symbol: "badge-shield", tone: "#6f9aa8", accent: "#315563" },
+    { id: "terracotta-guard", level: 10, title: "テラコッタ ガード", start: 128, symbol: "badge-brick", tone: "#bc5b3d", accent: "#652d21" },
+    { id: "multiply-ranger", level: 11, title: "かけざん レンジャー", start: 154, symbol: "badge-arrow", tone: "#5f9c72", accent: "#31563f" },
+    { id: "crystal-master", level: 12, title: "クリスタル マスター", start: 182, symbol: "badge-gem", tone: "#5aa7b9", accent: "#245d70" },
+    { id: "kuku-hero", level: 13, title: "九九の ゆうしゃ", start: 212, symbol: "badge-sword", tone: "#da6d4b", accent: "#713425" },
+    { id: "tower-challenger", level: 14, title: "とうの しれんしゃ", start: 245, symbol: "badge-flag", tone: "#d99246", accent: "#78501f" },
+    { id: "star-collector", level: 15, title: "ほしの コレクター", start: 280, symbol: "badge-stars", tone: "#e8b83e", accent: "#8e5a18" },
+    { id: "kuku-expert", level: 16, title: "九九の たつじん", start: 318, symbol: "badge-scroll", tone: "#a77955", accent: "#5c3b27" },
+    { id: "crown-hunter", level: 17, title: "おうかん ハンター", start: 358, symbol: "badge-crown", tone: "#e1aa2f", accent: "#81511c" },
+    { id: "terracotta-hero", level: 18, title: "テラコッタ ヒーロー", start: 400, symbol: "badge-wings", tone: "#c76348", accent: "#652d21" },
+    { id: "kuku-legend", level: 19, title: "九九の でんせつ", start: 445, symbol: "badge-comet", tone: "#8b76bd", accent: "#47356e" },
+    { id: "tower-king", level: 20, title: "とうの おうさま", start: 500, symbol: "badge-castle", tone: "#d49a29", accent: "#6f4616" },
   ];
 
   const MILESTONE_REWARDS = {
@@ -47,6 +61,9 @@
     rankTitle: document.querySelector("#rank-title"),
     rankLevel: document.querySelector("#rank-level"),
     crystalTotal: document.querySelector("#crystal-total"),
+    currentBadgeIcon: document.querySelector("#current-badge-icon"),
+    badgeCount: document.querySelector("#badge-count"),
+    badgeBookButton: document.querySelector("#badge-book-button"),
     rankProgress: document.querySelector("#rank-progress"),
     rankProgressFill: document.querySelector("#rank-progress-fill"),
     rankProgressLabel: document.querySelector("#rank-progress-label"),
@@ -66,6 +83,17 @@
     bestMessage: document.querySelector("#best-message"),
     restartButton: document.querySelector("#restart-button"),
     confettiLayer: document.querySelector("#confetti-layer"),
+    badgeBook: document.querySelector("#badge-book"),
+    badgeBookBackdrop: document.querySelector("#badge-book-backdrop"),
+    badgeBookClose: document.querySelector("#badge-book-close"),
+    badgeBookGuide: document.querySelector("#badge-book-guide"),
+    badgeBookCount: document.querySelector("#badge-book-count"),
+    badgeNextMessage: document.querySelector("#badge-next-message"),
+    badgeGrid: document.querySelector("#badge-grid"),
+    badgeUnlock: document.querySelector("#badge-unlock"),
+    badgeUnlockIcon: document.querySelector("#badge-unlock-icon"),
+    badgeUnlockTitle: document.querySelector("#badge-unlock-title"),
+    badgeUnlockClose: document.querySelector("#badge-unlock-close"),
   };
 
   const state = {
@@ -82,6 +110,9 @@
     audioContext: null,
     advanceTimer: null,
     rewardTimer: null,
+    badgeUnlockTimer: null,
+    pendingBadgeAdvance: false,
+    lastFocusedElement: null,
     bestScore: readBestScore(),
     profile: readProgress(),
   };
@@ -177,11 +208,13 @@
       const raw = window.localStorage.getItem(PROGRESS_STORAGE_KEY);
       const saved = raw ? JSON.parse(raw) : {};
       const crystals = Number.parseInt(saved?.crystals, 10);
+      const selectedBadge = typeof saved?.selectedBadge === "string" ? saved.selectedBadge : "";
       return {
         crystals: Number.isFinite(crystals) ? Math.max(0, crystals) : 0,
+        selectedBadge,
       };
     } catch (_error) {
-      return { crystals: 0 };
+      return { crystals: 0, selectedBadge: "" };
     }
   }
 
@@ -189,7 +222,10 @@
     try {
       window.localStorage.setItem(
         PROGRESS_STORAGE_KEY,
-        JSON.stringify({ crystals: state.profile.crystals }),
+        JSON.stringify({
+          crystals: state.profile.crystals,
+          selectedBadge: state.profile.selectedBadge,
+        }),
       );
     } catch (_error) {
       // 保存できない環境でも、現在のラウンドと画面表示は続けられる。
@@ -200,19 +236,93 @@
     return Math.min(Math.max(value, minimum), maximum);
   }
 
+  function getBadgeById(badgeId) {
+    return TITLE_BADGES.find((badge) => badge.id === badgeId) || null;
+  }
+
+  function getUnlockedBadges(crystals = state.profile.crystals) {
+    const safeCrystals = Math.max(0, Math.floor(crystals));
+    return TITLE_BADGES.filter((badge) => badge.start <= safeCrystals);
+  }
+
+  function getSelectedBadge() {
+    const selected = getBadgeById(state.profile.selectedBadge);
+
+    if (selected && selected.start <= state.profile.crystals) {
+      return selected;
+    }
+
+    return getUnlockedBadges().at(-1) || TITLE_BADGES[0];
+  }
+
+  function createSvgElement(name, attributes = {}) {
+    const element = document.createElementNS("http://www.w3.org/2000/svg", name);
+
+    for (const [attribute, value] of Object.entries(attributes)) {
+      element.setAttribute(attribute, String(value));
+    }
+
+    return element;
+  }
+
+  function createBadgeGraphic(badge, locked = false) {
+    const svg = createSvgElement("svg", {
+      viewBox: "0 0 80 88",
+      focusable: "false",
+      "aria-hidden": "true",
+    });
+    svg.classList.add("title-badge-svg");
+    svg.classList.toggle("is-locked", locked);
+    svg.style.setProperty("--badge-tone", badge.tone);
+    svg.style.setProperty("--badge-accent", badge.accent);
+    svg.style.setProperty("--badge-disc", "#fff9ed");
+
+    const leftRibbon = createSvgElement("path", {
+      d: "M22 62 14 84 34 74Z",
+      class: "badge-ribbon",
+    });
+    const rightRibbon = createSvgElement("path", {
+      d: "M58 62 66 84 46 74Z",
+      class: "badge-ribbon",
+    });
+    const rim = createSvgElement("circle", {
+      cx: 40,
+      cy: 38,
+      r: 32,
+      class: "badge-rim",
+    });
+    const disc = createSvgElement("circle", {
+      cx: 40,
+      cy: 38,
+      r: 24,
+      class: "badge-disc",
+    });
+    const use = createSvgElement("use", {
+      href: `#${badge.symbol}`,
+      x: 18,
+      y: 16,
+      width: 44,
+      height: 44,
+      class: "badge-glyph",
+    });
+
+    svg.append(leftRibbon, rightRibbon, rim, disc, use);
+    return svg;
+  }
+
   function getRankProgress(crystals) {
     const safeCrystals = Math.max(0, Math.floor(crystals));
-    let current = RANKS[0];
-    let next = RANKS[1];
+    let current = TITLE_BADGES[0];
+    let next = TITLE_BADGES[1];
 
-    for (let index = 1; index < RANKS.length; index += 1) {
-      if (safeCrystals < RANKS[index].start) {
-        next = RANKS[index];
+    for (let index = 1; index < TITLE_BADGES.length; index += 1) {
+      if (safeCrystals < TITLE_BADGES[index].start) {
+        next = TITLE_BADGES[index];
         break;
       }
 
-      current = RANKS[index];
-      next = RANKS[index + 1] || null;
+      current = TITLE_BADGES[index];
+      next = TITLE_BADGES[index + 1] || null;
     }
 
     const span = next ? next.start - current.start : 1;
@@ -237,15 +347,20 @@
     fill.style.width = `${info.percentage}%`;
     progressBar.setAttribute("aria-valuemax", String(info.span));
     progressBar.setAttribute("aria-valuenow", String(info.withinRank));
-    label.textContent = info.next ? `つぎまで ${info.remaining}` : "さいこうランク！";
+    label.textContent = info.next ? `あと ${info.remaining} ◇` : "ぜんぶ GET！";
   }
 
   function renderProfile() {
     const info = getRankProgress(state.profile.crystals);
+    const selectedBadge = getSelectedBadge();
+    const unlockedCount = getUnlockedBadges().length;
 
-    elements.rankTitle.textContent = info.current.title;
+    state.profile.selectedBadge = selectedBadge.id;
+    elements.rankTitle.textContent = selectedBadge.title;
     elements.rankLevel.textContent = String(info.current.level);
     elements.crystalTotal.textContent = String(state.profile.crystals);
+    elements.badgeCount.textContent = `${unlockedCount} / ${TITLE_BADGES.length}`;
+    elements.currentBadgeIcon.replaceChildren(createBadgeGraphic(selectedBadge));
     renderRankProgress(
       elements.rankProgress,
       elements.rankProgressFill,
@@ -256,8 +371,9 @@
 
   function renderFinishProfile() {
     const info = getRankProgress(state.profile.crystals);
+    const selectedBadge = getSelectedBadge();
 
-    elements.finishRankTitle.textContent = info.current.title;
+    elements.finishRankTitle.textContent = selectedBadge.title;
     elements.finishRankLevel.textContent = String(info.current.level);
     renderRankProgress(
       elements.finishRankProgress,
@@ -269,10 +385,150 @@
 
   function addCrystals(amount) {
     const safeAmount = Math.max(0, Math.floor(amount));
+    const before = state.profile.crystals;
 
     state.profile.crystals += safeAmount;
+    const newlyUnlocked = TITLE_BADGES.filter(
+      (badge) => badge.start > before && badge.start <= state.profile.crystals,
+    ).at(-1) || null;
+
+    if (newlyUnlocked) {
+      state.profile.selectedBadge = newlyUnlocked.id;
+    }
+
     writeProgress();
     renderProfile();
+    return newlyUnlocked;
+  }
+
+  function renderBadgeBook() {
+    const unlockedBadges = getUnlockedBadges();
+    const selectedBadge = getSelectedBadge();
+    const info = getRankProgress(state.profile.crystals);
+
+    elements.badgeBookCount.textContent = String(unlockedBadges.length);
+    elements.badgeNextMessage.textContent = info.next
+      ? `つぎは「${info.next.title}」 あと ${info.remaining} ◇`
+      : "20こ ぜんぶ あつまった！";
+    elements.badgeGrid.replaceChildren();
+
+    for (const badge of TITLE_BADGES) {
+      const unlocked = badge.start <= state.profile.crystals;
+      const selected = badge.id === selectedBadge.id;
+      const card = document.createElement("button");
+      const graphic = document.createElement("span");
+      const title = document.createElement("strong");
+      const condition = document.createElement("span");
+
+      card.className = "badge-card";
+      card.type = "button";
+      card.classList.toggle("is-locked", !unlocked);
+      card.classList.toggle("is-selected", selected);
+      card.disabled = !unlocked;
+      card.dataset.badgeId = badge.id;
+      card.setAttribute(
+        "aria-label",
+        unlocked
+          ? `${badge.title}${selected ? "、いま つけている バッジ" : "を つける"}`
+          : `${badge.title}、${badge.start}クリスタルで ひらく`,
+      );
+
+      graphic.className = "badge-card-graphic";
+      graphic.append(createBadgeGraphic(badge, !unlocked));
+      title.className = "badge-card-title";
+      title.textContent = badge.title;
+      condition.className = "badge-card-condition";
+      condition.textContent = selected
+        ? "つけてる！"
+        : unlocked
+          ? "つける"
+          : `${badge.start} ◇`;
+
+      card.append(graphic, title, condition);
+      if (unlocked) {
+        card.addEventListener("click", () => selectBadge(badge.id));
+      }
+      elements.badgeGrid.append(card);
+    }
+  }
+
+  function selectBadge(badgeId) {
+    const badge = getBadgeById(badgeId);
+
+    if (!badge || badge.start > state.profile.crystals) {
+      return;
+    }
+
+    state.profile.selectedBadge = badge.id;
+    writeProgress();
+    renderProfile();
+    renderFinishProfile();
+    elements.badgeBookGuide.textContent = `「${badge.title}」を つけたよ！`;
+    renderBadgeBook();
+  }
+
+  function setModalOpen(isOpen) {
+    const hasOpenModal = isOpen || !elements.badgeBook.hidden || !elements.badgeUnlock.hidden;
+    document.body.classList.toggle("is-modal-open", hasOpenModal);
+  }
+
+  function openBadgeBook() {
+    if (!elements.badgeUnlock.hidden || (state.locked && !elements.quizPanel.hidden)) {
+      return;
+    }
+
+    state.lastFocusedElement = document.activeElement;
+    elements.badgeBookGuide.textContent = "あつめた バッジを おして、つけかえよう！";
+    renderBadgeBook();
+    elements.badgeBook.hidden = false;
+    setModalOpen(true);
+    elements.badgeBookClose.focus({ preventScroll: true });
+  }
+
+  function closeBadgeBook() {
+    if (elements.badgeBook.hidden) {
+      return;
+    }
+
+    elements.badgeBook.hidden = true;
+    setModalOpen(false);
+
+    if (state.lastFocusedElement?.focus) {
+      state.lastFocusedElement.focus({ preventScroll: true });
+    }
+  }
+
+  function showBadgeUnlock(badge) {
+    state.lastFocusedElement = document.activeElement;
+    elements.badgeUnlockTitle.textContent = badge.title;
+    elements.badgeUnlockIcon.replaceChildren(createBadgeGraphic(badge));
+    elements.badgeUnlock.hidden = false;
+    setModalOpen(true);
+    elements.badgeUnlockClose.focus({ preventScroll: true });
+    burstConfetti(34);
+    playTone("badge");
+
+    if (state.badgeUnlockTimer) {
+      window.clearTimeout(state.badgeUnlockTimer);
+    }
+
+    state.badgeUnlockTimer = window.setTimeout(() => closeBadgeUnlock(true), 2100);
+  }
+
+  function closeBadgeUnlock(shouldAdvance = true) {
+    if (state.badgeUnlockTimer) {
+      window.clearTimeout(state.badgeUnlockTimer);
+      state.badgeUnlockTimer = null;
+    }
+
+    elements.badgeUnlock.hidden = true;
+    setModalOpen(false);
+    hideReward();
+
+    if (shouldAdvance && state.pendingBadgeAdvance) {
+      state.pendingBadgeAdvance = false;
+      goToNextQuestion();
+    }
   }
 
   function setProgress(completed) {
@@ -459,7 +715,7 @@
     }
 
     state.roundCrystals += crystals;
-    addCrystals(crystals);
+    const unlockedBadge = addCrystals(crystals);
     elements.score.textContent = String(state.firstTryScore);
     setProgress(questionNumber);
     updateTowerPath(questionNumber);
@@ -473,10 +729,21 @@
       window.clearTimeout(state.advanceTimer);
     }
 
-    state.advanceTimer = window.setTimeout(() => {
-      state.advanceTimer = null;
-      goToNextQuestion();
-    }, ANSWER_REVEAL_MS);
+    if (unlockedBadge) {
+      state.pendingBadgeAdvance = true;
+      elements.rewardMilestone.textContent = milestone
+        ? `${milestone.label}ボーナス +${milestone.crystals} ・ NEWバッジ！`
+        : "NEWバッジ かいほう！";
+      state.advanceTimer = window.setTimeout(() => {
+        state.advanceTimer = null;
+        showBadgeUnlock(unlockedBadge);
+      }, 520);
+    } else {
+      state.advanceTimer = window.setTimeout(() => {
+        state.advanceTimer = null;
+        goToNextQuestion();
+      }, ANSWER_REVEAL_MS);
+    }
   }
 
   function goToNextQuestion() {
@@ -494,27 +761,27 @@
     if (score === TOTAL_QUESTIONS) {
       return {
         title: "九九の塔を制覇！",
-        message: rankUp ? "ランクアップ！ ぜんもん いっぱつせいかい。" : "ぜんもん いっぱつせいかい。すごい！",
+        message: rankUp ? "バッジが ふえた！ ぜんもん いっぱつせいかい。" : "ぜんもん いっぱつせいかい。すごい！",
       };
     }
 
     if (score >= 8) {
       return {
         title: "だいせいこう！",
-        message: rankUp ? "ランクアップ！ 九九の力が ぐんぐん のびてる！" : "九九の力が ぐんぐん のびてる！",
+        message: rankUp ? "バッジが ふえた！ 九九の力が ぐんぐん のびてる！" : "九九の力が ぐんぐん のびてる！",
       };
     }
 
     if (score >= 5) {
       return {
         title: "いいちょうし！",
-        message: rankUp ? "ランクアップ！ できる もんだいが ふえてきた！" : "できる もんだいが ふえてきた！",
+        message: rankUp ? "バッジが ふえた！ できる もんだいが ふえてきた！" : "できる もんだいが ふえてきた！",
       };
     }
 
     return {
       title: "10もん できた！",
-      message: rankUp ? "ランクアップ！ さいごまで ちょうせんできたね！" : "さいごまで ちょうせんできたね！",
+      message: rankUp ? "バッジが ふえた！ さいごまで ちょうせんできたね！" : "さいごまで ちょうせんできたね！",
     };
   }
 
@@ -568,6 +835,10 @@
       state.advanceTimer = null;
     }
 
+    closeBadgeUnlock(false);
+    elements.badgeBook.hidden = true;
+    state.pendingBadgeAdvance = false;
+    setModalOpen(false);
     hideReward();
     elements.confettiLayer.replaceChildren();
     state.deck = buildDeck();
@@ -626,6 +897,14 @@
 
   function playTone(kind, firstTry = false) {
     if (!state.soundEnabled) {
+      return;
+    }
+
+    if (kind === "badge") {
+      playNote(523.25, 0, 0.18, 0.055);
+      playNote(659.25, 0.11, 0.2, 0.055);
+      playNote(783.99, 0.22, 0.22, 0.06);
+      playNote(1046.5, 0.35, 0.32, 0.06);
       return;
     }
 
@@ -690,6 +969,19 @@
 
   elements.soundToggle.addEventListener("click", toggleSound);
   elements.restartButton.addEventListener("click", startRound);
+  elements.badgeBookButton.addEventListener("click", openBadgeBook);
+  elements.badgeBookBackdrop.addEventListener("click", closeBadgeBook);
+  elements.badgeBookClose.addEventListener("click", closeBadgeBook);
+  elements.badgeUnlockClose.addEventListener("click", () => closeBadgeUnlock(true));
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") {
+      return;
+    }
+
+    if (!elements.badgeBook.hidden) {
+      closeBadgeBook();
+    }
+  });
 
   renderProfile();
   startRound();
