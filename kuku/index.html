@@ -9,7 +9,7 @@
   <meta name="format-detection" content="telephone=no" />
   <meta
     name="description"
-    content="小学校2年生向け。2〜9の段を3択で楽しく練習できる、iPhone対応の九九アプリ。"
+    content="小学校2年生向け。2〜9の段を3択で練習し、20個の称号バッジを集めて楽しめるiPhone対応の九九アプリ。"
   />
   <title>九九クエスト｜や印工務店</title>
   <link rel="stylesheet" href="style.css" />
@@ -42,7 +42,14 @@
 
         <section class="profile-strip" id="profile-panel" aria-label="九九の塔のせいちょう">
           <div class="profile-heading">
-            <span class="rank-name" id="rank-title">塔のぼり見習い</span>
+            <button class="badge-book-button" id="badge-book-button" type="button" aria-label="バッジずかんを ひらく">
+              <span class="current-badge-icon" id="current-badge-icon" aria-hidden="true"></span>
+              <span class="badge-book-button-copy">
+                <span>バッジずかん</span>
+                <strong id="badge-count">1 / 20</strong>
+              </span>
+            </button>
+            <span class="rank-name" id="rank-title">はじめの いっぽ</span>
             <strong class="rank-level">Lv.<span id="rank-level">1</span></strong>
             <span class="crystal-pill"><span aria-hidden="true">◇</span><span id="crystal-total">0</span> クリスタル</span>
           </div>
@@ -50,7 +57,7 @@
             <div
               class="rank-progress"
               role="progressbar"
-              aria-label="つぎのランクまでの進み具合"
+              aria-label="つぎのバッジまでの進み具合"
               aria-valuemin="0"
               aria-valuemax="10"
               aria-valuenow="0"
@@ -58,7 +65,7 @@
             >
               <span class="rank-progress-fill" id="rank-progress-fill"></span>
             </div>
-            <span class="rank-progress-label" id="rank-progress-label">つぎまで 10</span>
+            <span class="rank-progress-label" id="rank-progress-label">つぎまで 6</span>
           </div>
         </section>
       </section>
@@ -168,16 +175,16 @@
           </div>
         </div>
 
-        <div class="finish-rank" aria-label="ランクの進み具合">
+        <div class="finish-rank" aria-label="バッジの進み具合">
           <div class="finish-rank-heading">
-            <span>いまのランク</span>
-            <strong><span id="finish-rank-title">塔のぼり見習い</span> · Lv.<span id="finish-rank-level">1</span></strong>
+            <span>いまのバッジ</span>
+            <strong><span id="finish-rank-title">はじめの いっぽ</span> · Lv.<span id="finish-rank-level">1</span></strong>
           </div>
           <div class="finish-rank-progress-row">
-            <div class="rank-progress" role="progressbar" aria-label="つぎのランクまでの進み具合" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0" id="finish-rank-progress">
+            <div class="rank-progress" role="progressbar" aria-label="つぎのバッジまでの進み具合" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0" id="finish-rank-progress">
               <span class="rank-progress-fill" id="finish-rank-progress-fill"></span>
             </div>
-            <span class="rank-progress-label" id="finish-rank-progress-label">つぎまで 10</span>
+            <span class="rank-progress-label" id="finish-rank-progress-label">つぎまで 6</span>
           </div>
         </div>
 
@@ -191,6 +198,62 @@
     </main>
 
     <div class="confetti-layer" id="confetti-layer" aria-hidden="true"></div>
+
+    <section class="badge-book-layer" id="badge-book" hidden aria-labelledby="badge-book-title">
+      <button class="badge-book-backdrop" id="badge-book-backdrop" type="button" aria-label="バッジずかんを とじる"></button>
+      <div class="badge-book-sheet" role="dialog" aria-modal="true" aria-describedby="badge-book-guide">
+        <header class="badge-book-header">
+          <div>
+            <p class="badge-book-kicker">TITLE BADGES</p>
+            <h2 id="badge-book-title">バッジずかん</h2>
+          </div>
+          <button class="badge-book-close" id="badge-book-close" type="button" aria-label="バッジずかんを とじる">×</button>
+        </header>
+        <p class="badge-book-guide" id="badge-book-guide" aria-live="polite">あつめた バッジを おして、つけかえよう！</p>
+        <div class="badge-book-summary">
+          <strong><span id="badge-book-count">1</span> / 20</strong>
+          <span id="badge-next-message">つぎまで あと 6 クリスタル</span>
+        </div>
+        <div class="badge-grid" id="badge-grid" aria-label="20この称号バッジ"></div>
+      </div>
+    </section>
+
+    <section class="badge-unlock-layer" id="badge-unlock" hidden aria-labelledby="badge-unlock-title">
+      <div class="badge-unlock-card" role="dialog" aria-modal="true" aria-describedby="badge-unlock-message">
+        <p class="badge-unlock-kicker">NEW BADGE!</p>
+        <div class="badge-unlock-rays" aria-hidden="true"></div>
+        <div class="badge-unlock-icon" id="badge-unlock-icon" aria-hidden="true"></div>
+        <p class="badge-unlock-label">あたらしい しょうごう！</p>
+        <h2 id="badge-unlock-title">ひらめき ルーキー</h2>
+        <p class="badge-unlock-message" id="badge-unlock-message">バッジずかんに くわわった！</p>
+        <button class="badge-unlock-close" id="badge-unlock-close" type="button">つぎへ！</button>
+      </div>
+    </section>
+
+    <svg class="badge-symbols" aria-hidden="true">
+      <defs>
+        <symbol id="badge-sprout" viewBox="0 0 64 64"><path d="M32 47V26" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><path d="M31 31C18 31 15 21 15 15c10 0 17 4 17 14M33 25c2-9 9-13 17-13 0 9-5 17-17 17" fill="currentColor"/></symbol>
+        <symbol id="badge-spark" viewBox="0 0 64 64"><path d="m32 8 6 16 17 2-13 11 4 17-14-9-14 9 4-17L9 26l17-2Z" fill="currentColor"/></symbol>
+        <symbol id="badge-key" viewBox="0 0 64 64"><circle cx="23" cy="25" r="10" fill="none" stroke="currentColor" stroke-width="6"/><path d="m31 32 19 19m-9-9 6-6m-1 11 5-5" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/></symbol>
+        <symbol id="badge-crystal" viewBox="0 0 64 64"><path d="m32 7 20 16-8 28H20L12 23Zm0 0v44M12 23h40L32 51Z" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/></symbol>
+        <symbol id="badge-flame" viewBox="0 0 64 64"><path d="M35 7c3 12-8 14-2 25 1-7 8-9 9-16 10 9 14 20 8 31-7 13-29 13-36 0-7-13 2-25 12-32-1 9 2 13 5 15-1-10 7-14 4-23Z" fill="currentColor"/></symbol>
+        <symbol id="badge-chest" viewBox="0 0 64 64"><path d="M10 29h44v25H10Z" fill="none" stroke="currentColor" stroke-width="5"/><path d="M14 29c0-12 7-18 18-18s18 6 18 18M32 29v25" fill="none" stroke="currentColor" stroke-width="5"/><circle cx="32" cy="39" r="4" fill="currentColor"/></symbol>
+        <symbol id="badge-tower" viewBox="0 0 64 64"><path d="M16 55V20h8V10h8v10h8V10h8v45H38V42H27v13Z" fill="currentColor"/><path d="M24 28h7v8h-7Zm16 0h7v8h-7Z" fill="var(--badge-disc, #fff)"/></symbol>
+        <symbol id="badge-wand" viewBox="0 0 64 64"><path d="m17 50 28-28" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/><path d="m47 7 3 9 9 3-9 3-3 9-3-9-9-3 9-3Z" fill="currentColor"/><circle cx="18" cy="18" r="4" fill="currentColor"/></symbol>
+        <symbol id="badge-shield" viewBox="0 0 64 64"><path d="M32 7 52 15v15c0 13-8 22-20 28C20 52 12 43 12 30V15Z" fill="currentColor"/><path d="m24 31 6 6 12-14" fill="none" stroke="var(--badge-disc, #fff)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+        <symbol id="badge-brick" viewBox="0 0 64 64"><path d="M8 14h48v36H8Z" fill="none" stroke="currentColor" stroke-width="5"/><path d="M8 26h48M8 38h48M24 14v12m16-12v12M17 26v12m30-12v12M24 38v12m16-12v12" fill="none" stroke="currentColor" stroke-width="4"/></symbol>
+        <symbol id="badge-arrow" viewBox="0 0 64 64"><path d="m11 49 34-34m-8 0h8v8m-34 26 12-2-10-10Z" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+        <symbol id="badge-gem" viewBox="0 0 64 64"><path d="M15 13h34l9 14-26 30L6 27Zm0 0 17 44 17-44M6 27h52" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/></symbol>
+        <symbol id="badge-sword" viewBox="0 0 64 64"><path d="m16 50 33-39 4 4-29 42Z" fill="currentColor"/><path d="m14 37 14 14M11 54l7-7" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/></symbol>
+        <symbol id="badge-flag" viewBox="0 0 64 64"><path d="M17 56V9" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><path d="M20 11h32L43 23l9 12H20Z" fill="currentColor"/></symbol>
+        <symbol id="badge-stars" viewBox="0 0 64 64"><path d="m32 5 6 14 15 1-11 10 3 15-13-8-13 8 3-15-11-10 15-1Zm-19 39 3 6 7 1-5 5 1 7-6-4-6 4 1-7-5-5 7-1Zm38 0 3 6 7 1-5 5 1 7-6-4-6 4 1-7-5-5 7-1Z" fill="currentColor"/></symbol>
+        <symbol id="badge-scroll" viewBox="0 0 64 64"><path d="M17 10h35c-5 4-5 10 0 14v28H18c-8 0-10-11-3-14h29V18H17c-7 0-7-8 0-8Z" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><path d="M24 27h13M24 35h13" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></symbol>
+        <symbol id="badge-crown" viewBox="0 0 64 64"><path d="m9 19 13 10 10-18 10 18 13-10-6 31H15Z" fill="currentColor"/><path d="M16 42h32" fill="none" stroke="var(--badge-disc, #fff)" stroke-width="5"/></symbol>
+        <symbol id="badge-wings" viewBox="0 0 64 64"><path d="M29 49C16 53 7 45 5 31c8 7 15 8 22 7-8-5-12-11-12-20 8 7 14 9 18 21M35 49c13 4 22-4 24-18-8 7-15 8-22 7 8-5 12-11 12-20-8 7-14 9-18 21" fill="currentColor"/></symbol>
+        <symbol id="badge-comet" viewBox="0 0 64 64"><circle cx="43" cy="21" r="12" fill="currentColor"/><path d="M35 26 9 52m28-18L21 50m11-23L8 43" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/></symbol>
+        <symbol id="badge-castle" viewBox="0 0 64 64"><path d="M7 55V21h10V10h10v11h10V10h10v11h10v34H42V40H22v15Z" fill="currentColor"/><path d="M14 30h8v8h-8Zm28 0h8v8h-8Z" fill="var(--badge-disc, #fff)"/></symbol>
+      </defs>
+    </svg>
   </div>
 </body>
 </html>
