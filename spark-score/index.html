@@ -4,882 +4,448 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#101a2d">
-  <meta name="description" content="空に火花を置き、タップの位置と間隔を一回の光の譜面として残す小さな音の作品。">
-  <title>ひかり譜 / Spark Score</title>
+  <meta name="description" content="空に置いた火花の譜面を、音・光・速度・音色で変形して演奏する可変楽器。">
+  <title>ひかり譜 / Spark Score v2</title>
   <style>
-    :root {
-      --sky: #102039;
-      --sky-deep: #07111f;
-      --panel: rgba(18, 34, 57, 0.88);
-      --panel-soft: rgba(27, 48, 76, 0.78);
-      --line: rgba(201, 222, 236, 0.2);
-      --line-strong: rgba(201, 222, 236, 0.42);
-      --paper: #f5efe2;
-      --text: #edf6f8;
-      --muted: #9cb4c3;
-      --gold: #ffd166;
-      --gold-bright: #fff2ac;
-      --coral: #f38d6b;
-      --cyan: #7bd7dc;
-      --sans: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
-      --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-    }
-
-    * { box-sizing: border-box; }
-
-    html {
-      min-height: 100%;
-      background: var(--sky-deep);
-    }
-
-    body {
-      min-width: 320px;
-      min-height: 100vh;
-      margin: 0;
-      color: var(--text);
-      background:
-        radial-gradient(circle at 84% 4%, rgba(123, 215, 220, 0.17), transparent 24rem),
-        radial-gradient(circle at 8% 76%, rgba(243, 141, 107, 0.12), transparent 25rem),
-        linear-gradient(165deg, var(--sky), var(--sky-deep) 82%);
-      font-family: var(--sans);
-      line-height: 1.55;
-      -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
-    }
-
-    body::before {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-      content: "";
-      opacity: 0.17;
-      background-image: radial-gradient(rgba(255, 255, 255, 0.24) 0.55px, transparent 0.75px);
-      background-size: 6px 6px;
-    }
-
-    a,
-    button { -webkit-tap-highlight-color: transparent; }
-
-    button {
-      font: inherit;
-      touch-action: manipulation;
-    }
-
-    button:focus-visible,
-    a:focus-visible {
-      outline: 3px solid rgba(255, 209, 102, 0.9);
-      outline-offset: 3px;
-    }
-
-    .page {
-      position: relative;
-      z-index: 1;
-      width: min(100%, 680px);
-      margin: 0 auto;
-      padding: calc(16px + env(safe-area-inset-top))
-        calc(14px + env(safe-area-inset-right))
-        calc(30px + env(safe-area-inset-bottom))
-        calc(14px + env(safe-area-inset-left));
-    }
-
-    .back {
-      display: inline-flex;
-      align-items: center;
-      min-height: 48px;
-      color: var(--muted);
-      text-decoration: none;
-      font-family: var(--mono);
-      font-size: 0.7rem;
-      letter-spacing: 0.08em;
-    }
-
-    .back:hover { color: var(--gold); }
-
-    header {
-      margin: 14px 0 16px;
-      padding: 20px 19px 21px;
-      border: 1px solid var(--line-strong);
-      border-left: 6px solid var(--gold);
-      background: linear-gradient(135deg, rgba(30, 52, 81, 0.88), rgba(14, 27, 47, 0.8));
-      box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.14);
-    }
-
-    .eyebrow,
-    .kicker,
-    .phase,
-    .counter,
-    .hint-label,
-    .dock-label {
-      font-family: var(--mono);
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-
-    .eyebrow {
-      margin: 0 0 9px;
-      color: var(--gold);
-      font-size: 0.68rem;
-      font-weight: 700;
-    }
-
-    h1,
-    h2,
-    p { margin-top: 0; }
-
-    h1 {
-      max-width: 15ch;
-      margin: 0 0 9px;
-      color: var(--text);
-      font-size: clamp(2.2rem, 13vw, 4rem);
-      font-weight: 800;
-      letter-spacing: -0.06em;
-      line-height: 0.98;
-    }
-
-    h1 span {
-      display: block;
-      margin-top: 8px;
-      color: var(--gold);
-      font-family: Georgia, "Times New Roman", serif;
-      font-size: 0.46em;
-      font-style: italic;
-      font-weight: 400;
-      letter-spacing: 0.07em;
-    }
-
-    .lead {
-      max-width: 42ch;
-      margin-bottom: 0;
-      color: #c6d6df;
-      font-size: 0.92rem;
-      line-height: 1.78;
-    }
-
-    .workbench {
-      padding: 14px;
-      border: 1px solid var(--line);
-      background: rgba(12, 25, 44, 0.78);
-    }
-
-    .statusbar {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 0 2px 11px;
-      border-bottom: 1px solid var(--line-strong);
-    }
-
-    .phase {
-      color: var(--gold);
-      font-size: 0.72rem;
-      font-weight: 700;
-    }
-
-    .counter {
-      color: var(--muted);
-      font-size: 0.66rem;
-    }
-
-    .sky-frame {
-      position: relative;
-      width: 100%;
-      height: min(108vw, 440px);
-      min-height: 330px;
-      margin-top: 14px;
-      overflow: hidden;
-      border: 1px solid rgba(123, 215, 220, 0.32);
-      border-radius: 12px;
-      background: #0c1a31;
-      box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.24);
-    }
-
-    .sky-frame.is-disabled { cursor: default; }
-
-    #sky {
-      display: block;
-      width: 100%;
-      height: 100%;
-      touch-action: none;
-    }
-
-    .sky-copy {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      pointer-events: none;
-      color: rgba(237, 246, 248, 0.62);
-      font-family: var(--mono);
-      font-size: 0.68rem;
-      letter-spacing: 0.12em;
-      text-align: center;
-      text-transform: uppercase;
-      transition: opacity 160ms ease;
-    }
-
-    .sky-copy.is-hidden { opacity: 0; }
-
-    .hint-label {
-      color: var(--cyan);
-      font-size: 0.63rem;
-    }
-
-    .status {
-      min-height: 2.8em;
-      margin: 12px 2px 0;
-      color: #c9dce2;
-      font-size: 0.82rem;
-      line-height: 1.55;
-    }
-
-    .dock {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 4px;
-      padding-top: 13px;
-      border-top: 1px solid var(--line);
-    }
-
-    .dock-button {
-      flex: 1 1 120px;
-      min-height: 48px;
-      padding: 10px 12px;
-      border: 1px solid var(--line-strong);
-      border-radius: 9px;
-      color: var(--text);
-      background: var(--panel-soft);
-      cursor: pointer;
-      font-family: var(--mono);
-      font-size: 0.68rem;
-      letter-spacing: 0.08em;
-    }
-
-    .dock-button.primary {
-      color: #172331;
-      border-color: var(--gold);
-      background: var(--gold);
-      font-weight: 700;
-    }
-
-    .dock-button.sound {
-      flex: 0 0 auto;
-      min-width: 102px;
-    }
-
-    .dock-button:hover:not(:disabled) { border-color: var(--gold); }
-    .dock-button:active:not(:disabled) { transform: translateY(1px); }
-    .dock-button:disabled { cursor: not-allowed; opacity: 0.38; }
-
-    .dock-button[aria-pressed="false"] {
-      color: var(--muted);
-      border-color: var(--line);
-    }
-
-    .share-note {
-      margin: 11px 2px 0;
-      color: var(--muted);
-      font-size: 0.72rem;
-    }
-
-    footer {
-      margin-top: 19px;
-      color: rgba(156, 180, 195, 0.72);
-      font-family: var(--mono);
-      font-size: 0.64rem;
-      letter-spacing: 0.05em;
-      text-align: center;
-    }
-
-    @media (min-width: 600px) {
-      .page { padding-left: 20px; padding-right: 20px; }
-      .workbench { padding: 18px; }
-    }
-
-    @media (max-width: 350px) {
-      .page { padding-left: 11px; padding-right: 11px; }
-      .workbench { padding: 11px; }
-      .sky-frame { min-height: 300px; }
-      .dock-button { flex-basis: 105px; padding-left: 8px; padding-right: 8px; font-size: 0.63rem; }
-      .dock-button.sound { min-width: 94px; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        scroll-behavior: auto !important;
-        animation-duration: 0.001ms !important;
-        transition-duration: 0.001ms !important;
-      }
-    }
+    :root{--sky:#102039;--sky-deep:#07111f;--panel:rgba(18,34,57,.9);--panel-soft:rgba(27,48,76,.82);--line:rgba(201,222,236,.2);--line-strong:rgba(201,222,236,.42);--text:#edf6f8;--muted:#9cb4c3;--gold:#ffd166;--gold-bright:#fff2ac;--coral:#f38d6b;--cyan:#7bd7dc;--sans:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;--mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace}
+    *{box-sizing:border-box}html{min-height:100%;background:var(--sky-deep)}body{min-width:320px;min-height:100vh;margin:0;color:var(--text);background:radial-gradient(circle at 84% 4%,rgba(123,215,220,.17),transparent 24rem),radial-gradient(circle at 8% 76%,rgba(243,141,107,.12),transparent 25rem),linear-gradient(165deg,var(--sky),var(--sky-deep) 82%);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}body:before{position:fixed;inset:0;z-index:0;pointer-events:none;content:"";opacity:.17;background-image:radial-gradient(rgba(255,255,255,.24) .55px,transparent .75px);background-size:6px 6px}a,button{-webkit-tap-highlight-color:transparent}button,input,select{font:inherit}button{touch-action:manipulation}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid rgba(255,209,102,.9);outline-offset:2px}
+    .page{position:relative;z-index:1;width:min(100%,720px);margin:0 auto;padding:calc(12px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) calc(28px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left))}.back{display:inline-flex;align-items:center;min-height:44px;color:var(--muted);text-decoration:none;font-family:var(--mono);font-size:.68rem;letter-spacing:.08em}.back:hover{color:var(--gold)}header{margin:10px 0 14px;padding:18px 18px 20px;border:1px solid var(--line-strong);border-left:6px solid var(--gold);background:linear-gradient(135deg,rgba(30,52,81,.9),rgba(14,27,47,.84));box-shadow:8px 8px 0 rgba(0,0,0,.14)}.eyebrow,.kicker,.phase,.counter,.hint-label,.dock-label,.tab,.section-label,.value,.mini-label{font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase}.eyebrow{margin:0 0 8px;color:var(--gold);font-size:.64rem;font-weight:700}h1,h2,h3,p{margin-top:0}h1{max-width:15ch;margin:0 0 8px;color:var(--text);font-size:clamp(2.15rem,12vw,4rem);font-weight:800;letter-spacing:-.07em;line-height:.98}h1 span{display:block;margin-top:8px;color:var(--gold);font-family:Georgia,"Times New Roman",serif;font-size:.44em;font-style:italic;font-weight:400;letter-spacing:.07em}.lead{max-width:44ch;margin-bottom:0;color:#c6d6df;font-size:.88rem;line-height:1.75}.workbench{padding:11px;border:1px solid var(--line);background:rgba(12,25,44,.8)}.statusbar{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:0 2px 10px;border-bottom:1px solid var(--line-strong)}.phase{color:var(--gold);font-size:.68rem;font-weight:700}.counter{color:var(--muted);font-size:.62rem}.sky-frame{position:relative;width:100%;height:min(106vw,440px);min-height:290px;margin-top:12px;overflow:hidden;border:1px solid rgba(123,215,220,.32);border-radius:12px;background:#0c1a31;box-shadow:inset 0 0 50px rgba(0,0,0,.24)}#sky{display:block;width:100%;height:100%;touch-action:none}.sky-copy{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;pointer-events:none;color:rgba(237,246,248,.62);font-family:var(--mono);font-size:.64rem;letter-spacing:.1em;text-align:center;text-transform:uppercase;transition:opacity 160ms ease}.sky-copy.is-hidden{opacity:0}.hint-label{color:var(--cyan);font-size:.6rem}.status{min-height:2.8em;margin:10px 2px 0;color:#c9dce2;font-size:.78rem;line-height:1.55}.dock{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:4px;padding-top:11px;border-top:1px solid var(--line)}.dock-button,.tab,.small-button,.seg-button{min-height:46px;padding:9px 8px;border:1px solid var(--line-strong);border-radius:9px;color:var(--text);background:var(--panel-soft);cursor:pointer;font-family:var(--mono);font-size:.62rem;letter-spacing:.06em}.dock-button.primary{color:#172331;border-color:var(--gold);background:var(--gold);font-weight:700}.dock-button.sound{grid-column:span 2}.dock-button:hover:not(:disabled),.tab:hover,.small-button:hover,.seg-button:hover{border-color:var(--gold)}.dock-button:active:not(:disabled),.small-button:active,.seg-button:active{transform:translateY(1px)}.dock-button:disabled{cursor:not-allowed;opacity:.38}.dock-button[aria-pressed=false]{color:var(--muted);border-color:var(--line)}.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:11px}.tab{min-height:44px;padding:8px 4px;color:var(--muted);background:rgba(13,28,48,.78)}.tab[aria-selected=true]{color:#172331;border-color:var(--gold);background:var(--gold);font-weight:700}.panel{margin-top:10px;padding:11px 9px 4px;border-top:1px solid var(--line-strong)}.panel[hidden]{display:none}.panel-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px}.section-label{color:var(--gold);font-size:.64rem;font-weight:700}.panel-note{margin:0;color:var(--muted);font-size:.69rem}.macro-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.macro-card,.control-card,.fx-card,.lfo-card,.route-card,.reset-menu{padding:9px;border:1px solid var(--line);border-radius:9px;background:rgba(27,48,76,.5)}.macro-top,.control-top,.fx-top,.route-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}.macro-name,.control-name,.fx-name,.route-name{color:var(--text);font-size:.69rem;font-weight:700;letter-spacing:.07em}.value{color:var(--cyan);font-size:.6rem;white-space:nowrap}.micro-copy{min-height:2.1em;margin:4px 0 5px;color:var(--muted);font-size:.63rem;line-height:1.35}input[type=range]{width:100%;margin:5px 0 1px;accent-color:var(--gold)}input[type=range]:focus-visible{outline-offset:5px}.play-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:9px}.small-button{min-height:44px}.small-button.mutate{color:#172331;border-color:var(--cyan);background:var(--cyan);font-weight:700}.small-button.chaos{color:#271b22;border-color:var(--coral);background:var(--coral);font-weight:700}.intensity-row,.lock-row{display:flex;align-items:center;gap:8px;margin-top:8px;color:var(--muted);font-size:.67rem}.intensity-row input{flex:1}.xy-wrap{margin-top:11px}.xy-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px}.xy-targets{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px}.select-control,select{width:100%;min-height:42px;padding:7px 8px;color:var(--text);border:1px solid var(--line-strong);border-radius:7px;background:rgba(7,17,31,.66);font-size:.72rem}option{color:#142033;background:#f5efe2}.xy-pad{position:relative;width:min(100%,330px);height:154px;margin:8px auto 3px;overflow:hidden;border:1px solid rgba(123,215,220,.48);border-radius:9px;background:radial-gradient(circle at 50% 50%,rgba(255,209,102,.14),transparent 55%),linear-gradient(135deg,rgba(123,215,220,.1),rgba(243,141,107,.1));touch-action:none}.xy-pad:before,.xy-pad:after{position:absolute;content:"";pointer-events:none;background:rgba(201,222,236,.18)}.xy-pad:before{top:50%;right:0;left:0;height:1px}.xy-pad:after{top:0;bottom:0;left:50%;width:1px}.xy-dot{position:absolute;width:18px;height:18px;border:2px solid var(--gold-bright);border-radius:50%;background:var(--gold);box-shadow:0 0 18px rgba(255,209,102,.9);transform:translate(-50%,-50%);pointer-events:none}.xy-status{margin:0;color:var(--muted);font-family:var(--mono);font-size:.61rem;text-align:center}.control-list,.fx-list,.lfo-list,.routes{display:grid;gap:8px}.control-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.control-card select{margin-top:5px}.segmented{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:5px}.seg-button{min-height:40px;color:var(--muted)}.seg-button[aria-pressed=true]{color:#172331;border-color:var(--gold);background:var(--gold);font-weight:700}.fx-top select{width:53%;min-height:38px}.fx-control{display:grid;grid-template-columns:54px 1fr 46px;align-items:center;gap:7px;margin-top:4px;color:var(--muted);font-size:.63rem}.fx-control output{color:var(--cyan);font-family:var(--mono);font-size:.6rem;text-align:right}.lfo-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:6px}.lfo-card select{margin-top:5px}.lfo-control{display:grid;grid-template-columns:39px 1fr 39px;align-items:center;gap:5px;margin-top:4px;color:var(--muted);font-size:.6rem}.lfo-control output{color:var(--cyan);font-family:var(--mono);font-size:.56rem;text-align:right}.routes{margin-top:7px}.route-card{padding:8px}.route-row{display:grid;grid-template-columns:minmax(0,1.4fr) 31px minmax(0,1fr) 31px;align-items:center;gap:5px;margin-top:6px}.route-row select{min-height:36px;padding:5px;font-size:.62rem}.route-row input[type=range]{min-width:0;margin:0}.route-row output{color:var(--cyan);font-family:var(--mono);font-size:.55rem;text-align:center}.route-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;color:var(--muted);font-size:.6rem}.route-footer button{min-height:34px;padding:4px 8px;border:1px solid var(--line-strong);border-radius:6px;color:var(--muted);background:transparent;font-family:var(--mono);font-size:.58rem}.route-footer button:hover{border-color:var(--gold);color:var(--gold)}.lock-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:8px}.lock-grid label{display:flex;align-items:center;gap:5px;min-height:34px;color:var(--muted);font-size:.62rem}.lock-grid input{accent-color:var(--coral)}.reset-menu{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}.reset-menu[hidden]{display:none}.reset-menu button{min-height:42px;padding:5px;border:1px solid var(--line-strong);border-radius:7px;color:var(--text);background:rgba(7,17,31,.6);font-family:var(--mono);font-size:.57rem}.reset-menu button:hover{border-color:var(--coral);color:var(--coral)}.share-note{margin:10px 2px 0;color:var(--muted);font-size:.65rem}footer{margin-top:16px;color:rgba(156,180,195,.72);font-family:var(--mono);font-size:.58rem;letter-spacing:.04em;text-align:center}
+    @media (min-width:600px){.page{padding-left:20px;padding-right:20px}.workbench{padding:16px}}@media (max-width:350px){.page{padding-left:10px;padding-right:10px}.workbench{padding:9px}.sky-frame{min-height:276px}.dock-button{font-size:.56rem;padding-left:4px;padding-right:4px}.macro-card,.control-card,.fx-card,.lfo-card,.route-card{padding:7px}.xy-pad{height:140px}}@media (prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.001ms!important;transition-duration:.001ms!important}}
   </style>
 </head>
 <body>
   <main class="page">
-    <a class="back" href="../">← YZRS WORKS</a>
-
-    <header>
-      <p class="eyebrow">FREE POSITION / ONE SCORE</p>
-      <h1>ひかり譜<span>Spark Score</span></h1>
-      <p class="lead">空に火花を置く。置いた場所と、火花どうしの間隔を、一度だけ再生できる光の譜面にします。</p>
-    </header>
-
+    <a class="back" href="../" aria-label="アプリ一覧へ戻る">← YZRS WORKS</a>
+    <header><p class="eyebrow">MUTABLE INSTRUMENT / SCORE IS SACRED</p><h1>ひかり譜<span>Spark Score v2</span></h1><p class="lead">空に置いた火花の譜面はそのまま。速度、音色、効果、揺れを変えながら、同じ譜面を何度でも別の楽器として演奏します。</p></header>
     <section class="workbench" aria-labelledby="bench-heading">
-      <div class="statusbar">
-        <span class="phase" id="phase">EMPTY</span>
-        <span class="counter" id="counter">0 / 16 TAPS</span>
-      </div>
-
-      <div class="sky-frame" id="sky-frame">
-        <canvas id="sky" role="application" aria-label="火花を置く空。REC中にタップしてください。" aria-describedby="status"></canvas>
-        <div class="sky-copy" id="sky-copy"><span class="hint-label">RECを押して、空に1〜16個の火花を置く</span></div>
-      </div>
-
-      <p class="status" id="status" role="status" aria-live="polite">RECを押すと12秒間の記録が始まります。1〜16タップで完成します。0タップで終了すると空に戻ります。</p>
-
-      <div class="dock" aria-label="操作">
-        <button class="dock-button primary" id="record-button" type="button">● REC</button>
-        <button class="dock-button" id="play-button" type="button" disabled>▶ PLAY</button>
-        <button class="dock-button" id="share-button" type="button" disabled>↗ SHARE</button>
-        <button class="dock-button" id="reset-button" type="button">RESET</button>
-        <button class="dock-button sound" id="sound-button" type="button" aria-pressed="true">♫ SOUND ON</button>
-      </div>
-      <p class="share-note">最大16タップ / 記録は12秒まで / 共有URLに位置と間隔を封入</p>
+      <div class="statusbar"><span class="phase" id="phase">EMPTY</span><span class="counter" id="counter">0 / 16 TAPS</span></div>
+      <div class="sky-frame" id="sky-frame"><canvas id="sky" role="application" aria-label="火花を置く空。REC中にタップしてください。" aria-describedby="status"></canvas><div class="sky-copy" id="sky-copy"><span class="hint-label">RECを押して、空に1〜16個の火花を置く</span></div></div>
+      <p class="status" id="status" role="status" aria-live="polite">RECを押すと12秒間の記録が始まります。1〜16タップで譜面が完成します。</p>
+      <div class="dock" aria-label="基本操作"><button class="dock-button primary" id="record-button" type="button">● REC</button><button class="dock-button" id="play-button" type="button" disabled>▶ PLAY</button><button class="dock-button" id="share-button" type="button" disabled>↗ SHARE</button><button class="dock-button" id="reset-button" type="button" aria-expanded="false">RESET</button><button class="dock-button sound" id="sound-button" type="button" aria-pressed="true">♫ SOUND ON</button></div>
+      <div class="tabs" role="tablist" aria-label="楽器の編集ページ"><button class="tab" type="button" role="tab" aria-selected="true" aria-controls="play-panel" data-tab="play">PLAY</button><button class="tab" type="button" role="tab" aria-selected="false" aria-controls="sound-panel" data-tab="sound">SOUND</button><button class="tab" type="button" role="tab" aria-selected="false" aria-controls="fx-panel" data-tab="fx">FX</button><button class="tab" type="button" role="tab" aria-selected="false" aria-controls="mod-panel" data-tab="mod">MOD</button></div>
+      <section class="panel" id="play-panel" role="tabpanel"><div class="panel-head"><span class="section-label">PERFORMANCE</span><p class="panel-note" id="patch-summary">A–D are assignable</p></div><div class="macro-grid" aria-label="アサイナブル・マクロ"><div class="macro-card"><div class="macro-top"><span class="macro-name">MACRO A</span><output class="value" id="macro-value-0">50%</output></div><p class="micro-copy" id="macro-copy-0">—</p><input type="range" min="0" max="100" value="50" step="1" data-macro="0" aria-label="Macro A"></div><div class="macro-card"><div class="macro-top"><span class="macro-name">MACRO B</span><output class="value" id="macro-value-1">50%</output></div><p class="micro-copy" id="macro-copy-1">—</p><input type="range" min="0" max="100" value="50" step="1" data-macro="1" aria-label="Macro B"></div><div class="macro-card"><div class="macro-top"><span class="macro-name">MACRO C</span><output class="value" id="macro-value-2">50%</output></div><p class="micro-copy" id="macro-copy-2">—</p><input type="range" min="0" max="100" value="50" step="1" data-macro="2" aria-label="Macro C"></div><div class="macro-card"><div class="macro-top"><span class="macro-name">MACRO D</span><output class="value" id="macro-value-3">50%</output></div><p class="micro-copy" id="macro-copy-3">—</p><input type="range" min="0" max="100" value="50" step="1" data-macro="3" aria-label="Macro D"></div></div><div class="play-actions"><button class="small-button mutate" id="mutate-button" type="button">MUTATE</button><button class="small-button chaos" id="chaos-button" type="button">CHAOS</button></div><div class="intensity-row"><span class="mini-label">INTENSITY</span><input id="mutation-intensity" type="range" min="0" max="100" step="1" value="42" aria-label="Mutation intensity"><output class="value" id="mutation-value">42%</output></div><div class="xy-wrap"><div class="xy-head"><span class="section-label">XY PERFORMANCE</span><span class="value" id="xy-value">50 / 50</span></div><div class="xy-targets"><label><span class="mini-label">X</span><select id="xy-x-target" aria-label="XY X target"></select></label><label><span class="mini-label">Y</span><select id="xy-y-target" aria-label="XY Y target"></select></label></div><div class="xy-pad" id="xy-pad" role="application" aria-label="アサイナブルXYパッド"><span class="xy-dot" id="xy-dot"></span></div><p class="xy-status">指を動かすと、選んだ2つの演奏パラメータを同時に変えます。</p></div><div class="reset-menu" id="reset-menu" hidden><button type="button" data-reset="score">RESET SCORE</button><button type="button" data-reset="patch">RESET PATCH</button><button type="button" data-reset="all">RESET ALL</button></div></section>
+      <section class="panel" id="sound-panel" role="tabpanel" hidden><div class="panel-head"><span class="section-label">SOUND / PLAY</span><p class="panel-note">深い設定はここから</p></div><div class="control-list"><div class="control-card"><div class="control-top"><span class="control-name">SPEED</span><output class="value" id="speed-value">1.00x</output></div><input id="speed-input" type="range" min="0" max="1" step="0.001" value="0.5" aria-label="Playback speed"></div><div class="control-card"><div class="control-top"><span class="control-name">DIRECTION</span></div><div class="segmented"><button class="seg-button" type="button" data-direction="forward" aria-pressed="true">FORWARD</button><button class="seg-button" type="button" data-direction="reverse" aria-pressed="false">REVERSE</button></div></div><div class="control-grid"><div class="control-card"><div class="control-top"><span class="control-name">TRANSPOSE</span><output class="value" id="transpose-value">0 st</output></div><input id="transpose-input" type="range" min="-24" max="24" step="1" value="0" aria-label="Transpose"></div><div class="control-card"><div class="control-top"><span class="control-name">ROOT / SCALE</span></div><select id="root-input" aria-label="Root note"><option value="0">C</option><option value="1">C#</option><option value="2">D</option><option value="3">Eb</option><option value="4">E</option><option value="5">F</option><option value="6">F#</option><option value="7">G</option><option value="8">Ab</option><option value="9">A</option><option value="10">Bb</option><option value="11">B</option></select><select id="scale-input" aria-label="Scale" style="margin-top:5px"><option value="pentatonic">PENTATONIC</option><option value="major">MAJOR</option><option value="minor">MINOR</option><option value="chromatic">CHROMATIC</option></select></div></div><div class="control-grid"><div class="control-card"><div class="control-top"><span class="control-name">SHAPE</span><output class="value" id="shape-value">TRI</output></div><input id="shape-input" type="range" min="0" max="1" step="0.001" value="0.34" aria-label="Oscillator shape"></div><div class="control-card"><div class="control-top"><span class="control-name">DETUNE</span><output class="value" id="detune-value">3 ct</output></div><input id="detune-input" type="range" min="0" max="50" step="1" value="3" aria-label="Detune"></div></div><div class="control-card"><div class="control-top"><span class="control-name">AMP ENVELOPE</span><span class="value">A / D / S / R</span></div><div class="control-grid"><label class="mini-label">A <input id="attack-input" type="range" min="0" max="1" step="0.001" value="0.02"><output class="value" id="attack-value"></output></label><label class="mini-label">D <input id="decay-input" type="range" min="0" max="1" step="0.001" value="0.2"><output class="value" id="decay-value"></output></label><label class="mini-label">S <input id="sustain-input" type="range" min="0" max="1" step="0.001" value="0.55"><output class="value" id="sustain-value"></output></label><label class="mini-label">R <input id="release-input" type="range" min="0" max="1" step="0.001" value="0.22"><output class="value" id="release-value"></output></label></div></div><div class="control-card"><div class="control-top"><span class="control-name">FILTER</span><span class="value">SPATIAL Y TRACKING</span></div><div class="control-grid"><label class="mini-label">CUTOFF <input id="cutoff-input" type="range" min="0" max="1" step="0.001" value="0.88"><output class="value" id="cutoff-value"></output></label><label class="mini-label">RESONANCE <input id="resonance-input" type="range" min="0" max="1" step="0.001" value="0.08"><output class="value" id="resonance-value"></output></label><label class="mini-label">Y INFLUENCE <input id="tracking-input" type="range" min="0" max="1" step="0.001" value="0.95"><output class="value" id="tracking-value"></output></label><label class="mini-label">PAN <input id="pan-input" type="range" min="-1" max="1" step="0.01" value="0"><output class="value" id="pan-value"></output></label></div></div></div></section>
+      <section class="panel" id="fx-panel" role="tabpanel" hidden><div class="panel-head"><span class="section-label">FX RACK / 3 SLOTS</span><p class="panel-note">スロットごとに交換・バイパス</p></div><div class="fx-list"><div class="fx-card" data-fx-card="0"><div class="fx-top"><span class="fx-name">FX SLOT 1</span><select class="fx-type" data-fx="0" aria-label="FX slot 1 type"><option value="off">BYPASS</option><option value="delay">DELAY</option><option value="reverb">REVERB</option><option value="chorus">CHORUS</option><option value="tremolo">TREMOLO</option></select></div><div class="fx-control"><span>MIX</span><input class="fx-mix" data-fx="0" type="range" min="0" max="1" step="0.001"><output class="fx-mix-value"></output></div><div class="fx-control"><span class="fx-a-label">A</span><input class="fx-a" data-fx="0" type="range" min="0" max="1" step="0.001"><output class="fx-a-value"></output></div><div class="fx-control"><span class="fx-b-label">B</span><input class="fx-b" data-fx="0" type="range" min="0" max="1" step="0.001"><output class="fx-b-value"></output></div></div><div class="fx-card" data-fx-card="1"><div class="fx-top"><span class="fx-name">FX SLOT 2</span><select class="fx-type" data-fx="1" aria-label="FX slot 2 type"><option value="off">BYPASS</option><option value="delay">DELAY</option><option value="reverb">REVERB</option><option value="chorus">CHORUS</option><option value="tremolo">TREMOLO</option></select></div><div class="fx-control"><span>MIX</span><input class="fx-mix" data-fx="1" type="range" min="0" max="1" step="0.001"><output class="fx-mix-value"></output></div><div class="fx-control"><span class="fx-a-label">A</span><input class="fx-a" data-fx="1" type="range" min="0" max="1" step="0.001"><output class="fx-a-value"></output></div><div class="fx-control"><span class="fx-b-label">B</span><input class="fx-b" data-fx="1" type="range" min="0" max="1" step="0.001"><output class="fx-b-value"></output></div></div><div class="fx-card" data-fx-card="2"><div class="fx-top"><span class="fx-name">FX SLOT 3</span><select class="fx-type" data-fx="2" aria-label="FX slot 3 type"><option value="off">BYPASS</option><option value="delay">DELAY</option><option value="reverb">REVERB</option><option value="chorus">CHORUS</option><option value="tremolo">TREMOLO</option></select></div><div class="fx-control"><span>MIX</span><input class="fx-mix" data-fx="2" type="range" min="0" max="1" step="0.001"><output class="fx-mix-value"></output></div><div class="fx-control"><span class="fx-a-label">A</span><input class="fx-a" data-fx="2" type="range" min="0" max="1" step="0.001"><output class="fx-a-value"></output></div><div class="fx-control"><span class="fx-b-label">B</span><input class="fx-b" data-fx="2" type="range" min="0" max="1" step="0.001"><output class="fx-b-value"></output></div></div></div></section>
+      <section class="panel" id="mod-panel" role="tabpanel" hidden><div class="panel-head"><span class="section-label">MOD / ASSIGN</span><p class="panel-note">LFOは同じparameter registryを共有</p></div><div class="lfo-grid"><div class="lfo-card" data-lfo-card="0"><div class="macro-top"><span class="macro-name">LFO 1</span><output class="value lfo-title">CUTOFF</output></div><select class="lfo-shape" data-lfo="0" aria-label="LFO 1 shape"><option value="sine">SINE</option><option value="triangle">TRIANGLE</option><option value="square">SQUARE</option><option value="random">SAMPLE&HOLD</option></select><select class="lfo-target" data-lfo="0" aria-label="LFO 1 target"></select><div class="lfo-control"><span>RATE</span><input class="lfo-rate" data-lfo="0" type="range" min="0" max="1" step="0.001"><output class="lfo-rate-value"></output></div><div class="lfo-control"><span>DEPTH</span><input class="lfo-depth" data-lfo="0" type="range" min="0" max="1" step="0.001"><output class="lfo-depth-value"></output></div></div><div class="lfo-card" data-lfo-card="1"><div class="macro-top"><span class="macro-name">LFO 2</span><output class="value lfo-title">PAN</output></div><select class="lfo-shape" data-lfo="1" aria-label="LFO 2 shape"><option value="sine">SINE</option><option value="triangle">TRIANGLE</option><option value="square">SQUARE</option><option value="random">SAMPLE&HOLD</option></select><select class="lfo-target" data-lfo="1" aria-label="LFO 2 target"></select><div class="lfo-control"><span>RATE</span><input class="lfo-rate" data-lfo="1" type="range" min="0" max="1" step="0.001"><output class="lfo-rate-value"></output></div><div class="lfo-control"><span>DEPTH</span><input class="lfo-depth" data-lfo="1" type="range" min="0" max="1" step="0.001"><output class="lfo-depth-value"></output></div></div></div><div class="panel-head" style="margin-top:13px"><span class="section-label">MACRO ROUTING</span><p class="panel-note">1本の指で最大3 destination</p></div><div class="routes" id="macro-routes"></div><div class="panel-head" style="margin-top:13px"><span class="section-label">LOCKS</span><p class="panel-note">MUTATE / CHAOSから守る</p></div><div class="lock-grid"><label><input type="checkbox" data-lock="playback"> PLAYBACK</label><label><input type="checkbox" data-lock="timbre"> TIMBRE</label><label><input type="checkbox" data-lock="envelope"> ENVELOPE</label><label><input type="checkbox" data-lock="filter"> FILTER</label><label><input type="checkbox" data-lock="fx"> FX</label><label><input type="checkbox" data-lock="mod"> MOD</label><label><input type="checkbox" data-lock="macros"> MACROS</label><label><input type="checkbox" data-lock="xy"> XY</label></div></section>
+      <p class="share-note" id="share-note">最大16タップ / 12秒 / SCOREとPATCHをv2 URLに封入。譜面そのものはMUTATEで変わりません。</p>
     </section>
-
-    <footer>ひかり譜 / Spark Score — 音声とスコアはこの端末内で処理されます。</footer>
+    <footer>ひかり譜 / Spark Score v2 — 音声・譜面・パッチはこの端末内で処理されます。</footer>
   </main>
-
   <script>
-    (() => {
-      "use strict";
+  (() => {
+    "use strict";
 
-      const VERSION = 1;
-      const MAX_POINTS = 16;
-      const MAX_TIME_MS = 12000;
-      const STORAGE_KEY = "yzrs-spark-score:last";
-      const NOTE_FREQS = [261.63, 293.66, 329.63, 392.00, 440.00];
-      const NOTE_NAMES = ["C5", "D5", "E5", "G5", "A5"];
-      const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    /* v2 keeps SCORE (positions/timing) separate from PATCH (performance). */
+    const VERSION = 2;
+    const LEGACY_VERSION = 1;
+    const MAX_POINTS = 16;
+    const MAX_TIME_MS = 12000;
+    const STORAGE_KEY = "yzrs-spark-score:v2:last";
+    const LEGACY_STORAGE_KEY = "yzrs-spark-score:last";
+    const MAX_MACRO_ROUTES = 3;
+    const MAX_URL_CHARS = 8192;
+    const MAX_PAYLOAD_BYTES = 6144;
+    const MAX_VOICES = 8;
+    const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-      const phaseEl = document.querySelector("#phase");
-      const counterEl = document.querySelector("#counter");
-      const statusEl = document.querySelector("#status");
-      const skyFrame = document.querySelector("#sky-frame");
-      const skyCopy = document.querySelector("#sky-copy");
-      const canvas = document.querySelector("#sky");
-      const recordButton = document.querySelector("#record-button");
-      const playButton = document.querySelector("#play-button");
-      const shareButton = document.querySelector("#share-button");
-      const resetButton = document.querySelector("#reset-button");
-      const soundButton = document.querySelector("#sound-button");
-      const context2d = canvas.getContext("2d");
+    const SCALE_INTERVALS = {
+      pentatonic: [0, 2, 4, 7, 9],
+      major: [0, 2, 4, 5, 7, 9, 11],
+      minor: [0, 2, 3, 5, 7, 8, 10],
+      chromatic: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    };
+    const WAVEFORMS = ["sine", "triangle", "sawtooth", "square"];
+    const parameterRegistry = {
+      speed: { label: "SPEED", min: 0.1, max: 8, step: 0.01, toNorm: v => Math.log(clamp(v, 0.1, 8) / 0.1) / Math.log(80), fromNorm: n => 0.1 * Math.pow(80, clamp(n, 0, 1)), format: v => `${Number(v).toFixed(2)}x`, domain: "playback" },
+      transpose: { label: "TRANSPOSE", min: -24, max: 24, step: 1, toNorm: v => (clamp(v, -24, 24) + 24) / 48, fromNorm: n => -24 + clamp(n, 0, 1) * 48, format: v => `${Math.round(v)}st`, domain: "playback" },
+      shape: { label: "SHAPE", min: 0, max: 1, step: 0.001, toNorm: v => clamp(v, 0, 1), fromNorm: n => clamp(n, 0, 1), format: v => { const p = clamp(v, 0, 1) * 3; const i = Math.min(2, Math.floor(p)); return `${WAVEFORMS[i].slice(0, 3).toUpperCase()}→${WAVEFORMS[i + 1].slice(0, 3).toUpperCase()}`; }, domain: "timbre" },
+      detune: { label: "DETUNE", min: 0, max: 50, step: 1, toNorm: v => clamp(v, 0, 50) / 50, fromNorm: n => clamp(n, 0, 1) * 50, format: v => `${Math.round(v)}ct`, domain: "timbre" },
+      attack: { label: "ATTACK", min: 0.004, max: 1.5, step: 0.001, toNorm: v => Math.sqrt(clamp(v, 0.004, 1.5) / 1.5), fromNorm: n => 0.004 + Math.pow(clamp(n, 0, 1), 2) * 1.496, format: v => `${Number(v).toFixed(2)}s`, domain: "envelope" },
+      decay: { label: "DECAY", min: 0.03, max: 2.5, step: 0.001, toNorm: v => Math.sqrt(clamp(v, 0.03, 2.5) / 2.5), fromNorm: n => 0.03 + Math.pow(clamp(n, 0, 1), 2) * 2.47, format: v => `${Number(v).toFixed(2)}s`, domain: "envelope" },
+      sustain: { label: "SUSTAIN", min: 0.04, max: 1, step: 0.001, toNorm: v => clamp(v, 0.04, 1), fromNorm: n => 0.04 + clamp(n, 0, 1) * 0.96, format: v => `${Math.round(v * 100)}%`, domain: "envelope" },
+      release: { label: "RELEASE", min: 0.03, max: 3, step: 0.001, toNorm: v => Math.sqrt(clamp(v, 0.03, 3) / 3), fromNorm: n => 0.03 + Math.pow(clamp(n, 0, 1), 2) * 2.97, format: v => `${Number(v).toFixed(2)}s`, domain: "envelope" },
+      cutoff: { label: "CUTOFF", min: 180, max: 12000, step: 1, toNorm: v => Math.log(clamp(v, 180, 12000) / 180) / Math.log(12000 / 180), fromNorm: n => 180 * Math.pow(12000 / 180, clamp(n, 0, 1)), format: v => `${Math.round(v)}Hz`, domain: "filter" },
+      resonance: { label: "RESONANCE", min: 0.1, max: 16, step: 0.01, toNorm: v => Math.sqrt(clamp(v, 0.1, 16) / 16), fromNorm: n => 0.1 + Math.pow(clamp(n, 0, 1), 2) * 15.9, format: v => Number(v).toFixed(1), domain: "filter" },
+      tracking: { label: "Y INFLUENCE", min: 0, max: 1, step: 0.001, toNorm: v => clamp(v, 0, 1), fromNorm: n => clamp(n, 0, 1), format: v => `${Math.round(v * 100)}%`, domain: "filter" },
+      pan: { label: "PAN", min: -1, max: 1, step: 0.01, toNorm: v => (clamp(v, -1, 1) + 1) / 2, fromNorm: n => -1 + clamp(n, 0, 1) * 2, format: v => Number(v) < -0.01 ? `L${Math.round(Math.abs(v) * 100)}` : Number(v) > 0.01 ? `R${Math.round(v * 100)}` : "C", domain: "filter" },
+      fx1Mix: { label: "FX1 MIX", min: 0, max: 1, step: 0.001, toNorm: v => clamp(v, 0, 1), fromNorm: n => clamp(n, 0, 1), format: v => `${Math.round(v * 100)}%`, domain: "fx" },
+      fx2Mix: { label: "FX2 MIX", min: 0, max: 1, step: 0.001, toNorm: v => clamp(v, 0, 1), fromNorm: n => clamp(n, 0, 1), format: v => `${Math.round(v * 100)}%`, domain: "fx" },
+      fx3Mix: { label: "FX3 MIX", min: 0, max: 1, step: 0.001, toNorm: v => clamp(v, 0, 1), fromNorm: n => clamp(n, 0, 1), format: v => `${Math.round(v * 100)}%`, domain: "fx" },
+      lfo1Rate: { label: "LFO1 RATE", min: 0.05, max: 16, step: 0.01, toNorm: v => Math.sqrt(clamp(v, 0.05, 16) / 16), fromNorm: n => 0.05 + Math.pow(clamp(n, 0, 1), 2) * 15.95, format: v => `${Number(v).toFixed(2)}Hz`, domain: "mod" },
+      lfo1Depth: { label: "LFO1 DEPTH", min: 0, max: 1, step: 0.001, toNorm: v => clamp(v, 0, 1), fromNorm: n => clamp(n, 0, 1), format: v => `${Math.round(v * 100)}%`, domain: "mod" },
+      lfo2Rate: { label: "LFO2 RATE", min: 0.05, max: 16, step: 0.01, toNorm: v => Math.sqrt(clamp(v, 0.05, 16) / 16), fromNorm: n => 0.05 + Math.pow(clamp(n, 0, 1), 2) * 15.95, format: v => `${Number(v).toFixed(2)}Hz`, domain: "mod" },
+      lfo2Depth: { label: "LFO2 DEPTH", min: 0, max: 1, step: 0.001, toNorm: v => clamp(v, 0, 1), fromNorm: n => clamp(n, 0, 1), format: v => `${Math.round(v * 100)}%`, domain: "mod" }
+    };
+    const MACRO_TARGETS = Object.keys(parameterRegistry);
+    const MOD_TARGETS = ["speed", "transpose", "shape", "cutoff", "pan", "fx1Mix", "fx2Mix", "fx3Mix"];
 
-      let phase = "empty";
-      let points = [];
-      let firstTapAt = null;
-      let recordTimer = null;
-      let playbackTimer = null;
-      let playbackIndex = -1;
-      let soundOn = true;
-      let audioContext = null;
-      let masterGain = null;
-      let bursts = [];
-      let animationFrame = null;
+    const $ = selector => document.querySelector(selector);
+    const $$ = selector => Array.from(document.querySelectorAll(selector));
+    const phaseEl = $("#phase");
+    const counterEl = $("#counter");
+    const statusEl = $("#status");
+    const skyFrame = $("#sky-frame");
+    const skyCopy = $("#sky-copy");
+    const canvas = $("#sky");
+    const context2d = canvas.getContext("2d");
+    const recordButton = $("#record-button");
+    const playButton = $("#play-button");
+    const shareButton = $("#share-button");
+    const resetButton = $("#reset-button");
+    const resetMenu = $("#reset-menu");
+    const soundButton = $("#sound-button");
+    const xyPad = $("#xy-pad");
+    const xyDot = $("#xy-dot");
 
-      function emptyPoints() { return []; }
+    let phase = "empty";
+    let score = [];
+    let firstTapAt = null;
+    let recordTimer = null;
+    let playbackTimer = null;
+    let playback = null;
+    let soundOn = true;
+    let audio = null;
+    let bursts = [];
+    let animationFrame = null;
+    let saveTimer = null;
+    let patch = null;
 
-      function clampInteger(value, min, max) {
-        return Math.max(min, Math.min(max, Math.round(value)));
-      }
+    function clamp(value, min, max) { return Math.max(min, Math.min(max, Number(value))); }
+    function finite(value) { return Number.isFinite(Number(value)); }
+    function round(value, digits = 3) { const p = 10 ** digits; return Math.round(Number(value) * p) / p; }
+    function clone(value) { return JSON.parse(JSON.stringify(value)); }
+    function lerp(a, b, t) { return a + (b - a) * clamp(t, 0, 1); }
+    function normFor(name, value) { return parameterRegistry[name].toNorm(value); }
+    function valueFor(name, normalized) { return parameterRegistry[name].fromNorm(normalized); }
 
-      function validPoint(point) {
-        return point && Number.isSafeInteger(point.x) && Number.isSafeInteger(point.y) && Number.isSafeInteger(point.t)
-          && point.x >= 0 && point.x <= 255
-          && point.y >= 0 && point.y <= 255
-          && point.t >= 0 && point.t <= MAX_TIME_MS;
-      }
+    function defaults() {
+      return {
+        params: { speed: 1, direction: "forward", transpose: 0, root: 0, scale: "pentatonic", shape: 0.34, detune: 3, attack: 0.018, decay: 0.21, sustain: 0.56, release: 0.36, cutoff: 8600, resonance: 0.8, tracking: 0.95, pan: 0 },
+        fx: [{ type: "off", mix: 0, a: 0.28, b: 0.22 }, { type: "off", mix: 0, a: 0.45, b: 0.42 }, { type: "off", mix: 0, a: 0.28, b: 0.25 }],
+        lfo: [{ shape: "sine", rate: 0.35, depth: 0.18, target: "cutoff" }, { shape: "triangle", rate: 0.22, depth: 0.12, target: "pan" }],
+        macros: [{ value: 0.5, routes: [] }, { value: 0.5, routes: [] }, { value: 0.5, routes: [] }, { value: 0.5, routes: [] }],
+        xy: { xTarget: "pan", yTarget: "tracking", xValue: 0.5, yValue: 0.05 },
+        locks: { playback: false, timbre: false, envelope: false, filter: false, fx: false, mod: false, macros: false, xy: false },
+        intensity: 0.42
+      };
+    }
 
-      function validatePoints(candidate) {
-        if (!Array.isArray(candidate) || candidate.length > MAX_POINTS) return null;
-        let previousTime = -1;
-        const clean = candidate.map((point) => {
-          if (!point || typeof point !== "object") return null;
-          return { x: Number(point.x), y: Number(point.y), t: Number(point.t) };
-        });
-        if (!clean.every(validPoint)) return null;
-        for (const point of clean) {
-          if (point.t < previousTime) return null;
-          previousTime = point.t;
-        }
-        if (clean.length > 0 && clean[0].t !== 0) return null;
-        return clean;
-      }
+    function legacyDefaults() {
+      const base = defaults();
+      base.params.speed = 1; base.params.direction = "forward"; base.params.transpose = 0; base.params.shape = 0.34; base.params.detune = 3;
+      base.params.attack = 0.008; base.params.decay = 0.12; base.params.sustain = 0.48; base.params.release = 0.18; base.params.cutoff = 12000; base.params.resonance = 0.2; base.params.tracking = 0.8; base.params.pan = 0;
+      base.fx = base.fx.map(slot => ({ ...slot, type: "off", mix: 0 })); base.lfo = base.lfo.map(item => ({ ...item, depth: 0 }));
+      base.macros = base.macros.map(macro => ({ ...macro, routes: [] })); base.xy = { xTarget: "pan", yTarget: "tracking", xValue: 0.5, yValue: 0.2 };
+      return base;
+    }
 
-      function encodeHash(candidate) {
-        const clean = validatePoints(candidate) || [];
-        const body = clean.map((point) => `${point.x},${point.y},${point.t}`).join(";");
-        return `#v${VERSION}/${clean.length}/${body}`;
-      }
+    function validPoint(point) { return point && Number.isSafeInteger(point.x) && Number.isSafeInteger(point.y) && Number.isSafeInteger(point.t) && point.x >= 0 && point.x <= 255 && point.y >= 0 && point.y <= 255 && point.t >= 0 && point.t <= MAX_TIME_MS; }
+    function sanitizeScore(candidate, allowEmpty = true) {
+      if (!Array.isArray(candidate) || candidate.length > MAX_POINTS || (!allowEmpty && candidate.length === 0)) return null;
+      const clean = candidate.map(point => { if (Array.isArray(point) && point.length === 3) return { x: Number(point[0]), y: Number(point[1]), t: Number(point[2]) }; if (point && typeof point === "object") return { x: Number(point.x), y: Number(point.y), t: Number(point.t) }; return null; });
+      if (!clean.every(validPoint)) return null; let previous = -1; for (const point of clean) { if (point.t < previous) return null; previous = point.t; } if (clean.length && clean[0].t !== 0) return null; return clean;
+    }
+    function validEnum(value, values) { return typeof value === "string" && values.includes(value); }
+    function sanitizePatch(raw, strict = false) {
+      if (!raw || typeof raw !== "object") return null;
+      const base = defaults(); const required = ["params", "fx", "lfo", "macros", "xy", "locks", "intensity"];
+      if (strict && required.some(key => !(key in raw))) return null; if (!raw.params || typeof raw.params !== "object") return null;
+      const p = base.params; const numericParams = ["speed", "transpose", "shape", "detune", "attack", "decay", "sustain", "release", "cutoff", "resonance", "tracking", "pan"];
+      for (const name of numericParams) { if (strict && !finite(raw.params[name])) return null; if (finite(raw.params[name])) p[name] = Number(raw.params[name]); }
+      if (strict && !validEnum(raw.params.direction, ["forward", "reverse"])) return null; if (validEnum(raw.params.direction, ["forward", "reverse"])) p.direction = raw.params.direction;
+      if (strict && !finite(raw.params.root)) return null; if (finite(raw.params.root)) p.root = clamp(Math.round(raw.params.root), 0, 11);
+      if (strict && !validEnum(raw.params.scale, Object.keys(SCALE_INTERVALS))) return null; if (validEnum(raw.params.scale, Object.keys(SCALE_INTERVALS))) p.scale = raw.params.scale;
+      p.speed = clamp(p.speed, 0.1, 8); p.transpose = clamp(Math.round(p.transpose), -24, 24); p.shape = clamp(p.shape, 0, 1); p.detune = clamp(p.detune, 0, 50); p.attack = clamp(p.attack, 0.004, 1.5); p.decay = clamp(p.decay, 0.03, 2.5); p.sustain = clamp(p.sustain, 0.04, 1); p.release = clamp(p.release, 0.03, 3); p.cutoff = clamp(p.cutoff, 180, 12000); p.resonance = clamp(p.resonance, 0.1, 16); p.tracking = clamp(p.tracking, 0, 1); p.pan = clamp(p.pan, -1, 1);
+      if (!Array.isArray(raw.fx) || raw.fx.length !== 3) return null; base.fx = raw.fx.map(slot => { if (!slot || !validEnum(slot.type, ["off", "delay", "reverb", "chorus", "tremolo"]) || !finite(slot.mix) || !finite(slot.a) || !finite(slot.b)) return null; return { type: slot.type, mix: clamp(slot.mix, 0, 1), a: clamp(slot.a, 0, 1), b: clamp(slot.b, 0, 1) }; }); if (base.fx.some(slot => !slot)) return null;
+      if (!Array.isArray(raw.lfo) || raw.lfo.length !== 2) return null; base.lfo = raw.lfo.map(item => { if (!item || !validEnum(item.shape, ["sine", "triangle", "square", "random"]) || !finite(item.rate) || !finite(item.depth) || !validEnum(item.target, MOD_TARGETS)) return null; return { shape: item.shape, rate: clamp(item.rate, 0.05, 16), depth: clamp(item.depth, 0, 1), target: item.target }; }); if (base.lfo.some(item => !item)) return null;
+      if (!Array.isArray(raw.macros) || raw.macros.length !== 4) return null; base.macros = raw.macros.map(macro => { if (!macro || !finite(macro.value) || !Array.isArray(macro.routes) || macro.routes.length > MAX_MACRO_ROUTES) return null; const routes = macro.routes.map(route => { if (!route || !validEnum(route.target, MACRO_TARGETS) || !finite(route.min) || !finite(route.max)) return null; return { target: route.target, min: clamp(route.min, 0, 1), max: clamp(route.max, 0, 1), invert: Boolean(route.invert) }; }); if (routes.some(route => !route)) return null; return { value: clamp(macro.value, 0, 1), routes }; }); if (base.macros.some(macro => !macro)) return null;
+      if (!raw.xy || !validEnum(raw.xy.xTarget, MACRO_TARGETS) || !validEnum(raw.xy.yTarget, MACRO_TARGETS) || !finite(raw.xy.xValue) || !finite(raw.xy.yValue)) return null; base.xy = { xTarget: raw.xy.xTarget, yTarget: raw.xy.yTarget, xValue: clamp(raw.xy.xValue, 0, 1), yValue: clamp(raw.xy.yValue, 0, 1) };
+      if (!raw.locks || typeof raw.locks !== "object") return null; if (strict && Object.keys(base.locks).some(domain => typeof raw.locks[domain] !== "boolean")) return null; for (const domain of Object.keys(base.locks)) base.locks[domain] = Boolean(raw.locks[domain]); if (!finite(raw.intensity)) return null; base.intensity = clamp(raw.intensity, 0, 1); return base;
+    }
 
-      function invalidHashResult() { return { present: true, valid: false, points: emptyPoints() }; }
-
-      function decodeHash(hash) {
-        if (typeof hash !== "string" || hash.length === 0) return { present: false, valid: false, points: emptyPoints() };
-        const match = hash.match(/^#v(\d+)\/(\d{1,2})\/(.*)$/);
-        if (!match || Number(match[1]) !== VERSION) return invalidHashResult();
-        const count = Number(match[2]);
-        const body = match[3];
-        if (!Number.isSafeInteger(count) || count < 0 || count > MAX_POINTS) return invalidHashResult();
-        if (count === 0) return body === "" ? { present: true, valid: true, points: emptyPoints() } : invalidHashResult();
-        const records = body.split(";");
-        if (records.length !== count || records.some((record) => record.length === 0)) return invalidHashResult();
-        const parsed = records.map((record) => {
-          const values = record.split(",");
-          if (values.length !== 3 || values.some((value) => !/^\d+$/.test(value))) return null;
-          return { x: Number(values[0]), y: Number(values[1]), t: Number(values[2]) };
-        });
-        const clean = validatePoints(parsed);
-        return clean ? { present: true, valid: true, points: clean } : invalidHashResult();
-      }
-
-      function storedPoints() {
-        try {
-          const raw = window.localStorage.getItem(STORAGE_KEY);
-          if (!raw) return null;
-          const payload = JSON.parse(raw);
-          if (!payload || payload.v !== VERSION) return null;
-          return validatePoints(payload.points);
-        } catch (_error) {
-          return null;
-        }
-      }
-
-      function savePoints(candidate) {
-        const clean = validatePoints(candidate);
-        if (!clean || clean.length === 0) return;
-        try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ v: VERSION, points: clean })); } catch (_error) { /* optional */ }
-      }
-
-      function clearStoredPoints() {
-        try { window.localStorage.removeItem(STORAGE_KEY); } catch (_error) { /* optional */ }
-      }
-
-      function clearHash() {
-        const base = window.location.href.split("#")[0];
-        if (window.history && typeof window.history.replaceState === "function") window.history.replaceState(null, "", base);
-      }
-
-      function setHash(hash) {
-        const base = window.location.href.split("#")[0];
-        if (window.history && typeof window.history.replaceState === "function") window.history.replaceState(null, "", `${base}${hash}`);
-      }
-
-      function getShareUrl(candidate) {
-        return `${window.location.href.split("#")[0]}${encodeHash(candidate)}`;
-      }
-
-      function setStatus(message) { statusEl.textContent = message; }
-
-      function cancelTimers() {
-        if (recordTimer !== null) window.clearTimeout(recordTimer);
-        if (playbackTimer !== null) window.clearTimeout(playbackTimer);
-        recordTimer = null;
-        playbackTimer = null;
-      }
-
-      function cancelAnimation() {
-        if (animationFrame !== null) window.cancelAnimationFrame(animationFrame);
-        animationFrame = null;
-        bursts = [];
-      }
-
-      function canvasPoint(point) {
-        const rect = canvas.getBoundingClientRect();
-        return { x: (point.x / 255) * rect.width, y: (point.y / 255) * rect.height };
-      }
-
-      function pointColor(point, index) {
-        const hue = (point.x * 7 + point.y * 11 + point.t * 3 + index * 29) % 360;
-        return `hsl(${hue} 86% 68%)`;
-      }
-
-      function addBurst(point, index) {
-        const now = performance.now();
-        bursts.push({ point, index, born: now, color: pointColor(point, index) });
-        if (reduceMotion) {
-          draw();
-          return;
-        }
-        if (animationFrame === null) animationFrame = window.requestAnimationFrame(animate);
-      }
-
-      function animate(now) {
-        animationFrame = null;
-        bursts = bursts.filter((burst) => now - burst.born < 720);
-        draw(now);
-        if (bursts.length > 0) animationFrame = window.requestAnimationFrame(animate);
-      }
-
-      function draw(now = performance.now()) {
-        const width = canvas.clientWidth;
-        const height = canvas.clientHeight;
-        if (width === 0 || height === 0) return;
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        if (canvas.width !== Math.round(width * dpr) || canvas.height !== Math.round(height * dpr)) {
-          canvas.width = Math.round(width * dpr);
-          canvas.height = Math.round(height * dpr);
-        }
-        context2d.setTransform(dpr, 0, 0, dpr, 0, 0);
-        const sky = context2d.createLinearGradient(0, 0, 0, height);
-        sky.addColorStop(0, "#172d4d");
-        sky.addColorStop(0.58, "#0e203c");
-        sky.addColorStop(1, "#081323");
-        context2d.fillStyle = sky;
-        context2d.fillRect(0, 0, width, height);
-
-        const glow = context2d.createRadialGradient(width * 0.7, height * 0.22, 0, width * 0.7, height * 0.22, width * 0.8);
-        glow.addColorStop(0, "rgba(123,215,220,.13)");
-        glow.addColorStop(1, "rgba(123,215,220,0)");
-        context2d.fillStyle = glow;
-        context2d.fillRect(0, 0, width, height);
-
-        context2d.fillStyle = "rgba(245,239,226,.42)";
-        for (let i = 0; i < 24; i += 1) {
-          const starX = (i * 83 + 17) % Math.max(width, 1);
-          const starY = (i * 47 + 21) % Math.max(height * 0.8, 1);
-          context2d.fillRect(starX, starY, i % 4 === 0 ? 1.5 : 1, i % 4 === 0 ? 1.5 : 1);
-        }
-
-        if (points.length > 1) {
-          context2d.beginPath();
-          points.forEach((point, index) => {
-            const xy = canvasPoint(point);
-            if (index === 0) context2d.moveTo(xy.x, xy.y);
-            else context2d.lineTo(xy.x, xy.y);
-          });
-          context2d.strokeStyle = "rgba(255,209,102,.34)";
-          context2d.lineWidth = 1;
-          context2d.setLineDash([3, 6]);
-          context2d.stroke();
-          context2d.setLineDash([]);
-        }
-
-        points.forEach((point, index) => {
-          const xy = canvasPoint(point);
-          const color = pointColor(point, index);
-          const isPlaying = phase === "playing" && playbackIndex === index;
-          context2d.beginPath();
-          context2d.arc(xy.x, xy.y, isPlaying ? 13 : 8, 0, Math.PI * 2);
-          context2d.fillStyle = color.replace("68%)", "68% / .18)");
-          context2d.fill();
-          context2d.beginPath();
-          context2d.arc(xy.x, xy.y, isPlaying ? 5 : 4, 0, Math.PI * 2);
-          context2d.fillStyle = color;
-          context2d.shadowBlur = isPlaying ? 22 : 12;
-          context2d.shadowColor = color;
-          context2d.fill();
-          context2d.shadowBlur = 0;
-          context2d.fillStyle = "rgba(7,17,31,.72)";
-          context2d.font = "10px ui-monospace, monospace";
-          context2d.textAlign = "center";
-          context2d.textBaseline = "middle";
-          context2d.fillText(String(index + 1), xy.x, xy.y);
-        });
-
-        bursts.forEach((burst) => {
-          const xy = canvasPoint(burst.point);
-          const age = Math.max(0, now - burst.born);
-          const progress = reduceMotion ? 0.4 : Math.min(age / 720, 1);
-          const radius = reduceMotion ? 15 : 9 + progress * 28;
-          const alpha = reduceMotion ? 0.35 : 0.65 * (1 - progress);
-          context2d.beginPath();
-          context2d.arc(xy.x, xy.y, radius, 0, Math.PI * 2);
-          context2d.strokeStyle = burst.color.replace("68%)", `68% / ${alpha})`);
-          context2d.lineWidth = reduceMotion ? 1 : 2;
-          context2d.stroke();
-          if (!reduceMotion) {
-            for (let ray = 0; ray < 6; ray += 1) {
-              const angle = (Math.PI * 2 * ray) / 6;
-              const length = 8 + progress * 16;
-              context2d.beginPath();
-              context2d.moveTo(xy.x + Math.cos(angle) * (radius + 2), xy.y + Math.sin(angle) * (radius + 2));
-              context2d.lineTo(xy.x + Math.cos(angle) * (radius + length), xy.y + Math.sin(angle) * (radius + length));
-              context2d.strokeStyle = burst.color.replace("68%)", `68% / ${alpha})`);
-              context2d.lineWidth = 1;
-              context2d.stroke();
-            }
-          }
-        });
-      }
-
-      function resizeCanvas() { draw(); }
-
-      function ensureAudio() {
-        if (!soundOn) return null;
-        if (!audioContext) {
-          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-          if (!AudioContextClass) return null;
-          try {
-            audioContext = new AudioContextClass();
-            masterGain = audioContext.createGain();
-            masterGain.gain.value = 0.18;
-            masterGain.connect(audioContext.destination);
-          } catch (_error) {
-            audioContext = null;
-            masterGain = null;
-            return null;
-          }
-        }
-        if (audioContext.state === "suspended") audioContext.resume();
-        return audioContext;
-      }
-
-      function playPoint(point) {
-        const context = ensureAudio();
-        if (!context || !masterGain) return;
-        const yRatio = point.y / 255;
-        const xRatio = point.x / 255;
-        const noteIndex = clampInteger(xRatio * (NOTE_FREQS.length - 1), 0, NOTE_FREQS.length - 1);
-        const frequency = NOTE_FREQS[noteIndex];
-        const brightness = 1 - yRatio;
-        const now = context.currentTime;
-        const oscillator = context.createOscillator();
-        const filter = context.createBiquadFilter();
-        const gain = context.createGain();
-        oscillator.type = "triangle";
-        oscillator.frequency.setValueAtTime(frequency, now);
-        filter.type = "lowpass";
-        filter.frequency.setValueAtTime(360 + brightness * 6400, now);
-        filter.Q.setValueAtTime(0.8 + brightness * 1.4, now);
-        gain.gain.setValueAtTime(0.0001, now);
-        gain.gain.exponentialRampToValueAtTime(0.38, now + 0.012);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
-        oscillator.connect(filter);
-        filter.connect(gain);
-        gain.connect(masterGain);
-        oscillator.start(now);
-        oscillator.stop(now + 0.5);
-      }
-
-      function updateUI() {
-        phaseEl.textContent = phase.toUpperCase();
-        counterEl.textContent = `${points.length} / ${MAX_POINTS} TAPS`;
-        recordButton.textContent = phase === "recording" ? "■ FINISH REC" : phase === "ready" ? "● RERECORD" : "● REC";
-        recordButton.disabled = phase === "playing";
-        playButton.disabled = phase !== "ready";
-        shareButton.disabled = phase !== "ready" || points.length === 0;
-        skyFrame.classList.toggle("is-disabled", phase === "playing");
-        canvas.setAttribute("aria-disabled", phase === "playing" ? "true" : "false");
-        skyCopy.classList.toggle("is-hidden", phase === "recording" || phase === "playing" || points.length > 0);
-        if (phase === "recording") {
-          skyCopy.innerHTML = `<span class="hint-label">TAP THE SKY · ${points.length} / ${MAX_POINTS}</span>`;
-          skyCopy.classList.remove("is-hidden");
-        } else if (phase === "playing") {
-          skyCopy.innerHTML = `<span class="hint-label">PLAYING · ${Math.max(playbackIndex + 1, 1)} / ${points.length}</span>`;
-          skyCopy.classList.remove("is-hidden");
-        } else if (phase === "ready" && points.length > 0) {
-          skyCopy.innerHTML = `<span class="hint-label">READY · PLAYで元の間隔を一回再生</span>`;
-          skyCopy.classList.remove("is-hidden");
-        } else {
-          skyCopy.innerHTML = `<span class="hint-label">RECを押して、空に1〜16個の火花を置く</span>`;
-        }
-        soundButton.textContent = soundOn ? "♫ SOUND ON" : "♫ SOUND OFF";
-        soundButton.setAttribute("aria-pressed", soundOn ? "true" : "false");
-        draw();
-      }
-
-      function finishRecording(message) {
-        if (phase !== "recording") return;
-        cancelTimers();
-        if (points.length === 0) {
-          phase = "empty";
-          firstTapAt = null;
-          setStatus(message || "火花なしで記録を終了しました。もう一度RECできます。");
-        } else {
-          phase = "ready";
-          savePoints(points);
-          setStatus(message || `${points.length}個の火花を記録しました。PLAYで元の間隔を再生できます。`);
-        }
-        updateUI();
-      }
-
-      function startRecording() {
-        cancelTimers();
-        cancelAnimation();
-        points = emptyPoints();
-        firstTapAt = null;
-        phase = "recording";
-        clearHash();
-        clearStoredPoints();
-        setStatus("REC中。空の好きな場所をタップしてください。12秒または16タップで完成します。");
-        recordTimer = window.setTimeout(() => finishRecording("12秒が経過しました。記録を完成しました。"), MAX_TIME_MS);
-        updateUI();
-      }
-
-      function handleCanvasTap(event) {
-        if (phase !== "recording" || points.length >= MAX_POINTS) return;
-        event.preventDefault();
-        const rect = canvas.getBoundingClientRect();
-        const x = clampInteger(((event.clientX - rect.left) / rect.width) * 255, 0, 255);
-        const y = clampInteger(((event.clientY - rect.top) / rect.height) * 255, 0, 255);
-        const now = Date.now();
-        if (firstTapAt === null) firstTapAt = now;
-        const t = clampInteger(now - firstTapAt, 0, MAX_TIME_MS);
-        const point = { x, y, t };
-        points.push(point);
-        ensureAudio();
-        playPoint(point);
-        addBurst(point, points.length - 1);
-        setStatus(`${points.length}個目の火花。あと${MAX_POINTS - points.length}個、または12秒まで置けます。`);
-        if (points.length >= MAX_POINTS) finishRecording("16タップに到達しました。記録を完成しました。");
-        else if (t >= MAX_TIME_MS) finishRecording("12秒が経過しました。記録を完成しました。");
-        else updateUI();
-      }
-
-      function finishPlayback() {
-        cancelTimers();
-        phase = "ready";
-        playbackIndex = -1;
-        setStatus("再生完了。元の間隔を一回だけ再生しました。");
-        updateUI();
-      }
-
-      function playNext() {
-        if (phase !== "playing") return;
-        playbackIndex += 1;
-        if (playbackIndex >= points.length) {
-          finishPlayback();
-          return;
-        }
-        const point = points[playbackIndex];
-        playPoint(point);
-        addBurst(point, playbackIndex);
-        setStatus(`再生中 ${playbackIndex + 1} / ${points.length}。`);
-        updateUI();
-        if (playbackIndex === points.length - 1) {
-          playbackTimer = window.setTimeout(finishPlayback, 520);
-          return;
-        }
-        const interval = Math.max(0, points[playbackIndex + 1].t - point.t);
-        playbackTimer = window.setTimeout(playNext, interval);
-      }
-
-      function startPlayback() {
-        if (phase !== "ready" || points.length === 0) return;
-        cancelTimers();
-        ensureAudio();
-        phase = "playing";
-        playbackIndex = -1;
-        setStatus(`再生中 0 / ${points.length}。`);
-        playNext();
-      }
-
-      function resetAll() {
-        cancelTimers();
-        cancelAnimation();
-        phase = "empty";
-        points = emptyPoints();
-        playbackIndex = -1;
-        firstTapAt = null;
-        clearHash();
-        clearStoredPoints();
-        setStatus("リセットしました。RECを押して新しい火花を記録できます。");
-        updateUI();
-      }
-
-      function copyText(text) {
-        if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
-          return navigator.clipboard.writeText(text).then(() => true).catch(() => legacyCopy(text));
-        }
-        return Promise.resolve(legacyCopy(text));
-      }
-
-      function legacyCopy(text) {
-        const helper = document.createElement("textarea");
-        helper.value = text;
-        helper.setAttribute("readonly", "");
-        helper.style.position = "fixed";
-        helper.style.left = "-9999px";
-        document.body.appendChild(helper);
-        helper.select();
-        let result = false;
-        try { result = document.execCommand("copy"); } catch (_error) { result = false; }
-        helper.remove();
-        return result;
-      }
-
-      async function shareScore() {
-        if (phase !== "ready" || points.length === 0) return;
-        const url = getShareUrl(points);
-        setHash(encodeHash(points));
-        if (navigator.share && typeof navigator.share === "function") {
-          try {
-            await navigator.share({ title: "ひかり譜 / Spark Score", url });
-            setStatus("共有シートを開きました。URLにはこの譜面の位置と間隔が入っています。");
-            return;
-          } catch (error) {
-            if (error && error.name === "AbortError") {
-              setStatus("共有をキャンセルしました。譜面はそのままです。");
-              return;
-            }
-          }
-        }
-        const copied = await copyText(url);
-        setStatus(copied ? "共有URLをコピーしました。" : "共有URLをコピーできませんでした。");
-      }
-
-      function handleVisibility() {
-        if (document.visibilityState !== "hidden") return;
-        cancelAnimation();
-        if (phase === "recording") finishRecording("画面を離れたため記録を終了しました。");
-        else if (phase === "playing") finishPlayback();
-        else cancelTimers();
-      }
-
-      recordButton.addEventListener("click", () => {
-        if (phase === "recording") finishRecording(points.length ? "記録を終了しました。PLAYで元の間隔を一回再生できます。" : "火花なしで記録を終了しました。もう一度RECできます。");
-        else startRecording();
+    function normalizeOwners(candidate, notify = true) {
+      if (!candidate || !candidate.macros || !candidate.xy) return candidate;
+      const owners = []; let order = 0;
+      candidate.macros.forEach(macro => macro.routes.forEach(route => owners.push({ kind: "macro", route, target: route.target, locked: Boolean(candidate.locks && candidate.locks.macros), order: order++ })));
+      ["xTarget", "yTarget"].forEach(axis => owners.push({ kind: "xy", axis, target: candidate.xy[axis], locked: Boolean(candidate.locks && candidate.locks.xy), order: order++ }));
+      owners.sort((a, b) => Number(b.locked) - Number(a.locked) || a.order - b.order);
+      const seen = new Set(); const keptRoutes = new Set(); const keptAxes = new Set(); let changed = 0;
+      owners.forEach(owner => {
+        if (seen.has(owner.target)) { changed += 1; return; }
+        seen.add(owner.target);
+        if (owner.kind === "macro") keptRoutes.add(owner.route); else keptAxes.add(owner.axis);
       });
-      playButton.addEventListener("click", startPlayback);
-      shareButton.addEventListener("click", shareScore);
-      resetButton.addEventListener("click", resetAll);
-      soundButton.addEventListener("click", () => {
-        soundOn = !soundOn;
-        setStatus(soundOn ? "音声をONにしました。" : "音声をOFFにしました。光だけで記録できます。");
-        updateUI();
+      candidate.macros.forEach(macro => { macro.routes = macro.routes.filter(route => keptRoutes.has(route)); });
+      ["xTarget", "yTarget"].forEach(axis => {
+        if (keptAxes.has(axis)) return;
+        const fallback = MACRO_TARGETS.find(target => !seen.has(target)) || "pan";
+        candidate.xy[axis] = fallback; seen.add(fallback); changed += 1;
       });
-      canvas.addEventListener("pointerdown", handleCanvasTap, { passive: false });
-      window.addEventListener("resize", resizeCanvas);
-      document.addEventListener("visibilitychange", handleVisibility);
+      if (changed && notify) setStatus(`DESTINATION競合を整理しました（${changed}件）。新しいownerを優先して再割当できます。`);
+      return changed;
+    }
+    function claimDestination(candidate, owner, target) {
+      if (!candidate || !candidate.macros || !candidate.xy) return 0; let removed = 0;
+      candidate.macros.forEach((macro, macroIndex) => { macro.routes = macro.routes.filter((route, routeIndex) => { const isOwner = owner.kind === "macro" && owner.macroIndex === macroIndex && owner.routeIndex === routeIndex; if (!isOwner && route.target === target) { removed += 1; return false; } return true; }); });
+      ["xTarget", "yTarget"].forEach(axis => { const isOwner = owner.kind === "xy" && owner.axis === axis; if (!isOwner && candidate.xy[axis] === target) { const used = new Set(candidate.macros.flatMap(macro => macro.routes.map(route => route.target)).concat([target, axis === "xTarget" ? candidate.xy.yTarget : candidate.xy.xTarget])); const fallback = MACRO_TARGETS.find(item => !used.has(item)) || "pan"; candidate.xy[axis] = fallback; removed += 1; } });
+      normalizeOwners(candidate, false); if (removed) setStatus(`DESTINATION ${targetLabel(target)} を新しいownerへ移動（旧owner ${removed}件を解除）。`); return removed;
+    }
 
-      const hashState = decodeHash(window.location.hash);
-      if (hashState.present) {
-        if (hashState.valid && hashState.points.length > 0) {
-          points = hashState.points;
-          phase = "ready";
-          setStatus("共有URLから譜面を復元しました。PLAYで元の間隔を一回再生できます。");
-        } else {
-          points = emptyPoints();
-          phase = "empty";
-          clearHash();
-          setStatus("共有URLが正しくないため、安全のため空の譜面で開始しました。");
-        }
-      } else {
-        const last = storedPoints();
-        if (last && last.length > 0) {
-          points = last;
-          phase = "ready";
-          setStatus("この端末の最後の譜面を復元しました。PLAYで元の間隔を一回再生できます。");
-        }
+    function encodeBase64(text) { const bytes = new TextEncoder().encode(text); let binary = ""; for (let i = 0; i < bytes.length; i += 1) binary += String.fromCharCode(bytes[i]); return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, ""); }
+    function decodeBase64(value) { if (!value || value.length % 4 === 1) throw new Error("invalid base64 length"); const padded = value.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((value.length + 3) % 4); const binary = atob(padded); const bytes = new Uint8Array(binary.length); for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i); return { bytes, text: new TextDecoder().decode(bytes) }; }
+    function fnv1aHex(input) { const bytes = typeof input === "string" ? new TextEncoder().encode(input) : input; let hash = 0x811c9dc5; for (const byte of bytes) { hash ^= byte; hash = Math.imul(hash, 0x01000193) >>> 0; } return hash.toString(16).padStart(8, "0"); }
+    function serializablePatch(candidate) {
+      const clean = sanitizePatch(candidate); if (!clean) return null; normalizeOwners(clean, false);
+      return { params: { ...clean.params, speed: round(clean.params.speed), transpose: Math.round(clean.params.transpose), shape: round(clean.params.shape), detune: round(clean.params.detune), attack: round(clean.params.attack), decay: round(clean.params.decay), sustain: round(clean.params.sustain), release: round(clean.params.release), cutoff: Math.round(clean.params.cutoff), resonance: round(clean.params.resonance), tracking: round(clean.params.tracking), pan: round(clean.params.pan) }, fx: clean.fx.map(slot => ({ type: slot.type, mix: round(slot.mix), a: round(slot.a), b: round(slot.b) })), lfo: clean.lfo.map(item => ({ shape: item.shape, rate: round(item.rate), depth: round(item.depth), target: item.target })), macros: clean.macros.map(macro => ({ value: round(macro.value), routes: macro.routes.map(route => ({ target: route.target, min: round(route.min), max: round(route.max), invert: Boolean(route.invert) })) })), xy: { xTarget: clean.xy.xTarget, yTarget: clean.xy.yTarget, xValue: round(clean.xy.xValue), yValue: round(clean.xy.yValue) }, locks: { ...clean.locks }, intensity: round(clean.intensity) };
+    }
+    function encodeV2(candidateScore, candidatePatch) { const cleanScore = sanitizeScore(candidateScore) || []; const cleanPatch = serializablePatch(candidatePatch); if (!cleanPatch) return null; const text = JSON.stringify({ v: VERSION, s: cleanScore.map(point => [point.x, point.y, point.t]), p: cleanPatch }); const bytes = new TextEncoder().encode(text); if (bytes.length > MAX_PAYLOAD_BYTES) return null; const token = encodeBase64(text); const hash = `#v2/${token}.${fnv1aHex(bytes)}`; return hash.length <= MAX_URL_CHARS ? hash : null; }
+    function decodeV1(hash) {
+      const invalid = { present: true, valid: false, score: [], patch: null, version: LEGACY_VERSION }; const match = hash.match(/^#v1\/(\d{1,2})\/(.*)$/); if (!match) return invalid; const count = Number(match[1]); if (!Number.isSafeInteger(count) || count < 0 || count > MAX_POINTS) return invalid; const body = match[2]; if (count === 0) return body === "" ? { present: true, valid: true, score: [], patch: legacyDefaults(), version: LEGACY_VERSION } : invalid; const records = body.split(";"); if (records.length !== count || records.some(record => record.length === 0)) return invalid; const parsed = records.map(record => { const values = record.split(","); return values.length === 3 && values.every(value => /^\d+$/.test(value)) ? { x: Number(values[0]), y: Number(values[1]), t: Number(values[2]) } : null; }); const clean = sanitizeScore(parsed, true); return clean ? { present: true, valid: true, score: clean, patch: legacyDefaults(), version: LEGACY_VERSION } : invalid;
+    }
+    function decodeHash(hash) {
+      const invalid = { present: true, valid: false, score: [], patch: null, version: VERSION }; if (typeof hash !== "string" || hash.length < 2) return { present: false, valid: false, score: [], patch: null, version: 0 }; if (hash.length > MAX_URL_CHARS) return invalid; if (hash.startsWith("#v1/")) return decodeV1(hash); const match = hash.match(/^#v2\/([A-Za-z0-9_-]+)\.([0-9a-fA-F]{8})$/); if (!match) return invalid; try { const decoded = decodeBase64(match[1]); if (decoded.bytes.length > MAX_PAYLOAD_BYTES || fnv1aHex(decoded.bytes).toLowerCase() !== match[2].toLowerCase()) return invalid; const payload = JSON.parse(decoded.text); if (!payload || payload.v !== VERSION || !Array.isArray(payload.s)) return invalid; const clean = sanitizeScore(payload.s, true); const cleanPatch = sanitizePatch(payload.p, true); if (!clean || !cleanPatch) return invalid; normalizeOwners(cleanPatch, false); return { present: true, valid: true, score: clean, patch: cleanPatch, version: VERSION }; } catch (_error) { return invalid; }
+    }
+    function readStorage() {
+      try {
+        const raw = window.localStorage.getItem(STORAGE_KEY); if (raw) { const payload = JSON.parse(raw); if (payload && payload.v === VERSION && Array.isArray(payload.score)) { const cleanScore = sanitizeScore(payload.score, true); const cleanPatch = sanitizePatch(payload.patch, true); if (cleanScore && cleanPatch) { normalizeOwners(cleanPatch, false); window.localStorage.removeItem(LEGACY_STORAGE_KEY); return { valid: true, score: cleanScore, patch: cleanPatch, migrated: false }; } } }
+        const legacyRaw = window.localStorage.getItem(LEGACY_STORAGE_KEY); if (legacyRaw) { const legacy = JSON.parse(legacyRaw); if (legacy && legacy.v === LEGACY_VERSION) { const cleanScore = sanitizeScore(legacy.points, true); if (cleanScore) return { valid: true, score: cleanScore, patch: legacyDefaults(), migrated: true }; } }
+      } catch (_error) { /* malformed local state is ignored */ }
+      return { valid: false, score: [], patch: defaults(), migrated: false };
+    }
+    function saveStorage() { clearTimeout(saveTimer); saveTimer = setTimeout(() => { try { const cleanPatch = serializablePatch(patch); if (!cleanPatch) return; window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ v: VERSION, score: sanitizeScore(score) || [], patch: cleanPatch })); window.localStorage.removeItem(LEGACY_STORAGE_KEY); } catch (_error) { /* optional storage */ } }, 80); }
+    function clearStorage() { clearTimeout(saveTimer); saveTimer = null; try { window.localStorage.removeItem(STORAGE_KEY); window.localStorage.removeItem(LEGACY_STORAGE_KEY); } catch (_error) {} }
+    function clearHash() { const base = window.location.href.split("#")[0]; if (window.history && typeof window.history.replaceState === "function") window.history.replaceState(null, "", base); }
+    function setHash(hash) { const base = window.location.href.split("#")[0]; if (window.history && typeof window.history.replaceState === "function") window.history.replaceState(null, "", `${base}${hash}`); }
+
+    function getEffectiveState() {
+      const result = { params: { ...patch.params }, fx: patch.fx.map(slot => ({ ...slot })), lfo: patch.lfo.map(item => ({ ...item })) };
+      const setTarget = (target, normalized) => { if (/^fx[123]Mix$/.test(target)) { result.fx[Number(target.slice(2, 3)) - 1].mix = valueFor(target, normalized); return; } if (/^lfo[12](Rate|Depth)$/.test(target)) { const index = Number(target.slice(3, 4)) - 1; const key = target.endsWith("Rate") ? "rate" : "depth"; result.lfo[index][key] = valueFor(target, normalized); return; } if (parameterRegistry[target]) result.params[target] = valueFor(target, normalized); };
+      patch.macros.forEach(macro => macro.routes.forEach(route => { const amount = route.invert ? 1 - macro.value : macro.value; setTarget(route.target, lerp(route.min, route.max, amount)); })); setTarget(patch.xy.xTarget, patch.xy.xValue); setTarget(patch.xy.yTarget, 1 - patch.xy.yValue); result.params.speed = clamp(result.params.speed, 0.1, 8); return result;
+    }
+
+    function setStatus(message) { statusEl.textContent = message; }
+    function cancelTimers() { if (recordTimer !== null) window.clearTimeout(recordTimer); recordTimer = null; }
+    function cancelAnimation() { if (animationFrame !== null) window.cancelAnimationFrame(animationFrame); animationFrame = null; bursts = []; }
+    function canvasPoint(point) { const rect = canvas.getBoundingClientRect(); return { x: (point.x / 255) * rect.width, y: (point.y / 255) * rect.height }; }
+    function pointColor(point, index) { const hue = (point.x * 7 + point.y * 11 + point.t * 3 + index * 29) % 360; return `hsl(${hue} 86% 68%)`; }
+    function addBurst(point, index, intensity = 1) { bursts.push({ point, index, born: performance.now(), color: pointColor(point, index), intensity: clamp(intensity, 0.4, 2) }); if (reduceMotion) { draw(); return; } if (animationFrame === null) animationFrame = window.requestAnimationFrame(animate); }
+    function animate(now) { animationFrame = null; const effective = getEffectiveState(); const life = 560 + effective.fx.reduce((sum, slot) => sum + slot.mix, 0) * 320; bursts = bursts.filter(burst => now - burst.born < life); draw(now); if (bursts.length) animationFrame = window.requestAnimationFrame(animate); }
+    function draw(now = performance.now()) {
+      const width = canvas.clientWidth; const height = canvas.clientHeight; if (!width || !height) return; const dpr = Math.min(window.devicePixelRatio || 1, 2); if (canvas.width !== Math.round(width * dpr) || canvas.height !== Math.round(height * dpr)) { canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr); } context2d.setTransform(dpr, 0, 0, dpr, 0, 0); const effective = getEffectiveState(); const brightness = clamp(effective.params.cutoff / 12000, 0.18, 1);
+      const sky = context2d.createLinearGradient(0, 0, 0, height); sky.addColorStop(0, "#172d4d"); sky.addColorStop(.58, "#0e203c"); sky.addColorStop(1, "#081323"); context2d.fillStyle = sky; context2d.fillRect(0, 0, width, height); const glow = context2d.createRadialGradient(width * .7, height * .22, 0, width * .7, height * .22, width * .8); glow.addColorStop(0, `rgba(123,215,220,${.08 + brightness * .12})`); glow.addColorStop(1, "rgba(123,215,220,0)"); context2d.fillStyle = glow; context2d.fillRect(0, 0, width, height);
+      context2d.fillStyle = "rgba(245,239,226,.42)"; for (let i = 0; i < 24; i += 1) { const starX = (i * 83 + 17) % Math.max(width, 1); const starY = (i * 47 + 21) % Math.max(height * .8, 1); context2d.fillRect(starX, starY, i % 4 === 0 ? 1.5 : 1, i % 4 === 0 ? 1.5 : 1); }
+      if (score.length > 1) { context2d.beginPath(); score.forEach((point, index) => { const xy = canvasPoint(point); if (index === 0) context2d.moveTo(xy.x, xy.y); else context2d.lineTo(xy.x, xy.y); }); context2d.strokeStyle = "rgba(255,209,102,.34)"; context2d.lineWidth = 1; context2d.setLineDash([3, 6]); context2d.stroke(); context2d.setLineDash([]); }
+      score.forEach((point, index) => { const xy = canvasPoint(point); const color = pointColor(point, index); const isPlaying = phase === "playing" && playback && playback.index === index; context2d.beginPath(); context2d.arc(xy.x, xy.y, isPlaying ? 13 : 8, 0, Math.PI * 2); context2d.fillStyle = color.replace("68%)", "68% / .18)"); context2d.fill(); context2d.beginPath(); context2d.arc(xy.x, xy.y, isPlaying ? 5 : 4, 0, Math.PI * 2); context2d.fillStyle = color; context2d.shadowBlur = isPlaying ? 22 : 12; context2d.shadowColor = color; context2d.fill(); context2d.shadowBlur = 0; context2d.fillStyle = "rgba(7,17,31,.72)"; context2d.font = "10px ui-monospace, monospace"; context2d.textAlign = "center"; context2d.textBaseline = "middle"; context2d.fillText(String(index + 1), xy.x, xy.y); });
+      bursts.forEach(burst => { const xy = canvasPoint(burst.point); const age = Math.max(0, now - burst.born); const progress = reduceMotion ? .4 : Math.min(age / 720, 1); const radius = reduceMotion ? 15 : 9 + progress * 28 * burst.intensity; const alpha = reduceMotion ? .35 : .65 * (1 - progress); context2d.beginPath(); context2d.arc(xy.x, xy.y, radius, 0, Math.PI * 2); context2d.strokeStyle = burst.color.replace("68%)", `68% / ${alpha})`); context2d.lineWidth = reduceMotion ? 1 : 2; context2d.stroke(); if (!reduceMotion) for (let ray = 0; ray < 6; ray += 1) { const angle = Math.PI * 2 * ray / 6; const length = 8 + progress * 16 * burst.intensity; context2d.beginPath(); context2d.moveTo(xy.x + Math.cos(angle) * (radius + 2), xy.y + Math.sin(angle) * (radius + 2)); context2d.lineTo(xy.x + Math.cos(angle) * (radius + length), xy.y + Math.sin(angle) * (radius + length)); context2d.strokeStyle = burst.color.replace("68%)", `68% / ${alpha})`); context2d.lineWidth = 1; context2d.stroke(); } });
+    }
+
+    function buildImpulseResponse(ctx, seconds = 1.6) {
+      const length = Math.floor(ctx.sampleRate * seconds); const buffer = ctx.createBuffer(2, length, ctx.sampleRate); let seed = 0x13579bdf;
+      for (let channel = 0; channel < 2; channel += 1) { const data = buffer.getChannelData(channel); for (let i = 0; i < length; i += 1) { seed = (seed * 1664525 + 1013904223) >>> 0; const noise = seed / 4294967295 * 2 - 1; data[i] = noise * Math.pow(1 - i / length, 3.4); } }
+      return buffer;
+    }
+    function makeFxSlot(ctx) { const input = ctx.createGain(); const output = ctx.createGain(); output.gain.value = 0; return { ctx, input, output, type: "off", nodes: [], effect: null }; }
+    function disconnectNode(node) { if (!node) return; try { if (typeof node.stop === "function") node.stop(); } catch (_error) {} try { node.disconnect(); } catch (_error) {} }
+    function clearFxNodes(slot) { if (!slot) return; try { slot.input.disconnect(); } catch (_error) {} (slot.nodes || []).slice().reverse().forEach(disconnectNode); slot.nodes = []; slot.effect = null; slot.type = "off"; try { slot.output.gain.value = 0; } catch (_error) {} }
+    function ensureFxType(slot, type) {
+      if (!slot) return; if (slot.type === type && slot.effect) return; clearFxNodes(slot); if (type === "off") return;
+      const ctx = slot.ctx; const effect = {}; if (!["delay", "reverb", "chorus", "tremolo"].includes(type)) return;
+      if (type === "delay") { effect.delay = ctx.createDelay(1.2); effect.feedback = ctx.createGain(); effect.wet = ctx.createGain(); slot.input.connect(effect.delay); effect.delay.connect(effect.feedback); effect.feedback.connect(effect.delay); effect.delay.connect(effect.wet); effect.wet.connect(slot.output); slot.nodes = [effect.delay, effect.feedback, effect.wet]; }
+      if (type === "reverb") { effect.pre = ctx.createDelay(.2); effect.filter = ctx.createBiquadFilter(); effect.filter.type = "lowpass"; effect.convolver = ctx.createConvolver(); effect.wet = ctx.createGain(); effect.convolver.buffer = buildImpulseResponse(ctx); slot.input.connect(effect.pre); effect.pre.connect(effect.filter); effect.filter.connect(effect.convolver); effect.convolver.connect(effect.wet); effect.wet.connect(slot.output); slot.nodes = [effect.pre, effect.filter, effect.convolver, effect.wet]; }
+      if (type === "chorus") { effect.delay = ctx.createDelay(.08); effect.lfo = ctx.createOscillator(); effect.depth = ctx.createGain(); effect.wet = ctx.createGain(); effect.lfo.type = "sine"; slot.input.connect(effect.delay); effect.delay.connect(effect.wet); effect.wet.connect(slot.output); effect.lfo.connect(effect.depth); effect.depth.connect(effect.delay.delayTime); effect.lfo.start(); slot.nodes = [effect.delay, effect.lfo, effect.depth, effect.wet]; }
+      if (type === "tremolo") { effect.gain = ctx.createGain(); effect.lfo = ctx.createOscillator(); effect.depth = ctx.createGain(); effect.wet = ctx.createGain(); effect.gain.gain.value = 1; slot.input.connect(effect.gain); effect.gain.connect(effect.wet); effect.wet.connect(slot.output); effect.lfo.type = "sine"; effect.lfo.connect(effect.depth); effect.depth.connect(effect.gain.gain); effect.lfo.start(); slot.nodes = [effect.gain, effect.lfo, effect.depth, effect.wet]; }
+      slot.type = type; slot.effect = effect;
+    }
+    function createAudioEngine() {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext; if (!AudioContextClass) return null; let ctx;
+      try { ctx = new AudioContextClass(); } catch (_error) { return null; }
+      const master = ctx.createGain(); master.gain.value = 0; const compressor = ctx.createDynamicsCompressor(); compressor.threshold.value = -16; compressor.knee.value = 12; compressor.ratio.value = 8; compressor.attack.value = .003; compressor.release.value = .24; master.connect(compressor); compressor.connect(ctx.destination);
+      const voiceBus = ctx.createGain(); voiceBus.gain.value = 1; const globalFilter = ctx.createBiquadFilter(); globalFilter.type = "lowpass"; globalFilter.frequency.value = 8600; globalFilter.Q.value = .8; voiceBus.connect(globalFilter); const panner = ctx.createStereoPanner ? ctx.createStereoPanner() : ctx.createGain(); globalFilter.connect(panner); const dry = ctx.createGain(); dry.gain.value = 1; panner.connect(dry); dry.connect(master);
+      const fx = [makeFxSlot(ctx), makeFxSlot(ctx), makeFxSlot(ctx)]; fx.forEach(slot => { panner.connect(slot.input); slot.output.connect(master); });
+      const lfo = [0, 1].map(() => { const oscillator = ctx.createOscillator(); const gain = ctx.createGain(); oscillator.frequency.value = .2; gain.gain.value = 0; oscillator.connect(gain); oscillator.start(); return { oscillator, gain, connected: null }; });
+      const engine = { ctx, master, compressor, voiceBus, globalFilter, panner, dry, fx, lfo, graphGeneration: 1, lastState: ctx.state };
+      const stateChanged = () => { engine.lastState = ctx.state; if (ctx.state === "closed" && audio === engine) setStatus("Safariの音声が閉じました。次のREC / PLAY / SOUND操作で再構築します。"); if ((ctx.state === "interrupted" || ctx.state === "suspended") && audio === engine) { if (phase === "playing") finishPlayback("音声が中断されたため再生を停止しました。PLAYで再開できます。"); else if (phase === "recording") finishRecording("音声が中断されたため記録を終了しました。"); stopAllVoices(); } };
+      if (typeof ctx.addEventListener === "function") ctx.addEventListener("statechange", stateChanged); else ctx.onstatechange = stateChanged;
+      return engine;
+    }
+    async function ensureRunningFromGesture(reason = "音声") {
+      if (!soundOn) return null;
+      if (!audio || !audio.ctx || audio.ctx.state === "closed") { if (audio) disposeAudioGraph(audio); audio = createAudioEngine(); }
+      if (!audio || !audio.ctx) { setStatus(`${reason}を開始できません。Web Audioに対応したSafariで、もう一度タップしてください。`); return null; }
+      const context = audio.ctx;
+      if (context.state !== "running") { try { await context.resume(); } catch (_error) { setStatus(`${reason}を開始できません。Safariの音声を許可して、もう一度タップしてください。`); return null; } }
+      if (context.state !== "running") { setStatus(`${reason}を開始できません。音声は${context.state || "停止"}です。もう一度タップしてください。`); return null; }
+      applyAudioState(); return audio;
+    }
+    async function resumeAudioBestEffort() { if (!audio || !audio.ctx || audio.ctx.state === "closed") return false; try { await audio.ctx.resume(); } catch (_error) { return false; } return audio.ctx.state === "running"; }
+
+    function fxMeta(type) {
+      if (type === "delay") return { a: ["TIME", v => `${(.04 + v * .86).toFixed(2)}s`], b: ["FEEDBACK", v => `${Math.round(v * 76)}%`] };
+      if (type === "reverb") return { a: ["SPACE", v => `${Math.round(v * 180)}ms`], b: ["DAMP", v => `${Math.round((1 - v) * 100)}%`] };
+      if (type === "chorus") return { a: ["RATE", v => `${(.05 + v * 5).toFixed(2)}Hz`], b: ["DEPTH", v => `${Math.round(v * 100)}%`] };
+      if (type === "tremolo") return { a: ["RATE", v => `${(.2 + v * 14).toFixed(1)}Hz`], b: ["DEPTH", v => `${Math.round(v * 100)}%`] };
+      return { a: ["A", () => "—"], b: ["B", () => "—"] };
+    }
+    function applyFxSlot(index, effective) {
+      if (!audio || !audio.ctx || audio.ctx.state === "closed") return; const state = effective.fx[index]; const slot = audio.fx[index]; if (!soundOn) { if (slot.type !== "off") clearFxNodes(slot); return; } ensureFxType(slot, state.type); const effect = slot.effect; const now = audio.ctx.currentTime; const mix = clamp(state.mix, 0, .82);
+      try { slot.output.gain.setTargetAtTime(effect ? 1 : 0, now, .025); } catch (_error) {}
+      if (!effect) return;
+      if (state.type === "delay") { effect.delay.delayTime.setTargetAtTime(.04 + state.a * .86, now, .04); effect.feedback.gain.setTargetAtTime(Math.min(.76, state.b * .76), now, .025); effect.wet.gain.setTargetAtTime(mix, now, .025); }
+      if (state.type === "reverb") { effect.pre.delayTime.setTargetAtTime(state.a * .18, now, .04); effect.filter.frequency.setTargetAtTime(900 + (1 - state.b) * 10000, now, .04); effect.wet.gain.setTargetAtTime(mix, now, .025); }
+      if (state.type === "chorus") { effect.lfo.frequency.setTargetAtTime(.05 + state.a * 5, now, .04); effect.depth.gain.setTargetAtTime(.001 + state.b * .011, now, .04); effect.wet.gain.setTargetAtTime(mix, now, .025); }
+      if (state.type === "tremolo") { effect.lfo.frequency.setTargetAtTime(.2 + state.a * 14, now, .04); effect.depth.gain.setTargetAtTime(state.b * .9, now, .04); effect.gain.gain.setTargetAtTime(1 - state.b * .45, now, .04); effect.wet.gain.setTargetAtTime(mix, now, .025); }
+    }
+    function sampleHoldValue(item, hold) { const seed = (hold + 1) * 12.9898 + item.rate * 78.233 + item.target.length * 3.17; return clamp(Math.sin(seed) * .5 + Math.sin(seed * 1.618) * .5, -1, 1); }
+    function scheduleSampleHold(param, base, item, now, amount, min, max) {
+      if (!param || typeof param.setValueAtTime !== "function") return; const step = 1 / clamp(item.rate, .05, 16); const count = Math.min(256, Math.ceil((MAX_TIME_MS / 1000 + 4) / step));
+      try { if (typeof param.cancelScheduledValues === "function") param.cancelScheduledValues(now); param.setValueAtTime(base, now); for (let hold = 0; hold <= count; hold += 1) param.setValueAtTime(clamp(base + sampleHoldValue(item, hold) * amount, min, max), now + hold * step); } catch (_error) {}
+    }
+    function applyLfoGraph(effective) {
+      if (!audio || !audio.ctx || audio.ctx.state === "closed") return; const now = audio.ctx.currentTime;
+      const resetAutomation = (param, base) => { if (!param) return; try { if (typeof param.cancelScheduledValues === "function") param.cancelScheduledValues(now); if (typeof param.setValueAtTime === "function") param.setValueAtTime(base, now); } catch (_error) {} };
+      resetAutomation(audio.globalFilter.frequency, effective.params.cutoff); if (audio.panner.pan) resetAutomation(audio.panner.pan, effective.params.pan); audio.fx.forEach((slot, slotIndex) => { if (slot.effect && slot.effect.wet) resetAutomation(slot.effect.wet.gain, effective.fx[slotIndex].mix); });
+      audio.lfo.forEach((node, index) => {
+        try { node.gain.disconnect(); } catch (_error) {}
+        node.connected = null; const item = effective.lfo[index]; node.oscillator.type = item.shape === "random" ? "triangle" : item.shape; node.oscillator.frequency.setTargetAtTime(item.rate, now, .04); node.gain.gain.setTargetAtTime(0, now, .02);
+        if (item.target === "cutoff") { if (item.shape === "random") scheduleSampleHold(audio.globalFilter.frequency, effective.params.cutoff, item, now, Math.min(effective.params.cutoff * .78, 7600) * item.depth, 180, 12000); else { node.gain.gain.setTargetAtTime(Math.min(effective.params.cutoff * .78, 7600) * item.depth, now, .04); try { node.gain.connect(audio.globalFilter.frequency); node.connected = "cutoff"; } catch (_error) {} } }
+        else if (item.target === "pan" && audio.panner.pan) { if (item.shape === "random") scheduleSampleHold(audio.panner.pan, effective.params.pan, item, now, item.depth, -1, 1); else { node.gain.gain.setTargetAtTime(item.depth, now, .04); try { node.gain.connect(audio.panner.pan); node.connected = "pan"; } catch (_error) {} } }
+        else if (/^fx[123]Mix$/.test(item.target)) { const slotIndex = Number(item.target.slice(2, 3)) - 1; const targetParam = audio.fx[slotIndex].effect && audio.fx[slotIndex].effect.wet ? audio.fx[slotIndex].effect.wet.gain : null; if (targetParam) { const base = effective.fx[slotIndex].mix; if (item.shape === "random") scheduleSampleHold(targetParam, base, item, now, item.depth * .42, 0, .82); else { node.gain.gain.setTargetAtTime(item.depth * .42, now, .04); try { node.gain.connect(targetParam); node.connected = item.target; } catch (_error) {} } } }
+      });
+    }
+    function applyAudioState() {
+      if (!audio || !audio.ctx || audio.ctx.state === "closed") return; const effective = getEffectiveState(); const now = audio.ctx.currentTime; audio.master.gain.setTargetAtTime(soundOn ? .19 : 0, now, .025); audio.globalFilter.frequency.setTargetAtTime(effective.params.cutoff, now, .04); audio.globalFilter.Q.setTargetAtTime(effective.params.resonance, now, .04); if (audio.panner.pan) audio.panner.pan.setTargetAtTime(effective.params.pan, now, .04); effective.fx.forEach((_slot, index) => applyFxSlot(index, effective)); applyLfoGraph(effective);
+    }
+    function disposeAudioGraph(engine = audio) {
+      if (!engine) return; stopAllVoices(); engine.fx.forEach(slot => { clearFxNodes(slot); disconnectNode(slot.input); disconnectNode(slot.output); }); engine.lfo.forEach(item => { disconnectNode(item.oscillator); disconnectNode(item.gain); });
+      [engine.voiceBus, engine.globalFilter, engine.panner, engine.dry, engine.master, engine.compressor].forEach(disconnectNode); if (audio === engine) audio = null;
+    }
+    function rebuildEffectGraph() { if (!audio || !audio.ctx || audio.ctx.state === "closed") return; audio.fx.forEach(clearFxNodes); audio.graphGeneration = (audio.graphGeneration || 0) + 1; applyAudioState(); }
+
+    const activeVoices = new Set();
+    function stopVoice(voice, immediate = false) {
+      if (!voice || !voice.oscillators) return; const at = audio && audio.ctx && audio.ctx.state !== "closed" ? audio.ctx.currentTime + (immediate ? .005 : .03) : 0; voice.oscillators.forEach(oscillator => { try { oscillator.stop(at); } catch (_error) {} }); if (immediate) { voice.nodes.forEach(node => { try { node.disconnect(); } catch (_error) {} }); activeVoices.delete(voice); }
+    }
+    function stopAllVoices() { Array.from(activeVoices).forEach(voice => stopVoice(voice, true)); activeVoices.clear(); }
+    function lfoValue(item, at) {
+      const origin = playback && playback.originTime ? playback.originTime : at; const phaseValue = Math.max(0, at - origin) * item.rate; const cycle = phaseValue - Math.floor(phaseValue); let value;
+      if (item.shape === "triangle") value = 1 - 4 * Math.abs(Math.round(cycle) - cycle); else if (item.shape === "square") value = cycle < .5 ? 1 : -1; else if (item.shape === "random") value = sampleHoldValue(item, Math.floor(phaseValue)); else value = Math.sin(phaseValue * Math.PI * 2); return clamp(value, -1, 1);
+    }
+    function modulatedForTime(effective, at) {
+      const result = { ...effective.params }; let speedFactor = 1; let pitchOffset = 0;
+      effective.lfo.forEach(item => { const value = lfoValue(item, at) * item.depth; if (item.target === "speed") speedFactor *= Math.pow(2, value * .9); if (item.target === "transpose") pitchOffset += value * 12; if (item.target === "shape") result.shape = clamp(result.shape + value * .7, 0, 1); if (item.target === "cutoff") result.cutoff = clamp(result.cutoff * Math.pow(2, value), 180, 12000); if (item.target === "pan") result.pan = clamp(result.pan + value, -1, 1); });
+      return { params: result, speedFactor: clamp(speedFactor, .2, 4), pitchOffset };
+    }
+    function pointFrequency(point, params, pitchOffset = 0) { const intervals = SCALE_INTERVALS[params.scale] || SCALE_INTERVALS.pentatonic; const index = Math.round(point.x / 255 * (intervals.length - 1)); const midi = 72 + Number(params.root || 0) + intervals[index] + params.transpose + pitchOffset; return 440 * Math.pow(2, (midi - 69) / 12); }
+    function createVoice(point, when, holdSeconds, effective) {
+      const engine = audio; if (!engine || !engine.ctx || engine.ctx.state !== "running") return null; if (activeVoices.size >= MAX_VOICES) { const oldest = activeVoices.values().next().value; if (oldest) stopVoice(oldest, true); } const ctx = engine.ctx; const now = Math.max(when, ctx.currentTime + .003); const mod = modulatedForTime(effective, now); const params = mod.params; const frequency = pointFrequency(point, params, mod.pitchOffset); const yBrightness = 1 - point.y / 255;
+      const voiceGain = ctx.createGain(); const filter = ctx.createBiquadFilter(); const oscA = ctx.createOscillator(); const oscB = ctx.createOscillator(); const gainA = ctx.createGain(); const gainB = ctx.createGain(); const shapePosition = clamp(params.shape, 0, 1) * 3; const waveIndex = Math.min(2, Math.floor(shapePosition)); const waveMix = shapePosition - waveIndex;
+      oscA.type = WAVEFORMS[waveIndex]; oscB.type = WAVEFORMS[waveIndex + 1]; oscA.frequency.setValueAtTime(frequency, now); oscB.frequency.setValueAtTime(frequency * (1 + params.detune / 10000), now); gainA.gain.value = 1 - waveMix; gainB.gain.value = waveMix; filter.type = "lowpass"; const spatialCutoff = 260 + yBrightness * 7600 * params.tracking; filter.frequency.setValueAtTime(clamp(Math.min(params.cutoff, spatialCutoff + params.cutoff * .25), 120, 15000), now); filter.Q.setValueAtTime(clamp(params.resonance * .32 + yBrightness * 1.2, .1, 18), now);
+      const attack = clamp(params.attack, .004, 1.5); const decay = clamp(params.decay, .03, 2.5); const release = clamp(params.release, .03, 3); const hold = clamp(holdSeconds, .04, 1.8); const peak = .28; voiceGain.gain.setValueAtTime(.0001, now); voiceGain.gain.exponentialRampToValueAtTime(peak, now + attack); voiceGain.gain.setTargetAtTime(peak * params.sustain, now + attack, Math.max(.015, decay / 3)); voiceGain.gain.setValueAtTime(Math.max(.0001, peak * params.sustain), now + attack + decay + hold); voiceGain.gain.exponentialRampToValueAtTime(.0001, now + attack + decay + hold + release);
+      oscA.connect(gainA); oscB.connect(gainB); gainA.connect(filter); gainB.connect(filter); filter.connect(voiceGain); voiceGain.connect(engine.voiceBus); oscA.start(now); oscB.start(now); const stopAt = now + attack + decay + hold + release + .06; oscA.stop(stopAt); oscB.stop(stopAt);
+      const voice = { oscillators: [oscA, oscB], nodes: [oscA, oscB, gainA, gainB, filter, voiceGain] }; activeVoices.add(voice); oscA.addEventListener("ended", () => { activeVoices.delete(voice); voice.nodes.forEach(node => { try { node.disconnect(); } catch (_error) {} }); }, { once: true }); return voice;
+    }
+    function triggerPoint(point, index, when, nextIntervalMs = 520) { const effective = getEffectiveState(); const mod = modulatedForTime(effective, when); const hold = clamp(nextIntervalMs / 1000 * .72, .05, 1.6); createVoice(point, when, hold, effective); addBurst(point, index, clamp(.7 + mod.params.cutoff / 10000 + effective.fx.reduce((sum, slot) => sum + slot.mix, 0) * .25, .5, 2)); }
+
+    function clockNow() { return audio && audio.ctx && audio.ctx.state !== "closed" ? audio.ctx.currentTime : performance.now() / 1000; }
+    function finishPlayback(message = "再生完了。譜面はそのまま、演奏だけが変化しました。") { if (playbackTimer !== null) window.clearInterval(playbackTimer); playbackTimer = null; playback = null; phase = score.length ? "ready" : "empty"; setStatus(message); updateUI(); }
+    function rebuildPlaybackSchedule() {
+      if (!playback || phase !== "playing") return; const effective = getEffectiveState(); const now = clockNow(); const sequence = score.map((_point, index) => index); if (effective.params.direction === "reverse") sequence.reverse(); const currentPosition = playback.index < 0 ? -1 : sequence.indexOf(playback.index); let cursor = currentPosition >= 0 ? currentPosition + 1 : 0; if (cursor >= sequence.length) cursor = 0; stopAllVoices(); playback.sequence = sequence; playback.cursor = cursor; playback.direction = effective.params.direction; playback.nextDue = now + .018; playback.endAt = null; playback.lastSpeed = effective.params.speed; playback.originTime = playback.nextDue;
+    }
+    function schedulerTick() {
+      if (!playback || phase !== "playing") return;
+      const now = clockNow(); const effective = getEffectiveState(); const speed = effective.params.speed;
+      if (playback.direction !== effective.params.direction) rebuildPlaybackSchedule();
+      if (!playback || phase !== "playing") return;
+      if (Math.abs(speed - playback.lastSpeed) > .0001) { const remaining = Math.max(0, playback.nextDue - now); playback.nextDue = now + remaining * playback.lastSpeed / speed; playback.lastSpeed = speed; }
+      const horizon = now + .085;
+      while (playback.cursor < playback.sequence.length && playback.nextDue <= horizon) {
+        const index = playback.sequence[playback.cursor]; const nextIndex = playback.sequence[playback.cursor + 1]; const dt = nextIndex === undefined ? 520 : Math.max(0, Math.abs(score[nextIndex].t - score[index].t)); const eventAt = Math.max(now + .004, playback.nextDue); playback.index = index; triggerPoint(score[index], index, eventAt, dt / speed); playback.cursor += 1;
+        if (nextIndex === undefined) { playback.endAt = eventAt + Math.max(.24, Math.min(1.6, effective.params.release + .12)); break; }
+        const futureSpeed = modulatedForTime(effective, eventAt).speedFactor; playback.nextDue = eventAt + dt / 1000 / clamp(speed * futureSpeed, .1, 8); playback.lastSpeed = speed;
       }
+      if (playback.endAt && now >= playback.endAt) { finishPlayback(); return; }
+      setStatus(`再生中 ${Math.max(1, playback.cursor)} / ${score.length} · ${effective.params.direction === "reverse" ? "REVERSE" : "FORWARD"}`); updateUI();
+    }
+    async function startPlayback() {
+      if (phase !== "ready" || score.length === 0) return false; const engine = soundOn ? await ensureRunningFromGesture("PLAY") : null; if (soundOn && !engine) return false; cancelTimers(); stopAllVoices(); const now = engine ? engine.ctx.currentTime : performance.now() / 1000; const effective = getEffectiveState(); const sequence = score.map((_point, index) => index); if (effective.params.direction === "reverse") sequence.reverse(); playback = { sequence, cursor: 0, index: -1, nextDue: now + .035, endAt: null, lastSpeed: effective.params.speed, direction: effective.params.direction, originTime: now + .035 }; phase = "playing"; setStatus(`再生中 0 / ${score.length} · ${effective.params.direction === "reverse" ? "REVERSE" : "FORWARD"}`); if (playbackTimer !== null) window.clearInterval(playbackTimer); playbackTimer = window.setInterval(schedulerTick, 20); schedulerTick(); updateUI(); return true;
+    }
+    function cancelPlayback(message) { if (playbackTimer !== null) window.clearInterval(playbackTimer); playbackTimer = null; playback = null; stopAllVoices(); if (phase === "playing") { phase = score.length ? "ready" : "empty"; if (message) setStatus(message); } }
 
-      draw();
-      updateUI();
-    })();
+    function finishRecording(message) { if (phase !== "recording") return; cancelTimers(); firstTapAt = null; saveStorage(); if (score.length === 0) { phase = "empty"; setStatus(message || "火花なしで記録を終了しました。もう一度RECできます。"); } else { phase = "ready"; setStatus(message || `${score.length}個の火花を記録しました。PLAYで演奏できます。`); } updateUI(); }
+    async function startRecording() { const engine = soundOn ? await ensureRunningFromGesture("REC") : null; if (soundOn && !engine) return false; cancelPlayback(); cancelTimers(); cancelAnimation(); score = []; firstTapAt = null; phase = "recording"; clearHash(); setStatus("REC中。空の好きな場所をタップしてください。12秒または16タップで完成します。"); recordTimer = window.setTimeout(() => finishRecording("12秒が経過しました。譜面を完成しました。"), MAX_TIME_MS); updateUI(); return true; }
+    async function handleCanvasTap(event) { if (phase !== "recording" || score.length >= MAX_POINTS) return; event.preventDefault(); const engine = soundOn ? await ensureRunningFromGesture("TAP") : null; if (soundOn && !engine) return; const rect = canvas.getBoundingClientRect(); const x = clamp(Math.round((event.clientX - rect.left) / rect.width * 255), 0, 255); const y = clamp(Math.round((event.clientY - rect.top) / rect.height * 255), 0, 255); const now = Date.now(); if (firstTapAt === null) firstTapAt = now; const t = clamp(Math.round(now - firstTapAt), 0, MAX_TIME_MS); const point = { x, y, t }; score.push(point); triggerPoint(point, score.length - 1, engine ? engine.ctx.currentTime + .006 : performance.now() / 1000, 460); setStatus(`${score.length}個目の火花。あと${MAX_POINTS - score.length}個、または12秒まで置けます。`); if (score.length >= MAX_POINTS) finishRecording("16タップに到達しました。譜面を完成しました。"); else updateUI(); }
+
+    function closeResetMenu() { resetMenu.hidden = true; resetButton.setAttribute("aria-expanded", "false"); }
+    function commonResetCleanup() { cancelPlayback(); cancelTimers(); cancelAnimation(); stopAllVoices(); if (audio && audio.ctx && audio.ctx.state !== "closed") { audio.fx.forEach(clearFxNodes); audio.graphGeneration = (audio.graphGeneration || 0) + 1; } }
+    function resetScore() { commonResetCleanup(); score = []; firstTapAt = null; phase = "empty"; clearHash(); applyAudioState(); saveStorage(); closeResetMenu(); setStatus("譜面をリセットしました。パッチはそのままです。"); updateUI(); }
+    function resetPatch() { commonResetCleanup(); patch = defaults(); normalizeOwners(patch, false); clearHash(); applyAudioState(); saveStorage(); closeResetMenu(); setStatus("パッチを初期化しました。譜面はそのままです。"); updateUI(); }
+    function resetAll() { commonResetCleanup(); score = []; firstTapAt = null; patch = defaults(); normalizeOwners(patch, false); clearHash(); clearStorage(); applyAudioState(); phase = "empty"; closeResetMenu(); setStatus("譜面とパッチを初期化しました。"); updateUI(); }
+
+    function copyText(text) { if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") return navigator.clipboard.writeText(text).then(() => true).catch(() => legacyCopy(text)); return Promise.resolve(legacyCopy(text)); }
+    function legacyCopy(text) { const helper = document.createElement("textarea"); helper.value = text; helper.setAttribute("readonly", ""); helper.style.position = "fixed"; helper.style.left = "-9999px"; document.body.appendChild(helper); helper.select(); let result = false; try { result = document.execCommand("copy"); } catch (_error) { result = false; } helper.remove(); return result; }
+    async function shareScore() { if (phase !== "ready" || score.length === 0) return; const hash = encodeV2(score, patch); if (!hash || hash.length > MAX_URL_CHARS) { setStatus("パッチが大きすぎるため共有を停止しました。"); return; } const url = `${window.location.href.split("#")[0]}${hash}`; setHash(hash); if (navigator.share && typeof navigator.share === "function") { try { await navigator.share({ title: "ひかり譜 / Spark Score v2", url }); setStatus(`共有シートを開きました。v2 state ${hash.length} chars。`); return; } catch (error) { if (error && error.name === "AbortError") { setStatus("共有をキャンセルしました。譜面はそのままです。"); return; } } } const copied = await copyText(url); setStatus(copied ? `v2共有URLをコピーしました（${hash.length} chars）。` : "共有URLをコピーできませんでした。"); }
+
+    function targetLabel(target) { return parameterRegistry[target] ? parameterRegistry[target].label : target.toUpperCase(); }
+    function targetOptions(values = MACRO_TARGETS) { return values.map(target => `<option value="${target}">${targetLabel(target)}</option>`).join(""); }
+    function routeSummary(route) { const reg = parameterRegistry[route.target]; return `${targetLabel(route.target)} ${reg.format(reg.fromNorm(route.min))} → ${reg.format(reg.fromNorm(route.max))}${route.invert ? " ↔" : ""}`; }
+    function renderMacroRoutes() {
+      const container = $("#macro-routes"); container.innerHTML = "";
+      patch.macros.forEach((macro, macroIndex) => {
+        const card = document.createElement("div"); card.className = "route-card"; const routeMarkup = macro.routes.map((route, routeIndex) => `<div class="route-row"><select class="route-target" data-macro="${macroIndex}" data-route="${routeIndex}" aria-label="Macro ${String.fromCharCode(65 + macroIndex)} target">${targetOptions()}</select><output class="route-min-value" data-macro="${macroIndex}" data-route="${routeIndex}">${Math.round(route.min * 100)}</output><input class="route-range route-min" data-macro="${macroIndex}" data-route="${routeIndex}" type="range" min="0" max="1" step=".01" value="${route.min}" aria-label="route minimum"><input class="route-range route-max" data-macro="${macroIndex}" data-route="${routeIndex}" type="range" min="0" max="1" step=".01" value="${route.max}" aria-label="route maximum"><output class="route-max-value" data-macro="${macroIndex}" data-route="${routeIndex}">${Math.round(route.max * 100)}</output></div><div class="route-footer"><label><input class="route-invert" data-macro="${macroIndex}" data-route="${routeIndex}" type="checkbox" ${route.invert ? "checked" : ""}> INVERT</label><span>${routeSummary(route)}</span><button type="button" class="remove-route" data-macro="${macroIndex}" data-route="${routeIndex}">REMOVE</button></div>`).join("");
+        card.innerHTML = `<div class="route-top"><span class="route-name">MACRO ${String.fromCharCode(65 + macroIndex)}</span><span class="value">${macro.routes.length} DEST</span></div>${routeMarkup}<div class="route-footer"><span>min ← / → max</span>${macro.routes.length < MAX_MACRO_ROUTES ? `<button type="button" class="add-route" data-macro="${macroIndex}">＋ DEST</button>` : ""}</div>`; container.appendChild(card); macro.routes.forEach((route, routeIndex) => { const select = card.querySelector(`.route-target[data-macro="${macroIndex}"][data-route="${routeIndex}"]`); if (select) select.value = route.target; });
+      });
+    }
+    function applyAndSave() { applyAudioState(); saveStorage(); updateUI(); }
+    function mutatePatch(aggressive = false) {
+      const intensity = aggressive ? 1 : patch.intensity; const random = (min, max) => min + Math.random() * (max - min); const vary = (value, range, amount = intensity) => clamp(value + (Math.random() * 2 - 1) * range * amount, 0, 1); const locked = domain => patch.locks[domain];
+      if (!locked("playback")) { patch.params.speed = valueFor("speed", vary(normFor("speed", patch.params.speed), aggressive ? .9 : .35)); patch.params.transpose = Math.round(valueFor("transpose", vary(normFor("transpose", patch.params.transpose), aggressive ? 1 : .34))); if (aggressive || Math.random() < intensity * .35) patch.params.direction = Math.random() < .5 ? "forward" : "reverse"; }
+      if (!locked("timbre")) { patch.params.shape = vary(patch.params.shape, aggressive ? 1 : .5); patch.params.detune = valueFor("detune", vary(normFor("detune", patch.params.detune), aggressive ? 1 : .48)); }
+      if (!locked("envelope")) ["attack", "decay", "sustain", "release"].forEach(name => { patch.params[name] = valueFor(name, vary(normFor(name, patch.params[name]), aggressive ? .85 : .34)); });
+      if (!locked("filter")) { patch.params.cutoff = valueFor("cutoff", vary(normFor("cutoff", patch.params.cutoff), aggressive ? .92 : .34)); patch.params.resonance = valueFor("resonance", vary(normFor("resonance", patch.params.resonance), aggressive ? .7 : .28)); patch.params.tracking = vary(patch.params.tracking, aggressive ? 1 : .35); patch.params.pan = valueFor("pan", vary(normFor("pan", patch.params.pan), aggressive ? .7 : .25)); }
+      if (!locked("fx")) patch.fx.forEach(slot => { if (aggressive && Math.random() < .68) slot.type = ["off", "delay", "reverb", "chorus", "tremolo"][Math.floor(Math.random() * 5)]; slot.mix = vary(slot.mix, aggressive ? .95 : .32); slot.a = vary(slot.a, aggressive ? .95 : .3); slot.b = vary(slot.b, aggressive ? .9 : .28); });
+      if (!locked("mod")) patch.lfo.forEach((item, index) => { if (aggressive && Math.random() < .55) item.shape = ["sine", "triangle", "square", "random"][Math.floor(Math.random() * 4)]; if (aggressive && Math.random() < .55) item.target = MOD_TARGETS[Math.floor(Math.random() * MOD_TARGETS.length)]; item.rate = valueFor(`lfo${index + 1}Rate`, vary(normFor(`lfo${index + 1}Rate`, item.rate), aggressive ? .8 : .25)); item.depth = vary(item.depth, aggressive ? .9 : .28); });
+      if (!locked("macros")) patch.macros.forEach(macro => { macro.value = vary(macro.value, aggressive ? .8 : .28); if (aggressive && Math.random() < .35) macro.routes.forEach(route => { route.target = MACRO_TARGETS[Math.floor(Math.random() * MACRO_TARGETS.length)]; route.min = Math.random() * .55; route.max = .45 + Math.random() * .55; route.invert = Math.random() < .35; }); });
+      if (!locked("xy") && aggressive) { patch.xy.xTarget = MACRO_TARGETS[Math.floor(Math.random() * MACRO_TARGETS.length)]; patch.xy.yTarget = MACRO_TARGETS[Math.floor(Math.random() * MACRO_TARGETS.length)]; patch.xy.xValue = random(.15, .85); patch.xy.yValue = random(.15, .85); }
+      const ownerChanges = normalizeOwners(patch, false); setStatus(`${aggressive ? "CHAOS：譜面は守ったまま、演奏パッチを再構成しました。" : `MUTATE：強度${Math.round(patch.intensity * 100)}%で演奏を揺らしました。`}${ownerChanges ? ` destination競合${ownerChanges}件を整理。` : ""}`); applyAndSave(); renderMacroRoutes();
+    }
+
+    const controlBindings = [["speed-input", "speed", "speed-value"], ["transpose-input", "transpose", "transpose-value"], ["shape-input", "shape", "shape-value"], ["detune-input", "detune", "detune-value"], ["attack-input", "attack", "attack-value"], ["decay-input", "decay", "decay-value"], ["sustain-input", "sustain", "sustain-value"], ["release-input", "release", "release-value"], ["cutoff-input", "cutoff", "cutoff-value"], ["resonance-input", "resonance", "resonance-value"], ["tracking-input", "tracking", "tracking-value"], ["pan-input", "pan", "pan-value"]];
+    function updateControl(id, param, outputId) { const input = $(`#${id}`); const output = $(`#${outputId}`); const value = patch.params[param]; const reg = parameterRegistry[param]; if (!input || !reg) return; const rawValue = id === "transpose-input" || id === "detune-input" || id === "pan-input" ? value : reg.toNorm(value); if (document.activeElement !== input) input.value = rawValue; if (output) output.textContent = reg.format(value); }
+    function updateFXUI() { $$(".fx-card").forEach(card => { const index = Number(card.dataset.fxCard); const slot = patch.fx[index]; const meta = fxMeta(slot.type); card.querySelector(".fx-type").value = slot.type; const mix = card.querySelector(".fx-mix"); const a = card.querySelector(".fx-a"); const b = card.querySelector(".fx-b"); if (document.activeElement !== mix) mix.value = slot.mix; if (document.activeElement !== a) a.value = slot.a; if (document.activeElement !== b) b.value = slot.b; card.querySelector(".fx-mix-value").textContent = `${Math.round(slot.mix * 100)}%`; card.querySelector(".fx-a-label").textContent = meta.a[0]; card.querySelector(".fx-b-label").textContent = meta.b[0]; card.querySelector(".fx-a-value").textContent = meta.a[1](slot.a); card.querySelector(".fx-b-value").textContent = meta.b[1](slot.b); }); }
+    function updateLFOUI() { $$(".lfo-card").forEach(card => { const index = Number(card.dataset.lfoCard); const item = patch.lfo[index]; card.querySelector(".lfo-shape").value = item.shape; card.querySelector(".lfo-target").value = item.target; const rate = card.querySelector(".lfo-rate"); const depth = card.querySelector(".lfo-depth"); if (document.activeElement !== rate) rate.value = normFor(`lfo${index + 1}Rate`, item.rate); if (document.activeElement !== depth) depth.value = item.depth; card.querySelector(".lfo-rate-value").textContent = `${item.rate.toFixed(2)}Hz`; card.querySelector(".lfo-depth-value").textContent = `${Math.round(item.depth * 100)}%`; card.querySelector(".lfo-title").textContent = targetLabel(item.target); }); }
+    function updateMacroUI() { patch.macros.forEach((macro, index) => { const input = $(`input[data-macro="${index}"]`); if (input && document.activeElement !== input) input.value = Math.round(macro.value * 100); const output = $(`#macro-value-${index}`); if (output) output.textContent = `${Math.round(macro.value * 100)}%`; const copy = $(`#macro-copy-${index}`); if (copy) copy.textContent = macro.routes.length ? macro.routes.map(routeSummary).join(" · ") : "未割り当て"; }); }
+    function updateXYUI() { $("#xy-x-target").value = patch.xy.xTarget; $("#xy-y-target").value = patch.xy.yTarget; const x = clamp(patch.xy.xValue, 0, 1) * 100; const y = (1 - clamp(patch.xy.yValue, 0, 1)) * 100; xyDot.style.left = `${x}%`; xyDot.style.top = `${y}%`; $("#xy-value").textContent = `${Math.round(x)} / ${Math.round(100 - y)}`; }
+    function updateUI() {
+      phaseEl.textContent = phase.toUpperCase(); counterEl.textContent = `${score.length} / ${MAX_POINTS} TAPS`; recordButton.textContent = phase === "recording" ? "■ FINISH REC" : phase === "ready" ? "● RERECORD" : "● REC"; recordButton.disabled = phase === "playing"; playButton.disabled = phase !== "ready" || score.length === 0; shareButton.disabled = phase !== "ready" || score.length === 0; skyFrame.classList.toggle("is-disabled", phase === "playing"); canvas.setAttribute("aria-disabled", phase === "playing" ? "true" : "false"); skyCopy.classList.toggle("is-hidden", phase === "recording" || phase === "playing" || score.length > 0);
+      if (phase === "recording") { skyCopy.innerHTML = `<span class="hint-label">TAP THE SKY · ${score.length} / ${MAX_POINTS}</span>`; skyCopy.classList.remove("is-hidden"); } else if (phase === "playing") { skyCopy.innerHTML = `<span class="hint-label">PLAYING · ${playback ? Math.min(playback.cursor, score.length) : 0} / ${score.length}</span>`; skyCopy.classList.remove("is-hidden"); } else if (phase === "ready" && score.length > 0) { skyCopy.innerHTML = `<span class="hint-label">READY · PLAYでパッチを演奏</span>`; skyCopy.classList.remove("is-hidden"); } else skyCopy.innerHTML = `<span class="hint-label">RECを押して、空に1〜16個の火花を置く</span>`;
+      soundButton.textContent = soundOn ? "♫ SOUND ON" : "♫ SOUND OFF"; soundButton.setAttribute("aria-pressed", soundOn ? "true" : "false"); $("#mutation-intensity").value = Math.round(patch.intensity * 100); $("#mutation-value").textContent = `${Math.round(patch.intensity * 100)}%`; controlBindings.forEach(binding => updateControl(...binding)); $("#root-input").value = String(patch.params.root); $("#scale-input").value = patch.params.scale; $$("[data-direction]").forEach(button => button.setAttribute("aria-pressed", button.dataset.direction === patch.params.direction ? "true" : "false")); updateMacroUI(); updateXYUI(); updateFXUI(); updateLFOUI(); Object.keys(patch.locks).forEach(domain => { const checkbox = $(`input[data-lock="${domain}"]`); if (checkbox) checkbox.checked = patch.locks[domain]; }); $("#patch-summary").textContent = `${parameterRegistry.speed.format(getEffectiveState().params.speed)} · ${patch.macros.reduce((sum, macro) => sum + macro.routes.length, 0)} destinations`; draw();
+    }
+    function populateTargetSelects() { [$("#xy-x-target"), $("#xy-y-target")].forEach(select => { select.innerHTML = targetOptions(); }); $$(".lfo-target").forEach(select => { select.innerHTML = targetOptions(MOD_TARGETS); }); }
+    function handleXY(event) { event.preventDefault(); const rect = xyPad.getBoundingClientRect(); patch.xy.xValue = clamp((event.clientX - rect.left) / rect.width, 0, 1); patch.xy.yValue = clamp(1 - (event.clientY - rect.top) / rect.height, 0, 1); applyAndSave(); }
+
+    controlBindings.forEach(([id, param]) => { const input = $(`#${id}`); if (!input) return; input.addEventListener("input", () => { const raw = Number(input.value); patch.params[param] = id === "transpose-input" || id === "detune-input" || id === "pan-input" ? raw : valueFor(param, raw); applyAndSave(); }); });
+    $$("[data-direction]").forEach(button => button.addEventListener("click", () => { patch.params.direction = button.dataset.direction; applyAndSave(); if (playback && phase === "playing") rebuildPlaybackSchedule(); }));
+    $("#root-input").addEventListener("change", event => { patch.params.root = clamp(Number(event.target.value), 0, 11); applyAndSave(); }); $("#scale-input").addEventListener("change", event => { if (SCALE_INTERVALS[event.target.value]) patch.params.scale = event.target.value; applyAndSave(); });
+    $$("input[data-macro]").forEach(input => input.addEventListener("input", () => { const index = Number(input.dataset.macro); patch.macros[index].value = clamp(Number(input.value) / 100, 0, 1); applyAndSave(); }));
+    $("#mutation-intensity").addEventListener("input", event => { patch.intensity = clamp(Number(event.target.value) / 100, 0, 1); applyAndSave(); }); $("#mutate-button").addEventListener("click", () => mutatePatch(false)); $("#chaos-button").addEventListener("click", () => { if (typeof window.confirm !== "function") { setStatus("CHAOSには確認操作が必要です。"); return; } if (window.confirm("CHAOS：譜面は変更せず、パッチを大きく再構成します。続けますか？")) mutatePatch(true); });
+    $("#xy-x-target").addEventListener("change", event => { if (parameterRegistry[event.target.value]) { patch.xy.xTarget = event.target.value; claimDestination(patch, { kind: "xy", axis: "xTarget" }, event.target.value); } applyAndSave(); }); $("#xy-y-target").addEventListener("change", event => { if (parameterRegistry[event.target.value]) { patch.xy.yTarget = event.target.value; claimDestination(patch, { kind: "xy", axis: "yTarget" }, event.target.value); } applyAndSave(); }); xyPad.addEventListener("pointerdown", handleXY, { passive: false }); xyPad.addEventListener("pointermove", event => { if (event.buttons || event.pressure > 0) handleXY(event); }, { passive: false });
+    $$(".fx-type").forEach(select => select.addEventListener("change", event => { const index = Number(event.target.dataset.fx); patch.fx[index].type = event.target.value; applyAndSave(); updateFXUI(); })); $$(".fx-mix, .fx-a, .fx-b").forEach(input => input.addEventListener("input", event => { const index = Number(event.target.dataset.fx); if (event.target.classList.contains("fx-mix")) patch.fx[index].mix = clamp(Number(event.target.value), 0, 1); else if (event.target.classList.contains("fx-a")) patch.fx[index].a = clamp(Number(event.target.value), 0, 1); else patch.fx[index].b = clamp(Number(event.target.value), 0, 1); applyAndSave(); updateFXUI(); }));
+    $$(".lfo-shape, .lfo-target").forEach(select => select.addEventListener("change", event => { const index = Number(event.target.dataset.lfo); if (event.target.classList.contains("lfo-shape")) patch.lfo[index].shape = event.target.value; else if (MOD_TARGETS.includes(event.target.value)) patch.lfo[index].target = event.target.value; applyAndSave(); updateLFOUI(); })); $$(".lfo-rate, .lfo-depth").forEach(input => input.addEventListener("input", event => { const index = Number(event.target.dataset.lfo); if (event.target.classList.contains("lfo-rate")) patch.lfo[index].rate = valueFor(`lfo${index + 1}Rate`, Number(event.target.value)); else patch.lfo[index].depth = clamp(Number(event.target.value), 0, 1); applyAndSave(); updateLFOUI(); }));
+    $$("[data-lock]").forEach(input => input.addEventListener("change", event => { patch.locks[event.target.dataset.lock] = event.target.checked; applyAndSave(); }));
+    $("#macro-routes").addEventListener("input", event => { const target = event.target; if (!target.matches(".route-range")) return; const macroIndex = Number(target.dataset.macro); const routeIndex = Number(target.dataset.route); const route = patch.macros[macroIndex].routes[routeIndex]; if (target.classList.contains("route-min")) route.min = clamp(Number(target.value), 0, 1); else route.max = clamp(Number(target.value), 0, 1); const output = target.classList.contains("route-min") ? $(`.route-min-value[data-macro="${macroIndex}"][data-route="${routeIndex}"]`) : $(`.route-max-value[data-macro="${macroIndex}"][data-route="${routeIndex}"]`); if (output) output.textContent = Math.round(Number(target.value) * 100); applyAudioState(); saveStorage(); });
+    $("#macro-routes").addEventListener("change", event => { const target = event.target; const macroIndex = Number(target.dataset.macro); const routeIndex = Number(target.dataset.route); if (target.matches(".route-target")) { patch.macros[macroIndex].routes[routeIndex].target = target.value; patch.macros[macroIndex].routes[routeIndex].min = 0; patch.macros[macroIndex].routes[routeIndex].max = 1; claimDestination(patch, { kind: "macro", macroIndex, routeIndex }, target.value); normalizeOwners(patch, true); renderMacroRoutes(); applyAndSave(); } else if (target.matches(".route-invert")) { patch.macros[macroIndex].routes[routeIndex].invert = target.checked; applyAndSave(); renderMacroRoutes(); } });
+    $("#macro-routes").addEventListener("click", event => { const target = event.target; if (target.matches(".add-route")) { const index = Number(target.dataset.macro); const used = new Set(patch.macros.flatMap(macro => macro.routes.map(route => route.target)).concat([patch.xy.xTarget, patch.xy.yTarget])); const destination = MACRO_TARGETS.find(item => !used.has(item)) || "cutoff"; patch.macros[index].routes.push({ target: destination, min: 0, max: 1, invert: false }); normalizeOwners(patch, true); renderMacroRoutes(); applyAndSave(); } if (target.matches(".remove-route")) { const macroIndex = Number(target.dataset.macro); const routeIndex = Number(target.dataset.route); patch.macros[macroIndex].routes.splice(routeIndex, 1); renderMacroRoutes(); applyAndSave(); } });
+    $$("[data-tab]").forEach(tab => tab.addEventListener("click", () => { const name = tab.dataset.tab; $$("[data-tab]").forEach(item => item.setAttribute("aria-selected", item === tab ? "true" : "false")); $$(".panel[role=tabpanel]").forEach(panel => { panel.hidden = panel.id !== `${name}-panel`; }); }));
+    recordButton.addEventListener("click", async () => { if (phase === "recording") finishRecording(score.length ? "記録を終了しました。PLAYでパッチを演奏できます。" : "火花なしで記録を終了しました。もう一度RECできます。"); else await startRecording(); }); playButton.addEventListener("click", async () => { await startPlayback(); }); shareButton.addEventListener("click", shareScore);
+    resetButton.addEventListener("click", () => { resetMenu.hidden = !resetMenu.hidden; resetButton.setAttribute("aria-expanded", resetMenu.hidden ? "false" : "true"); }); $$("[data-reset]").forEach(button => button.addEventListener("click", () => { if (button.dataset.reset === "score") resetScore(); if (button.dataset.reset === "patch") resetPatch(); if (button.dataset.reset === "all") resetAll(); }));
+    soundButton.addEventListener("click", async () => { if (soundOn) { soundOn = false; cancelPlayback(); stopAllVoices(); cancelAnimation(); if (audio && audio.ctx && audio.ctx.state !== "closed") { audio.master.gain.setTargetAtTime(0, audio.ctx.currentTime, .02); audio.fx.forEach(clearFxNodes); audio.graphGeneration = (audio.graphGeneration || 0) + 1; } setStatus("音声をOFFにしました。光だけで記録・演奏できます。"); updateUI(); return; } soundOn = true; const engine = await ensureRunningFromGesture("SOUND ON"); if (!engine) { soundOn = false; updateUI(); return; } setStatus("音声をONにしました。"); updateUI(); }); canvas.addEventListener("pointerdown", handleCanvasTap, { passive: false }); window.addEventListener("resize", () => draw());
+    document.addEventListener("pointerdown", () => { if (soundOn && audio && audio.ctx && audio.ctx.state !== "running") void resumeAudioBestEffort(); }, { passive: true }); document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") { cancelAnimation(); if (phase === "recording") finishRecording("画面を離れたため記録を終了しました。"); else if (phase === "playing") finishPlayback("画面を離れたため再生を停止しました。PLAYで再開できます。"); stopAllVoices(); if (audio && audio.ctx.state === "running") { try { const promise = audio.ctx.suspend(); if (promise && promise.catch) promise.catch(() => {}); } catch (_error) {} } } else void resumeAudioBestEffort(); }); window.addEventListener("pagehide", () => { cancelTimers(); if (playbackTimer !== null) window.clearInterval(playbackTimer); playbackTimer = null; stopAllVoices(); });
+
+    populateTargetSelects(); const initial = decodeHash(window.location.hash);
+    if (initial.present) { if (initial.valid) { score = initial.score; patch = initial.patch || defaults(); phase = score.length ? "ready" : "empty"; setStatus(initial.version === LEGACY_VERSION ? "v1共有URLから譜面を復元しました。v2の演奏パッチは初期値です。" : "v2共有URLから譜面と演奏パッチを復元しました。PLAYで再生できます。"); saveStorage(); } else { score = []; patch = defaults(); phase = "empty"; clearHash(); setStatus("共有URLが正しくないため、安全のため空の譜面で開始しました。"); } } else { const stored = readStorage(); score = stored.score; patch = stored.patch; phase = score.length ? "ready" : "empty"; if (stored.migrated) saveStorage(); if (score.length) setStatus("この端末の最後の譜面とパッチを復元しました。PLAYで演奏できます。"); }
+    normalizeOwners(patch, false); renderMacroRoutes(); updateUI();
+    window.__sparkScoreV2 = { decodeHash, encodeV2, sanitizeScore, sanitizePatch, getEffectiveState, sampleHoldValue, ensureRunningFromGesture, getPatch: () => clone(patch), getScore: () => clone(score), getStateSize: () => { const encoded = encodeV2(score, patch); return encoded ? encoded.length : 0; }, getAudioState: () => audio ? { state: audio.ctx.state, voices: activeVoices.size, graphGeneration: audio.graphGeneration, fx: audio.fx.map(slot => slot.type), lfoConnections: audio.lfo.map(item => item.connected) } : null };
+  })();
   </script>
 </body>
 </html>
