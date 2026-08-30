@@ -338,7 +338,7 @@
         <div class="sky-copy" id="sky-copy"><span class="hint-label">RECを押して、空に1〜16個の火花を置く</span></div>
       </div>
 
-      <p class="status" id="status" role="status" aria-live="polite">RECを押すと12秒間の記録が始まります。0〜16タップで完成します。</p>
+      <p class="status" id="status" role="status" aria-live="polite">RECを押すと12秒間の記録が始まります。1〜16タップで完成します。0タップで終了すると空に戻ります。</p>
 
       <div class="dock" aria-label="操作">
         <button class="dock-button primary" id="record-button" type="button">● REC</button>
@@ -642,7 +642,8 @@
         const context = ensureAudio();
         if (!context || !masterGain) return;
         const yRatio = point.y / 255;
-        const noteIndex = clampInteger((1 - yRatio) * (NOTE_FREQS.length - 1), 0, NOTE_FREQS.length - 1);
+        const xRatio = point.x / 255;
+        const noteIndex = clampInteger(xRatio * (NOTE_FREQS.length - 1), 0, NOTE_FREQS.length - 1);
         const frequency = NOTE_FREQS[noteIndex];
         const brightness = 1 - yRatio;
         const now = context.currentTime;
