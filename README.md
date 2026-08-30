@@ -16,6 +16,7 @@
 | `news/` | 電子工作通信 | 電子工作の記録・ニュース。ルートの `news.html` はリダイレクトのみ |
 | `otamatone/` | オタマトーン WEB | しっぽのリボンをなぞって鳴らす白いオタマトーン。TR-808エフェクトとルーパー搭載。ルートの `otamatone.html` はリダイレクトのみ |
 | `prompt-forge/` | Prompt Forge | マネキン2体のキャラクターでプロンプトを生成する画像生成AI向けツール。ルートの `prompt-forge.html` はリダイレクトのみ |
+| `salvage-yard/` | AI SALVAGE YARD | ボツPrompt・失敗出力・途中案を部品取りし、SALVAGE REPORT用のpromptに再構成する静的PWA。AI APIなし、端末保存、オフライン対応。 |
 | `metronome/` | Metronome Watch | ネオン時計型メトロノーム（16小節×4拍）。ルートの `metronome-watch.html` はリダイレクトのみ |
 | `mizu/` | Mizu | 指でなぞって描く水彩トレース。旧`grid_v2.html`は同じ作品への転送のみ |
 | `virus-busters/` | ウィルスバスターズ | iPhone向け縦持ちディフェンスゲーム（全20ステージ・図鑑50種）。ルートの `virus-busters.html` はリダイレクトのみ |
