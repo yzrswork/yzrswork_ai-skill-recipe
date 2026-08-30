@@ -18,6 +18,7 @@
 | `prompt-forge/` | Prompt Forge | マネキン2体のキャラクターでプロンプトを生成する画像生成AI向けツール。ルートの `prompt-forge.html` はリダイレクトのみ |
 | `salvage-yard/` | AI SALVAGE YARD | ボツPrompt・失敗出力・途中案を部品取りし、SALVAGE REPORT用のpromptに再構成する静的PWA。AI APIなし、端末保存、オフライン対応。 |
 | `metronome/` | Metronome Watch | ネオン時計型メトロノーム（16小節×4拍）。ルートの `metronome-watch.html` はリダイレクトのみ |
+| `spark-score/` | ひかり譜 / Spark Score | 空を最大16回タップし、位置とタップ間隔を音と光の一回分の譜面としてURL共有するiPhone向け作品。音声はブラウザ内で生成し、APIなし・最後の譜面のみ端末内保存。 |
 | `mizu/` | Mizu | 指でなぞって描く水彩トレース。旧`grid_v2.html`は同じ作品への転送のみ |
 | `virus-busters/` | ウィルスバスターズ | iPhone向け縦持ちディフェンスゲーム（全20ステージ・図鑑50種）。ルートの `virus-busters.html` はリダイレクトのみ |
 | `bikey/index.html` | bikey / Bike Commute Action | 毎朝の通学路を自転車で駆け抜ける横スクロールアクション。日を追うごとに道が険しくなる。単一HTML（PWA非対応）。企画メモは `bikey/PLAN.md`。 |

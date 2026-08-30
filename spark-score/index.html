@@ -1,0 +1,884 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101a2d">
+  <meta name="description" content="空に火花を置き、タップの位置と間隔を一回の光の譜面として残す小さな音の作品。">
+  <title>ひかり譜 / Spark Score</title>
+  <style>
+    :root {
+      --sky: #102039;
+      --sky-deep: #07111f;
+      --panel: rgba(18, 34, 57, 0.88);
+      --panel-soft: rgba(27, 48, 76, 0.78);
+      --line: rgba(201, 222, 236, 0.2);
+      --line-strong: rgba(201, 222, 236, 0.42);
+      --paper: #f5efe2;
+      --text: #edf6f8;
+      --muted: #9cb4c3;
+      --gold: #ffd166;
+      --gold-bright: #fff2ac;
+      --coral: #f38d6b;
+      --cyan: #7bd7dc;
+      --sans: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+      --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      min-height: 100%;
+      background: var(--sky-deep);
+    }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 84% 4%, rgba(123, 215, 220, 0.17), transparent 24rem),
+        radial-gradient(circle at 8% 76%, rgba(243, 141, 107, 0.12), transparent 25rem),
+        linear-gradient(165deg, var(--sky), var(--sky-deep) 82%);
+      font-family: var(--sans);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      content: "";
+      opacity: 0.17;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.24) 0.55px, transparent 0.75px);
+      background-size: 6px 6px;
+    }
+
+    a,
+    button { -webkit-tap-highlight-color: transparent; }
+
+    button {
+      font: inherit;
+      touch-action: manipulation;
+    }
+
+    button:focus-visible,
+    a:focus-visible {
+      outline: 3px solid rgba(255, 209, 102, 0.9);
+      outline-offset: 3px;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      width: min(100%, 680px);
+      margin: 0 auto;
+      padding: calc(16px + env(safe-area-inset-top))
+        calc(14px + env(safe-area-inset-right))
+        calc(30px + env(safe-area-inset-bottom))
+        calc(14px + env(safe-area-inset-left));
+    }
+
+    .back {
+      display: inline-flex;
+      align-items: center;
+      min-height: 48px;
+      color: var(--muted);
+      text-decoration: none;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+    }
+
+    .back:hover { color: var(--gold); }
+
+    header {
+      margin: 14px 0 16px;
+      padding: 20px 19px 21px;
+      border: 1px solid var(--line-strong);
+      border-left: 6px solid var(--gold);
+      background: linear-gradient(135deg, rgba(30, 52, 81, 0.88), rgba(14, 27, 47, 0.8));
+      box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.14);
+    }
+
+    .eyebrow,
+    .kicker,
+    .phase,
+    .counter,
+    .hint-label,
+    .dock-label {
+      font-family: var(--mono);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow {
+      margin: 0 0 9px;
+      color: var(--gold);
+      font-size: 0.68rem;
+      font-weight: 700;
+    }
+
+    h1,
+    h2,
+    p { margin-top: 0; }
+
+    h1 {
+      max-width: 15ch;
+      margin: 0 0 9px;
+      color: var(--text);
+      font-size: clamp(2.2rem, 13vw, 4rem);
+      font-weight: 800;
+      letter-spacing: -0.06em;
+      line-height: 0.98;
+    }
+
+    h1 span {
+      display: block;
+      margin-top: 8px;
+      color: var(--gold);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 0.46em;
+      font-style: italic;
+      font-weight: 400;
+      letter-spacing: 0.07em;
+    }
+
+    .lead {
+      max-width: 42ch;
+      margin-bottom: 0;
+      color: #c6d6df;
+      font-size: 0.92rem;
+      line-height: 1.78;
+    }
+
+    .workbench {
+      padding: 14px;
+      border: 1px solid var(--line);
+      background: rgba(12, 25, 44, 0.78);
+    }
+
+    .statusbar {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 2px 11px;
+      border-bottom: 1px solid var(--line-strong);
+    }
+
+    .phase {
+      color: var(--gold);
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .counter {
+      color: var(--muted);
+      font-size: 0.66rem;
+    }
+
+    .sky-frame {
+      position: relative;
+      width: 100%;
+      height: min(108vw, 440px);
+      min-height: 330px;
+      margin-top: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(123, 215, 220, 0.32);
+      border-radius: 12px;
+      background: #0c1a31;
+      box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.24);
+    }
+
+    .sky-frame.is-disabled { cursor: default; }
+
+    #sky {
+      display: block;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+    }
+
+    .sky-copy {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      pointer-events: none;
+      color: rgba(237, 246, 248, 0.62);
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-align: center;
+      text-transform: uppercase;
+      transition: opacity 160ms ease;
+    }
+
+    .sky-copy.is-hidden { opacity: 0; }
+
+    .hint-label {
+      color: var(--cyan);
+      font-size: 0.63rem;
+    }
+
+    .status {
+      min-height: 2.8em;
+      margin: 12px 2px 0;
+      color: #c9dce2;
+      font-size: 0.82rem;
+      line-height: 1.55;
+    }
+
+    .dock {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+      padding-top: 13px;
+      border-top: 1px solid var(--line);
+    }
+
+    .dock-button {
+      flex: 1 1 120px;
+      min-height: 48px;
+      padding: 10px 12px;
+      border: 1px solid var(--line-strong);
+      border-radius: 9px;
+      color: var(--text);
+      background: var(--panel-soft);
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+    }
+
+    .dock-button.primary {
+      color: #172331;
+      border-color: var(--gold);
+      background: var(--gold);
+      font-weight: 700;
+    }
+
+    .dock-button.sound {
+      flex: 0 0 auto;
+      min-width: 102px;
+    }
+
+    .dock-button:hover:not(:disabled) { border-color: var(--gold); }
+    .dock-button:active:not(:disabled) { transform: translateY(1px); }
+    .dock-button:disabled { cursor: not-allowed; opacity: 0.38; }
+
+    .dock-button[aria-pressed="false"] {
+      color: var(--muted);
+      border-color: var(--line);
+    }
+
+    .share-note {
+      margin: 11px 2px 0;
+      color: var(--muted);
+      font-size: 0.72rem;
+    }
+
+    footer {
+      margin-top: 19px;
+      color: rgba(156, 180, 195, 0.72);
+      font-family: var(--mono);
+      font-size: 0.64rem;
+      letter-spacing: 0.05em;
+      text-align: center;
+    }
+
+    @media (min-width: 600px) {
+      .page { padding-left: 20px; padding-right: 20px; }
+      .workbench { padding: 18px; }
+    }
+
+    @media (max-width: 350px) {
+      .page { padding-left: 11px; padding-right: 11px; }
+      .workbench { padding: 11px; }
+      .sky-frame { min-height: 300px; }
+      .dock-button { flex-basis: 105px; padding-left: 8px; padding-right: 8px; font-size: 0.63rem; }
+      .dock-button.sound { min-width: 94px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.001ms !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <a class="back" href="../">← YZRS WORKS</a>
+
+    <header>
+      <p class="eyebrow">FREE POSITION / ONE SCORE</p>
+      <h1>ひかり譜<span>Spark Score</span></h1>
+      <p class="lead">空に火花を置く。置いた場所と、火花どうしの間隔を、一度だけ再生できる光の譜面にします。</p>
+    </header>
+
+    <section class="workbench" aria-labelledby="bench-heading">
+      <div class="statusbar">
+        <span class="phase" id="phase">EMPTY</span>
+        <span class="counter" id="counter">0 / 16 TAPS</span>
+      </div>
+
+      <div class="sky-frame" id="sky-frame">
+        <canvas id="sky" role="application" aria-label="火花を置く空。REC中にタップしてください。" aria-describedby="status"></canvas>
+        <div class="sky-copy" id="sky-copy"><span class="hint-label">RECを押して、空に1〜16個の火花を置く</span></div>
+      </div>
+
+      <p class="status" id="status" role="status" aria-live="polite">RECを押すと12秒間の記録が始まります。0〜16タップで完成します。</p>
+
+      <div class="dock" aria-label="操作">
+        <button class="dock-button primary" id="record-button" type="button">● REC</button>
+        <button class="dock-button" id="play-button" type="button" disabled>▶ PLAY</button>
+        <button class="dock-button" id="share-button" type="button" disabled>↗ SHARE</button>
+        <button class="dock-button" id="reset-button" type="button">RESET</button>
+        <button class="dock-button sound" id="sound-button" type="button" aria-pressed="true">♫ SOUND ON</button>
+      </div>
+      <p class="share-note">最大16タップ / 記録は12秒まで / 共有URLに位置と間隔を封入</p>
+    </section>
+
+    <footer>ひかり譜 / Spark Score — 音声とスコアはこの端末内で処理されます。</footer>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const VERSION = 1;
+      const MAX_POINTS = 16;
+      const MAX_TIME_MS = 12000;
+      const STORAGE_KEY = "yzrs-spark-score:last";
+      const NOTE_FREQS = [261.63, 293.66, 329.63, 392.00, 440.00];
+      const NOTE_NAMES = ["C5", "D5", "E5", "G5", "A5"];
+      const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      const phaseEl = document.querySelector("#phase");
+      const counterEl = document.querySelector("#counter");
+      const statusEl = document.querySelector("#status");
+      const skyFrame = document.querySelector("#sky-frame");
+      const skyCopy = document.querySelector("#sky-copy");
+      const canvas = document.querySelector("#sky");
+      const recordButton = document.querySelector("#record-button");
+      const playButton = document.querySelector("#play-button");
+      const shareButton = document.querySelector("#share-button");
+      const resetButton = document.querySelector("#reset-button");
+      const soundButton = document.querySelector("#sound-button");
+      const context2d = canvas.getContext("2d");
+
+      let phase = "empty";
+      let points = [];
+      let firstTapAt = null;
+      let recordTimer = null;
+      let playbackTimer = null;
+      let playbackIndex = -1;
+      let soundOn = true;
+      let audioContext = null;
+      let masterGain = null;
+      let bursts = [];
+      let animationFrame = null;
+
+      function emptyPoints() { return []; }
+
+      function clampInteger(value, min, max) {
+        return Math.max(min, Math.min(max, Math.round(value)));
+      }
+
+      function validPoint(point) {
+        return point && Number.isSafeInteger(point.x) && Number.isSafeInteger(point.y) && Number.isSafeInteger(point.t)
+          && point.x >= 0 && point.x <= 255
+          && point.y >= 0 && point.y <= 255
+          && point.t >= 0 && point.t <= MAX_TIME_MS;
+      }
+
+      function validatePoints(candidate) {
+        if (!Array.isArray(candidate) || candidate.length > MAX_POINTS) return null;
+        let previousTime = -1;
+        const clean = candidate.map((point) => {
+          if (!point || typeof point !== "object") return null;
+          return { x: Number(point.x), y: Number(point.y), t: Number(point.t) };
+        });
+        if (!clean.every(validPoint)) return null;
+        for (const point of clean) {
+          if (point.t < previousTime) return null;
+          previousTime = point.t;
+        }
+        if (clean.length > 0 && clean[0].t !== 0) return null;
+        return clean;
+      }
+
+      function encodeHash(candidate) {
+        const clean = validatePoints(candidate) || [];
+        const body = clean.map((point) => `${point.x},${point.y},${point.t}`).join(";");
+        return `#v${VERSION}/${clean.length}/${body}`;
+      }
+
+      function invalidHashResult() { return { present: true, valid: false, points: emptyPoints() }; }
+
+      function decodeHash(hash) {
+        if (typeof hash !== "string" || hash.length === 0) return { present: false, valid: false, points: emptyPoints() };
+        const match = hash.match(/^#v(\d+)\/(\d{1,2})\/(.*)$/);
+        if (!match || Number(match[1]) !== VERSION) return invalidHashResult();
+        const count = Number(match[2]);
+        const body = match[3];
+        if (!Number.isSafeInteger(count) || count < 0 || count > MAX_POINTS) return invalidHashResult();
+        if (count === 0) return body === "" ? { present: true, valid: true, points: emptyPoints() } : invalidHashResult();
+        const records = body.split(";");
+        if (records.length !== count || records.some((record) => record.length === 0)) return invalidHashResult();
+        const parsed = records.map((record) => {
+          const values = record.split(",");
+          if (values.length !== 3 || values.some((value) => !/^\d+$/.test(value))) return null;
+          return { x: Number(values[0]), y: Number(values[1]), t: Number(values[2]) };
+        });
+        const clean = validatePoints(parsed);
+        return clean ? { present: true, valid: true, points: clean } : invalidHashResult();
+      }
+
+      function storedPoints() {
+        try {
+          const raw = window.localStorage.getItem(STORAGE_KEY);
+          if (!raw) return null;
+          const payload = JSON.parse(raw);
+          if (!payload || payload.v !== VERSION) return null;
+          return validatePoints(payload.points);
+        } catch (_error) {
+          return null;
+        }
+      }
+
+      function savePoints(candidate) {
+        const clean = validatePoints(candidate);
+        if (!clean || clean.length === 0) return;
+        try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ v: VERSION, points: clean })); } catch (_error) { /* optional */ }
+      }
+
+      function clearStoredPoints() {
+        try { window.localStorage.removeItem(STORAGE_KEY); } catch (_error) { /* optional */ }
+      }
+
+      function clearHash() {
+        const base = window.location.href.split("#")[0];
+        if (window.history && typeof window.history.replaceState === "function") window.history.replaceState(null, "", base);
+      }
+
+      function setHash(hash) {
+        const base = window.location.href.split("#")[0];
+        if (window.history && typeof window.history.replaceState === "function") window.history.replaceState(null, "", `${base}${hash}`);
+      }
+
+      function getShareUrl(candidate) {
+        return `${window.location.href.split("#")[0]}${encodeHash(candidate)}`;
+      }
+
+      function setStatus(message) { statusEl.textContent = message; }
+
+      function cancelTimers() {
+        if (recordTimer !== null) window.clearTimeout(recordTimer);
+        if (playbackTimer !== null) window.clearTimeout(playbackTimer);
+        recordTimer = null;
+        playbackTimer = null;
+      }
+
+      function cancelAnimation() {
+        if (animationFrame !== null) window.cancelAnimationFrame(animationFrame);
+        animationFrame = null;
+        bursts = [];
+      }
+
+      function canvasPoint(point) {
+        const rect = canvas.getBoundingClientRect();
+        return { x: (point.x / 255) * rect.width, y: (point.y / 255) * rect.height };
+      }
+
+      function pointColor(point, index) {
+        const hue = (point.x * 7 + point.y * 11 + point.t * 3 + index * 29) % 360;
+        return `hsl(${hue} 86% 68%)`;
+      }
+
+      function addBurst(point, index) {
+        const now = performance.now();
+        bursts.push({ point, index, born: now, color: pointColor(point, index) });
+        if (reduceMotion) {
+          draw();
+          return;
+        }
+        if (animationFrame === null) animationFrame = window.requestAnimationFrame(animate);
+      }
+
+      function animate(now) {
+        animationFrame = null;
+        bursts = bursts.filter((burst) => now - burst.born < 720);
+        draw(now);
+        if (bursts.length > 0) animationFrame = window.requestAnimationFrame(animate);
+      }
+
+      function draw(now = performance.now()) {
+        const width = canvas.clientWidth;
+        const height = canvas.clientHeight;
+        if (width === 0 || height === 0) return;
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        if (canvas.width !== Math.round(width * dpr) || canvas.height !== Math.round(height * dpr)) {
+          canvas.width = Math.round(width * dpr);
+          canvas.height = Math.round(height * dpr);
+        }
+        context2d.setTransform(dpr, 0, 0, dpr, 0, 0);
+        const sky = context2d.createLinearGradient(0, 0, 0, height);
+        sky.addColorStop(0, "#172d4d");
+        sky.addColorStop(0.58, "#0e203c");
+        sky.addColorStop(1, "#081323");
+        context2d.fillStyle = sky;
+        context2d.fillRect(0, 0, width, height);
+
+        const glow = context2d.createRadialGradient(width * 0.7, height * 0.22, 0, width * 0.7, height * 0.22, width * 0.8);
+        glow.addColorStop(0, "rgba(123,215,220,.13)");
+        glow.addColorStop(1, "rgba(123,215,220,0)");
+        context2d.fillStyle = glow;
+        context2d.fillRect(0, 0, width, height);
+
+        context2d.fillStyle = "rgba(245,239,226,.42)";
+        for (let i = 0; i < 24; i += 1) {
+          const starX = (i * 83 + 17) % Math.max(width, 1);
+          const starY = (i * 47 + 21) % Math.max(height * 0.8, 1);
+          context2d.fillRect(starX, starY, i % 4 === 0 ? 1.5 : 1, i % 4 === 0 ? 1.5 : 1);
+        }
+
+        if (points.length > 1) {
+          context2d.beginPath();
+          points.forEach((point, index) => {
+            const xy = canvasPoint(point);
+            if (index === 0) context2d.moveTo(xy.x, xy.y);
+            else context2d.lineTo(xy.x, xy.y);
+          });
+          context2d.strokeStyle = "rgba(255,209,102,.34)";
+          context2d.lineWidth = 1;
+          context2d.setLineDash([3, 6]);
+          context2d.stroke();
+          context2d.setLineDash([]);
+        }
+
+        points.forEach((point, index) => {
+          const xy = canvasPoint(point);
+          const color = pointColor(point, index);
+          const isPlaying = phase === "playing" && playbackIndex === index;
+          context2d.beginPath();
+          context2d.arc(xy.x, xy.y, isPlaying ? 13 : 8, 0, Math.PI * 2);
+          context2d.fillStyle = color.replace("68%)", "68% / .18)");
+          context2d.fill();
+          context2d.beginPath();
+          context2d.arc(xy.x, xy.y, isPlaying ? 5 : 4, 0, Math.PI * 2);
+          context2d.fillStyle = color;
+          context2d.shadowBlur = isPlaying ? 22 : 12;
+          context2d.shadowColor = color;
+          context2d.fill();
+          context2d.shadowBlur = 0;
+          context2d.fillStyle = "rgba(7,17,31,.72)";
+          context2d.font = "10px ui-monospace, monospace";
+          context2d.textAlign = "center";
+          context2d.textBaseline = "middle";
+          context2d.fillText(String(index + 1), xy.x, xy.y);
+        });
+
+        bursts.forEach((burst) => {
+          const xy = canvasPoint(burst.point);
+          const age = Math.max(0, now - burst.born);
+          const progress = reduceMotion ? 0.4 : Math.min(age / 720, 1);
+          const radius = reduceMotion ? 15 : 9 + progress * 28;
+          const alpha = reduceMotion ? 0.35 : 0.65 * (1 - progress);
+          context2d.beginPath();
+          context2d.arc(xy.x, xy.y, radius, 0, Math.PI * 2);
+          context2d.strokeStyle = burst.color.replace("68%)", `68% / ${alpha})`);
+          context2d.lineWidth = reduceMotion ? 1 : 2;
+          context2d.stroke();
+          if (!reduceMotion) {
+            for (let ray = 0; ray < 6; ray += 1) {
+              const angle = (Math.PI * 2 * ray) / 6;
+              const length = 8 + progress * 16;
+              context2d.beginPath();
+              context2d.moveTo(xy.x + Math.cos(angle) * (radius + 2), xy.y + Math.sin(angle) * (radius + 2));
+              context2d.lineTo(xy.x + Math.cos(angle) * (radius + length), xy.y + Math.sin(angle) * (radius + length));
+              context2d.strokeStyle = burst.color.replace("68%)", `68% / ${alpha})`);
+              context2d.lineWidth = 1;
+              context2d.stroke();
+            }
+          }
+        });
+      }
+
+      function resizeCanvas() { draw(); }
+
+      function ensureAudio() {
+        if (!soundOn) return null;
+        if (!audioContext) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContextClass) return null;
+          try {
+            audioContext = new AudioContextClass();
+            masterGain = audioContext.createGain();
+            masterGain.gain.value = 0.18;
+            masterGain.connect(audioContext.destination);
+          } catch (_error) {
+            audioContext = null;
+            masterGain = null;
+            return null;
+          }
+        }
+        if (audioContext.state === "suspended") audioContext.resume();
+        return audioContext;
+      }
+
+      function playPoint(point) {
+        const context = ensureAudio();
+        if (!context || !masterGain) return;
+        const yRatio = point.y / 255;
+        const noteIndex = clampInteger((1 - yRatio) * (NOTE_FREQS.length - 1), 0, NOTE_FREQS.length - 1);
+        const frequency = NOTE_FREQS[noteIndex];
+        const brightness = 1 - yRatio;
+        const now = context.currentTime;
+        const oscillator = context.createOscillator();
+        const filter = context.createBiquadFilter();
+        const gain = context.createGain();
+        oscillator.type = "triangle";
+        oscillator.frequency.setValueAtTime(frequency, now);
+        filter.type = "lowpass";
+        filter.frequency.setValueAtTime(360 + brightness * 6400, now);
+        filter.Q.setValueAtTime(0.8 + brightness * 1.4, now);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.38, now + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
+        oscillator.connect(filter);
+        filter.connect(gain);
+        gain.connect(masterGain);
+        oscillator.start(now);
+        oscillator.stop(now + 0.5);
+      }
+
+      function updateUI() {
+        phaseEl.textContent = phase.toUpperCase();
+        counterEl.textContent = `${points.length} / ${MAX_POINTS} TAPS`;
+        recordButton.textContent = phase === "recording" ? "■ FINISH REC" : phase === "ready" ? "● RERECORD" : "● REC";
+        recordButton.disabled = phase === "playing";
+        playButton.disabled = phase !== "ready";
+        shareButton.disabled = phase !== "ready" || points.length === 0;
+        skyFrame.classList.toggle("is-disabled", phase === "playing");
+        canvas.setAttribute("aria-disabled", phase === "playing" ? "true" : "false");
+        skyCopy.classList.toggle("is-hidden", phase === "recording" || phase === "playing" || points.length > 0);
+        if (phase === "recording") {
+          skyCopy.innerHTML = `<span class="hint-label">TAP THE SKY · ${points.length} / ${MAX_POINTS}</span>`;
+          skyCopy.classList.remove("is-hidden");
+        } else if (phase === "playing") {
+          skyCopy.innerHTML = `<span class="hint-label">PLAYING · ${Math.max(playbackIndex + 1, 1)} / ${points.length}</span>`;
+          skyCopy.classList.remove("is-hidden");
+        } else if (phase === "ready" && points.length > 0) {
+          skyCopy.innerHTML = `<span class="hint-label">READY · PLAYで元の間隔を一回再生</span>`;
+          skyCopy.classList.remove("is-hidden");
+        } else {
+          skyCopy.innerHTML = `<span class="hint-label">RECを押して、空に1〜16個の火花を置く</span>`;
+        }
+        soundButton.textContent = soundOn ? "♫ SOUND ON" : "♫ SOUND OFF";
+        soundButton.setAttribute("aria-pressed", soundOn ? "true" : "false");
+        draw();
+      }
+
+      function finishRecording(message) {
+        if (phase !== "recording") return;
+        cancelTimers();
+        if (points.length === 0) {
+          phase = "empty";
+          firstTapAt = null;
+          setStatus(message || "火花なしで記録を終了しました。もう一度RECできます。");
+        } else {
+          phase = "ready";
+          savePoints(points);
+          setStatus(message || `${points.length}個の火花を記録しました。PLAYで元の間隔を再生できます。`);
+        }
+        updateUI();
+      }
+
+      function startRecording() {
+        cancelTimers();
+        cancelAnimation();
+        points = emptyPoints();
+        firstTapAt = null;
+        phase = "recording";
+        clearHash();
+        clearStoredPoints();
+        setStatus("REC中。空の好きな場所をタップしてください。12秒または16タップで完成します。");
+        recordTimer = window.setTimeout(() => finishRecording("12秒が経過しました。記録を完成しました。"), MAX_TIME_MS);
+        updateUI();
+      }
+
+      function handleCanvasTap(event) {
+        if (phase !== "recording" || points.length >= MAX_POINTS) return;
+        event.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const x = clampInteger(((event.clientX - rect.left) / rect.width) * 255, 0, 255);
+        const y = clampInteger(((event.clientY - rect.top) / rect.height) * 255, 0, 255);
+        const now = Date.now();
+        if (firstTapAt === null) firstTapAt = now;
+        const t = clampInteger(now - firstTapAt, 0, MAX_TIME_MS);
+        const point = { x, y, t };
+        points.push(point);
+        ensureAudio();
+        playPoint(point);
+        addBurst(point, points.length - 1);
+        setStatus(`${points.length}個目の火花。あと${MAX_POINTS - points.length}個、または12秒まで置けます。`);
+        if (points.length >= MAX_POINTS) finishRecording("16タップに到達しました。記録を完成しました。");
+        else if (t >= MAX_TIME_MS) finishRecording("12秒が経過しました。記録を完成しました。");
+        else updateUI();
+      }
+
+      function finishPlayback() {
+        cancelTimers();
+        phase = "ready";
+        playbackIndex = -1;
+        setStatus("再生完了。元の間隔を一回だけ再生しました。");
+        updateUI();
+      }
+
+      function playNext() {
+        if (phase !== "playing") return;
+        playbackIndex += 1;
+        if (playbackIndex >= points.length) {
+          finishPlayback();
+          return;
+        }
+        const point = points[playbackIndex];
+        playPoint(point);
+        addBurst(point, playbackIndex);
+        setStatus(`再生中 ${playbackIndex + 1} / ${points.length}。`);
+        updateUI();
+        if (playbackIndex === points.length - 1) {
+          playbackTimer = window.setTimeout(finishPlayback, 520);
+          return;
+        }
+        const interval = Math.max(0, points[playbackIndex + 1].t - point.t);
+        playbackTimer = window.setTimeout(playNext, interval);
+      }
+
+      function startPlayback() {
+        if (phase !== "ready" || points.length === 0) return;
+        cancelTimers();
+        ensureAudio();
+        phase = "playing";
+        playbackIndex = -1;
+        setStatus(`再生中 0 / ${points.length}。`);
+        playNext();
+      }
+
+      function resetAll() {
+        cancelTimers();
+        cancelAnimation();
+        phase = "empty";
+        points = emptyPoints();
+        playbackIndex = -1;
+        firstTapAt = null;
+        clearHash();
+        clearStoredPoints();
+        setStatus("リセットしました。RECを押して新しい火花を記録できます。");
+        updateUI();
+      }
+
+      function copyText(text) {
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+          return navigator.clipboard.writeText(text).then(() => true).catch(() => legacyCopy(text));
+        }
+        return Promise.resolve(legacyCopy(text));
+      }
+
+      function legacyCopy(text) {
+        const helper = document.createElement("textarea");
+        helper.value = text;
+        helper.setAttribute("readonly", "");
+        helper.style.position = "fixed";
+        helper.style.left = "-9999px";
+        document.body.appendChild(helper);
+        helper.select();
+        let result = false;
+        try { result = document.execCommand("copy"); } catch (_error) { result = false; }
+        helper.remove();
+        return result;
+      }
+
+      async function shareScore() {
+        if (phase !== "ready" || points.length === 0) return;
+        const url = getShareUrl(points);
+        setHash(encodeHash(points));
+        if (navigator.share && typeof navigator.share === "function") {
+          try {
+            await navigator.share({ title: "ひかり譜 / Spark Score", url });
+            setStatus("共有シートを開きました。URLにはこの譜面の位置と間隔が入っています。");
+            return;
+          } catch (error) {
+            if (error && error.name === "AbortError") {
+              setStatus("共有をキャンセルしました。譜面はそのままです。");
+              return;
+            }
+          }
+        }
+        const copied = await copyText(url);
+        setStatus(copied ? "共有URLをコピーしました。" : "共有URLをコピーできませんでした。");
+      }
+
+      function handleVisibility() {
+        if (document.visibilityState !== "hidden") return;
+        cancelAnimation();
+        if (phase === "recording") finishRecording("画面を離れたため記録を終了しました。");
+        else if (phase === "playing") finishPlayback();
+        else cancelTimers();
+      }
+
+      recordButton.addEventListener("click", () => {
+        if (phase === "recording") finishRecording(points.length ? "記録を終了しました。PLAYで元の間隔を一回再生できます。" : "火花なしで記録を終了しました。もう一度RECできます。");
+        else startRecording();
+      });
+      playButton.addEventListener("click", startPlayback);
+      shareButton.addEventListener("click", shareScore);
+      resetButton.addEventListener("click", resetAll);
+      soundButton.addEventListener("click", () => {
+        soundOn = !soundOn;
+        setStatus(soundOn ? "音声をONにしました。" : "音声をOFFにしました。光だけで記録できます。");
+        updateUI();
+      });
+      canvas.addEventListener("pointerdown", handleCanvasTap, { passive: false });
+      window.addEventListener("resize", resizeCanvas);
+      document.addEventListener("visibilitychange", handleVisibility);
+
+      const hashState = decodeHash(window.location.hash);
+      if (hashState.present) {
+        if (hashState.valid && hashState.points.length > 0) {
+          points = hashState.points;
+          phase = "ready";
+          setStatus("共有URLから譜面を復元しました。PLAYで元の間隔を一回再生できます。");
+        } else {
+          points = emptyPoints();
+          phase = "empty";
+          clearHash();
+          setStatus("共有URLが正しくないため、安全のため空の譜面で開始しました。");
+        }
+      } else {
+        const last = storedPoints();
+        if (last && last.length > 0) {
+          points = last;
+          phase = "ready";
+          setStatus("この端末の最後の譜面を復元しました。PLAYで元の間隔を一回再生できます。");
+        }
+      }
+
+      draw();
+      updateUI();
+    })();
+  </script>
+</body>
+</html>
