@@ -1,7 +1,8 @@
-const CACHE='morito-fishing-v3';
+const CACHE='morito-fishing-v4';
 const CORE=[
   './',
   './index.html',
+  './tide-chart.js',
   './manifest.webmanifest',
   './data/fish.json',
   './data/catches.json',
