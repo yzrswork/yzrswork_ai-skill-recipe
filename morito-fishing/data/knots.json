@@ -1,6 +1,7 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "updated": "2026-09-02",
+  "imagePolicy": "サイト内表示は再利用条件を確認できた図版のみ。条件を確認できない図版は転載せず、参考ページへの外部リンクだけを表示する。",
   "knots": [
     {
       "id": "uni",
@@ -10,6 +11,15 @@
       "useFor": ["サルカン", "スナップ", "ルアー", "ブラクリ金具"],
       "line": ["ナイロン", "フロロ"],
       "summary": "まずこれ。餌釣りの金具からルアーまで使いやすい万能ノット。",
+      "image": {
+        "imageUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Uni%20knot.jpg?width=1000",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Uni_knot.jpg",
+        "sourceName": "Wikimedia Commons",
+        "author": "Snapper G",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+        "caption": "ユニノットの結び方参考図"
+      },
       "steps": [
         "糸をアイに通し、10〜15cmほど余らせる。",
         "余り糸を本線に沿わせ、折り返して輪を作る。",
@@ -28,6 +38,15 @@
       "useFor": ["サルカン", "スナップ", "小型ルアー"],
       "line": ["ナイロン", "フロロ"],
       "summary": "小さい金具へ素早く結ぶ定番。ユニノットとどちらか一つ覚えれば現場ではかなり足りる。",
+      "image": {
+        "imageUrl": "https://www.fws.gov/sites/default/files/styles/max_1300x1300/public/2023-05/clinch%20knot%202.png?itok=mwacaf8j",
+        "sourceUrl": "https://www.fws.gov/media/improved-clinch-knot",
+        "sourceName": "U.S. Fish & Wildlife Service",
+        "author": "USFWS",
+        "license": "Public Domain",
+        "licenseUrl": "https://www.fws.gov/media/improved-clinch-knot",
+        "caption": "改良クリンチノットの結び方参考図"
+      },
       "steps": [
         "糸をアイに通し、10〜15cmほど余らせる。",
         "余り糸を本線へ5〜7回巻き付ける。",
@@ -39,6 +58,33 @@
       "warning": "太いラインや極端に硬いラインでは締まりにくいことがある。"
     },
     {
+      "id": "palomar",
+      "nameJa": "パロマーノット",
+      "difficulty": "easy",
+      "recommendedForUser": true,
+      "useFor": ["スナップ", "サルカン", "ルアー", "針"],
+      "line": ["ナイロン", "フロロ", "PE"],
+      "summary": "輪を作って金具ごとくぐらせるタイプ。手順が少なく、図を見ながら覚えやすい。",
+      "image": {
+        "imageUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/PalomarKnotSequence.jpg?width=1200",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:PalomarKnotSequence.jpg",
+        "sourceName": "Wikimedia Commons",
+        "author": "Vaughan Pratt",
+        "license": "CC BY-SA 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+        "caption": "パロマーノットの結び方参考図"
+      },
+      "steps": [
+        "糸を折り返して二重にし、輪になった側をアイへ通す。",
+        "二重の糸でゆるいひと結びを作る。",
+        "大きく残した輪を、針・スナップ・ルアーなど金具全体へかぶせる。",
+        "糸を湿らせ、本線と余り糸をゆっくり引いて締め込む。",
+        "結び目がアイへきれいに寄ったことを確認して余り糸を切る。"
+      ],
+      "check": "輪が金具に引っ掛かったまま締まっていないか確認し、本線と金具を強めに引いて滑らないことを見る。",
+      "warning": "輪をルアー本体へ通す必要があるので、大きいルアーや仕掛けでは扱いにくい場合がある。"
+    },
+    {
       "id": "double-uni",
       "nameJa": "電車結び（ダブルユニ系）",
       "difficulty": "medium",
@@ -46,6 +92,11 @@
       "useFor": ["糸と糸の接続", "ナイロン同士", "ナイロンとフロロ"],
       "line": ["ナイロン", "フロロ"],
       "summary": "道糸を足したい、リーダーをつなぎたい時の簡単な糸同士の接続。",
+      "reference": {
+        "url": "https://knots3d.com/en/uni-to-uni-knot",
+        "label": "Uni-to-Uni / Double Uni の参考図を見る",
+        "note": "外部サイトの図版は再利用条件を確認できていないため、サイト内には転載しない。"
+      },
       "steps": [
         "2本の糸を15〜20cmほど重ね、互いに逆方向へ伸ばす。",
         "片方の余り糸で2本をまとめる輪を作り、輪の中へ4〜6回巻いて湿らせ、軽く締める。",
@@ -64,6 +115,11 @@
       "useFor": ["PEとリーダーの接続", "ルアー釣り"],
       "line": ["PE", "フロロ", "ナイロン"],
       "summary": "PEを使い始めた時の上級枠。細く強いが、現状の餌釣り中心なら急いで覚えなくていい。",
+      "reference": {
+        "url": "https://knots3d.com/ja/fg%E3%83%8E%E3%83%83%E3%83%88-%E7%B5%90%E3%81%B3%E7%9B%AE",
+        "label": "FGノットの3D参考図を見る",
+        "note": "外部サイトの図版は再利用条件を確認できていないため、サイト内には転載しない。"
+      },
       "steps": [
         "リーダーを張り、その上へPEを左右交互に編み付ける。",
         "交互の編み込みを15〜20回程度作り、編み目を揃える。",
@@ -72,7 +128,7 @@
         "リーダー端を適切に処理し、PE本線へ追加のハーフヒッチを行って仕上げる。"
       ],
       "check": "編み込み全体が均一に締まり、PEがリーダー上で滑らないことを強めのテンションで確認。",
-      "warning": "締め込み不足はすっぽ抜けの原因。正確な編み方を図解付きUIで確認してから実釣に使う。"
+      "warning": "締め込み不足はすっぽ抜けの原因。図解または実演を確認してから実釣に使う。"
     }
   ]
 }
