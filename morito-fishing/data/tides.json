@@ -7,11 +7,62 @@
     "timezone": "Asia/Tokyo"
   },
   "source": {
-    "status": "unresolved",
-    "station": null,
-    "sourceName": null,
-    "sourceUrl": null,
-    "note": "森戸海岸ピンポイントの公式観測点ではなく、近傍の公的潮汐データをどう採用・補正するかを次段で確定する。出典未確定の数値は公開データへ入れない。"
+    "status": "verified-proxy",
+    "station": {
+      "code": "D8",
+      "nameJa": "湘南港",
+      "nameEn": "SHONANKO",
+      "prefecture": "神奈川県",
+      "city": "藤沢市",
+      "latitude": "35°18′N",
+      "longitude": "139°29′E"
+    },
+    "sourceName": "気象庁 潮位表",
+    "sourceUrl": "https://www.data.jma.go.jp/kaiyou/db/tide/suisan/suisan.php?stn=D8",
+    "annualTextUrl": "https://www.data.jma.go.jp/kaiyou/data/db/tide/suisan/txt/2026/D8.txt",
+    "attribution": "気象庁「潮位表（湘南港）」をもとにyzrsworkが森戸海岸用に整形",
+    "note": "森戸海岸そのものの観測・予測点ではない。近傍の公的な天文潮位予測として湘南港を森戸の参考基準に採用する。実際の海面水位は気圧・風・波などにより予測値からずれる。"
   },
-  "days": []
+  "days": [
+    {
+      "date": "2026-09-19",
+      "events": [
+        {"type": "low", "time": "03:36", "heightCm": 47},
+        {"type": "high", "time": "19:38", "heightCm": 125}
+      ]
+    },
+    {
+      "date": "2026-09-20",
+      "events": [
+        {"type": "low", "time": "05:15", "heightCm": 52},
+        {"type": "high", "time": "15:05", "heightCm": 118}
+      ]
+    },
+    {
+      "date": "2026-09-21",
+      "events": [
+        {"type": "low", "time": "06:59", "heightCm": 49},
+        {"type": "high", "time": "15:08", "heightCm": 125},
+        {"type": "low", "time": "20:38", "heightCm": 103}
+      ]
+    },
+    {
+      "date": "2026-09-22",
+      "events": [
+        {"type": "high", "time": "00:17", "heightCm": 109},
+        {"type": "low", "time": "08:04", "heightCm": 42},
+        {"type": "high", "time": "15:25", "heightCm": 132},
+        {"type": "low", "time": "20:59", "heightCm": 91}
+      ]
+    },
+    {
+      "date": "2026-09-23",
+      "events": [
+        {"type": "high", "time": "01:51", "heightCm": 118},
+        {"type": "low", "time": "08:49", "heightCm": 35},
+        {"type": "high", "time": "15:44", "heightCm": 139},
+        {"type": "low", "time": "21:24", "heightCm": 77}
+      ]
+    }
+  ]
 }
