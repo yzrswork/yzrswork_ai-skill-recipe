@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "updated": "2026-09-02",
+  "location": {
+    "id": "morito-groyne",
+    "name": "森戸海岸・ホーム導流堤",
+    "timezone": "Asia/Tokyo"
+  },
+  "source": {
+    "status": "unresolved",
+    "station": null,
+    "sourceName": null,
+    "sourceUrl": null,
+    "note": "森戸海岸ピンポイントの公式観測点ではなく、近傍の公的潮汐データをどう採用・補正するかを次段で確定する。出典未確定の数値は公開データへ入れない。"
+  },
+  "days": []
+}
