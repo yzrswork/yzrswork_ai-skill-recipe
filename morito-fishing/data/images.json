@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "updated": "2026-09-02",
+  "policy": "Wikimedia Commonsで再利用条件を確認した画像のみ。MVPは外部参照し、最終版でローカル保存を検討する。",
+  "images": [
+    {
+      "fishId": "kasago",
+      "fileName": "SebastiscusMarmoratusJI1.jpg",
+      "imageUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/SebastiscusMarmoratusJI1.jpg?width=800",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:SebastiscusMarmoratusJI1.jpg",
+      "author": "Joi Ito",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0/"
+    },
+    {
+      "fishId": "kurodai",
+      "fileName": "Acanthopagrus schlegelii.JPG",
+      "imageUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Acanthopagrus%20schlegelii.JPG?width=800",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Acanthopagrus_schlegelii.JPG",
+      "author": "TMDSA",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/"
+    },
+    {
+      "fishId": "hiiragi",
+      "fileName": "Nuchequula nuchalis.jpg",
+      "imageUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Nuchequula%20nuchalis.jpg?width=800",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Nuchequula_nuchalis.jpg",
+      "author": "Togabi",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/"
+    },
+    {
+      "fishId": "madai",
+      "fileName": "Pagrus major ioworld.jpg",
+      "imageUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Pagrus%20major%20ioworld.jpg?width=800",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Pagrus_major_ioworld.jpg",
+      "author": "タウナギ",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "fishId": "shirogisu",
+      "fileName": "Sillago japonica-01.jpg",
+      "imageUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Sillago%20japonica-01.jpg?width=800",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Sillago_japonica-01.jpg",
+      "author": "Togabi",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    },
+    {
+      "fishId": "kawahagi",
+      "fileName": "Stephanolepis cirrhifer.jpg",
+      "imageUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Stephanolepis%20cirrhifer.jpg?width=800",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Stephanolepis_cirrhifer.jpg",
+      "author": "Daiju Azuma",
+      "license": "CC BY-SA 2.5",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.5/"
+    },
+    {
+      "fishId": "murasoi",
+      "fileName": "Murasoi.jpg",
+      "imageUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Murasoi.jpg?width=800",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Murasoi.jpg",
+      "author": "Izuzuki",
+      "license": "CC BY 2.5",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.5/"
+    },
+    {
+      "fishId": "nezumigochi",
+      "fileName": "Repomucenus richardsonii.jpg",
+      "imageUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Repomucenus%20richardsonii.jpg?width=800",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Repomucenus_richardsonii.jpg",
+      "author": "Kimon Berlin",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/"
+    },
+    {
+      "fishId": "mahaze",
+      "fileName": "Acanthogobius flavimanus Nakagawa.jpg",
+      "imageUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Acanthogobius%20flavimanus%20Nakagawa.jpg?width=800",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Acanthogobius_flavimanus_Nakagawa.jpg",
+      "author": "Totti",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/"
+    },
+    {
+      "fishId": "mekki-group",
+      "fileName": "Caranx sexfasciatus, banc de juvéniles.jpg",
+      "imageUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Caranx%20sexfasciatus%2C%20banc%20de%20juv%C3%A9niles.jpg?width=800",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Caranx_sexfasciatus,_banc_de_juv%C3%A9niles.jpg",
+      "author": "Philippe Bourjon",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/"
+    },
+    {
+      "fishId": "akakamasu",
+      "fileName": "Sphyraena pinguis tokai (cropped).jpg",
+      "imageUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Sphyraena%20pinguis%20tokai%20%28cropped%29.jpg?width=800",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Sphyraena_pinguis_tokai_(cropped).jpg",
+      "author": "Totti",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/"
+    },
+    {
+      "fishId": "inada",
+      "fileName": "Seriola quinqueradiata (200810).jpg",
+      "imageUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Seriola%20quinqueradiata%20%28200810%29.jpg?width=800",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Seriola_quinqueradiata_(200810).jpg",
+      "author": "E-190's",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/"
+    },
+    {
+      "fishId": "gonzui",
+      "fileName": "Gonzui.jpg",
+      "imageUrl": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Gonzui.jpg?width=800",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Gonzui.jpg",
+      "author": "Izuzuki",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/"
+    }
+  ]
+}
