@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "updated": "2026-09-02",
+  "seedOnly": true,
+  "note": "UI初回起動時のseed。日常更新はlocalStorage側を優先し、静的ファイルを毎回書き換えない。",
+  "catches": [
+    {"fishId": "kasago", "status": "caught"},
+    {"fishId": "kurodai", "status": "caught"},
+    {"fishId": "bera-group", "status": "caught"},
+    {"fishId": "hiiragi", "status": "caught"},
+    {"fishId": "madai", "status": "caught", "note": "小型個体 / チャリコ"},
+    {"fishId": "shirogisu", "status": "lost_at_landing", "note": "釣り上げ目前でバラシ"},
+    {"fishId": "gonzui", "status": "encountered"}
+  ]
+}

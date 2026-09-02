@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "updated": "2026-09-02",
+  "rules": [
+    {
+      "id": "kisu-autumn-local-agreement",
+      "type": "local_agreement",
+      "severity": "note",
+      "title": "9〜12月のキス釣り地域申し合わせ",
+      "message": "神奈川県公開の遊漁申し合わせ資料に葉山周辺の9〜12月キス釣り禁漁期の記載がある。ただし公式掲載ページは船釣り向けで、森戸の岸釣りへの適用は未確認。岸から狙う前に最新の適用範囲を確認する。",
+      "appliesToShore": "unconfirmed",
+      "needsAnnualCheck": true,
+      "sourceName": "神奈川県 海面における遊漁の申し合わせ事項 / 船釣りのルール",
+      "sourceUrl": "https://www.pref.kanagawa.jp/documents/42060/250401hpmousiawase.pdf",
+      "contextUrl": "https://www.pref.kanagawa.jp/docs/kb2/docs/yugyo/fune.html",
+      "verifiedOn": "2026-09-02"
+    },
+    {
+      "id": "madai-under-20-release",
+      "type": "recommendation",
+      "severity": "warning",
+      "title": "小型マダイは再放流",
+      "message": "全長20cm以下のマダイは再放流の取り決め・呼びかけを優先して表示する。チャリコを釣った時は料理導線より先にサイズ確認を出す。",
+      "appliesToShore": true,
+      "needsAnnualCheck": true,
+      "sourceName": "神奈川県 海面における遊漁の申し合わせ事項",
+      "sourceUrl": "https://www.pref.kanagawa.jp/documents/42060/250401hpmousiawase.pdf",
+      "verifiedOn": "2026-09-02"
+    },
+    {
+      "id": "gonzui-venom",
+      "type": "safety",
+      "severity": "danger",
+      "title": "ゴンズイの毒棘",
+      "message": "背びれ・胸びれの毒棘に触れない。死後も毒性が残る。安全に外せない場合は無理に針を外さずハリスを切る。",
+      "appliesToShore": true,
+      "needsAnnualCheck": false,
+      "sourceName": "神奈川県 危険な生き物",
+      "sourceUrl": "https://www.pref.kanagawa.jp/docs/ch3/ikusei/r4outdoor/safety/dangerous.html",
+      "verifiedOn": "2026-09-02"
+    },
+    {
+      "id": "venomous-fish-general",
+      "type": "safety",
+      "severity": "danger",
+      "title": "毒棘のある魚",
+      "message": "アイゴ・アカエイ等は素手での取り込みや針外しを避け、魚種ごとの危険部位を確認する。",
+      "appliesToShore": true,
+      "needsAnnualCheck": false,
+      "sourceName": "神奈川県 危険な生き物",
+      "sourceUrl": "https://www.pref.kanagawa.jp/docs/ch3/ikusei/r4outdoor/safety/dangerous.html",
+      "verifiedOn": "2026-09-02"
+    },
+    {
+      "id": "fugu-do-not-self-prepare",
+      "type": "safety",
+      "severity": "danger",
+      "title": "釣ったフグを自分で調理しない",
+      "message": "フグは種類や部位によって強い毒を持つ。釣ったフグの素人調理はしない。加熱など家庭調理で安全化できるものとして扱わない。",
+      "appliesToShore": true,
+      "needsAnnualCheck": false,
+      "sourceName": "厚生労働省 フグによる食中毒について",
+      "sourceUrl": "https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000094363.html",
+      "verifiedOn": "2026-09-02"
+    },
+    {
+      "id": "raw-fish-anisakis",
+      "type": "safety",
+      "severity": "warning",
+      "title": "生食時のアニサキス対策",
+      "message": "生食する場合は寄生虫リスクを確認する。魚は速やかに冷却・内臓処理し、目視確認を行う。酢・塩・醤油・わさびではアニサキス対策にならない。",
+      "appliesToShore": true,
+      "needsAnnualCheck": false,
+      "sourceName": "厚生労働省 アニサキスによる食中毒を予防しましょう",
+      "sourceUrl": "https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000042953.html",
+      "verifiedOn": "2026-09-02"
+    },
+    {
+      "id": "aori-autumn-resource-protection",
+      "type": "local_agreement",
+      "severity": "warning",
+      "title": "秋のアオリイカ資源保護期間は年次確認",
+      "message": "葉山周辺では過年度に8月1日〜10月19日の資源保護禁漁が案内されている。2026年の対象期間・区域は当年の公式告知を確認できるまでTARGET OFFとする。",
+      "appliesToShore": true,
+      "needsAnnualCheck": true,
+      "sourceName": "葉山港 / 湘南漁協 過年度案内",
+      "sourceUrl": "https://www.hayama-port.jp/news/2024/07/22/%E3%82%A2%E3%82%AA%E3%83%AA%E3%82%A4%E3%82%AB%E3%81%AE%E7%A6%81%E6%BC%81%E6%9C%9F%E9%96%93%E5%8F%8A%E3%81%B3%E5%8C%BA%E5%9F%9F%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6/",
+      "verifiedOn": "2026-09-02"
+    },
+    {
+      "id": "tako-fishery-right",
+      "type": "fishery_right",
+      "severity": "warning",
+      "title": "マダコは通常ターゲットから除外",
+      "message": "葉山町地先の共同漁業権との関係があるため、このサイトではマダコを通常ターゲットとして案内しない。",
+      "appliesToShore": true,
+      "needsAnnualCheck": true,
+      "sourceName": "神奈川県 共同漁業権・磯遊びのルール",
+      "sourceUrl": "https://www.pref.kanagawa.jp/docs/kb2/docs/yugyo/isoasobi.html",
+      "verifiedOn": "2026-09-02"
+    }
+  ]
+}
