@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f3f0e8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="MORITO">
+<title>MORITO FISHING — 森戸釣りフィールドツール</title>
+<meta name="description" content="森戸神社横の導流堤専用。潮汐、狙える魚、釣果図鑑、料理、結び方、安全情報をまとめた個人用フィールドツール。">
+<link rel="manifest" href="./manifest.webmanifest">
+<style>
+:root{
+  --paper:#f3f0e8;--card:#fffdf7;--ink:#17211f;--muted:#6b746f;--line:#c9cec7;
+  --sea:#145f68;--sea2:#dcecee;--navy:#17374b;--sand:#d9c59d;--orange:#b8572a;
+  --danger:#a62929;--danger-bg:#f5dddd;--warn:#8a6418;--warn-bg:#f5ebcf;--ok:#39704b;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",Meiryo,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--paper)}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.55;padding-bottom:calc(74px + env(safe-area-inset-bottom))}
+button,input{font:inherit}
+button{cursor:pointer}
+a{color:var(--sea)}
+.wrap{width:min(100%,680px);margin:auto;padding:0 14px 24px}
+header{padding:calc(12px + env(safe-area-inset-top)) 0 12px;border-bottom:2px solid var(--ink)}
+.kicker{display:flex;justify-content:space-between;gap:10px;font:700 .65rem/1.2 var(--mono);letter-spacing:.12em;color:var(--sea)}
+h1{font-size:1.46rem;line-height:1.1;margin:7px 0 2px;letter-spacing:.02em}h1 small{display:block;font-size:.72rem;font-weight:500;color:var(--muted);margin-top:6px}
+main>section{display:none}.tab.on{display:block}
+.section-head{display:flex;align-items:end;justify-content:space-between;margin:20px 0 9px;border-bottom:1px solid var(--ink);padding-bottom:5px}.section-head h2{font-size:.92rem;margin:0;letter-spacing:.05em}.section-head span{font:500 .64rem var(--mono);color:var(--muted)}
+.tide-hero{margin-top:14px;border:1.5px solid var(--ink);background:var(--card);padding:13px}
+.date-row{display:flex;gap:6px;overflow:auto;padding-bottom:3px;scrollbar-width:none}.date-row::-webkit-scrollbar{display:none}.date-btn{flex:none;border:1px solid var(--line);background:transparent;color:var(--muted);padding:7px 9px;font:700 .72rem var(--mono)}.date-btn.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.tide-title{display:flex;align-items:flex-end;justify-content:space-between;margin-top:12px;gap:12px}.tide-date{font:700 1.4rem var(--mono)}.tide-state{text-align:right;font:700 .68rem var(--mono);letter-spacing:.08em;color:var(--sea)}
+.tide-events{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:11px}.tide-event{border-top:3px solid var(--sea);background:var(--sea2);padding:9px}.tide-event.low{border-top-color:var(--orange);background:#f4e5dc}.tide-event .type{font-size:.68rem;font-weight:700;color:var(--muted)}.tide-event .time{font:800 1.28rem var(--mono);margin-top:2px}.tide-event .cm{font:.67rem var(--mono);color:var(--muted)}
+.source-note{font-size:.66rem;color:var(--muted);margin:9px 1px 0}.source-note b{color:var(--ink)}
+.mode-toggle{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0 12px}.mode-btn{border:1px solid var(--line);background:var(--card);padding:9px 6px;color:var(--muted);font-size:.78rem;font-weight:700}.mode-btn.on{background:var(--sea);border-color:var(--sea);color:#fff}
+.target-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.target-card,.fish-card{border:1px solid var(--line);background:var(--card);overflow:hidden;text-align:left;padding:0;color:var(--ink)}
+.photo{height:112px;background:linear-gradient(135deg,#dfe6e1,#cbd7d2);position:relative;display:grid;place-items:center;overflow:hidden}.photo img{width:100%;height:100%;object-fit:cover;display:block}.photo-fallback{font:700 .62rem var(--mono);letter-spacing:.12em;color:#65746e}.photo img+.photo-fallback{display:none}
+.card-body{padding:9px}.card-top{display:flex;justify-content:space-between;gap:5px;align-items:start}.fish-name{font-size:.9rem;font-weight:800;line-height:1.25}.status{flex:none;font:800 .57rem var(--mono);letter-spacing:.04em;padding:3px 5px;border:1px solid currentColor}.status.caught{color:var(--ok)}.status.lost_at_landing{color:var(--orange)}.status.encountered{color:var(--danger)}.status.unknown{color:var(--muted)}
+.tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:7px}.tag{font:600 .59rem var(--mono);background:#edf0ed;padding:3px 5px;color:#4e5954}.tag.hot{background:var(--sea2);color:var(--sea)}.tag.warn{background:var(--warn-bg);color:var(--warn)}
+.recipe-line{margin-top:7px;color:var(--muted);font-size:.69rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.stat{background:var(--card);border:1px solid var(--line);padding:8px 5px;text-align:center}.stat strong{display:block;font:800 1.25rem var(--mono)}.stat small{font:700 .52rem var(--mono);color:var(--muted);letter-spacing:.04em}
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.quick button{border:1px solid var(--ink);background:var(--card);padding:11px;text-align:left;font-weight:800}.quick small{display:block;color:var(--muted);font-size:.65rem;margin-top:3px;font-weight:500}
+.filter-row{display:flex;gap:6px;overflow:auto;margin:11px 0;scrollbar-width:none}.filter-row::-webkit-scrollbar{display:none}.filter{flex:none;border:1px solid var(--line);background:var(--card);padding:7px 10px;font:700 .67rem var(--mono);color:var(--muted)}.filter.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.fish-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.fish-card.danger{border-color:#dcaaaa}.fish-card.danger .photo{background:var(--danger-bg)}
+.knot{border:1px solid var(--line);background:var(--card);margin-bottom:9px}.knot summary{list-style:none;padding:12px;font-weight:800;display:flex;align-items:center;gap:8px}.knot summary::-webkit-details-marker{display:none}.knot .difficulty{margin-left:auto;font:700 .58rem var(--mono);color:var(--muted);border:1px solid var(--line);padding:3px 5px}.knot-body{border-top:1px solid var(--line);padding:10px 13px 13px}.knot-body p{font-size:.76rem;color:var(--muted);margin:0 0 8px}.knot-body ol{margin:0;padding-left:1.3em;font-size:.82rem}.knot-body li{margin:7px 0}.check{margin-top:11px;background:var(--sea2);padding:9px;font-size:.75rem}.warning{margin-top:7px;background:var(--warn-bg);padding:8px;font-size:.7rem;color:#5d491c}
+.rule{border:1px solid var(--line);background:var(--card);padding:11px 12px;margin-bottom:8px}.rule.danger{border-left:5px solid var(--danger)}.rule.warning{border-left:5px solid var(--warn)}.rule.note{border-left:5px solid var(--sea)}.rule h3{font-size:.82rem;margin:0 0 5px}.rule p{font-size:.73rem;margin:0;color:#515b56}.rule .meta{font:.57rem var(--mono);color:var(--muted);margin-top:7px}.rule a{font-size:.68rem}
+.credits{font-size:.65rem;color:var(--muted);line-height:1.55}.credits div{padding:5px 0;border-bottom:1px dashed var(--line)}
+nav{position:fixed;z-index:20;left:0;right:0;bottom:0;background:rgba(255,253,247,.96);border-top:1.5px solid var(--ink);display:flex;padding-bottom:env(safe-area-inset-bottom);backdrop-filter:blur(8px)}nav button{flex:1;border:0;background:transparent;padding:10px 2px 8px;color:var(--muted);font:700 .61rem var(--mono);letter-spacing:.04em}nav button.on{color:var(--sea)}nav .ico{display:block;font-size:1rem;line-height:1.2;margin-bottom:2px}
+.sheet-backdrop{position:fixed;inset:0;background:rgba(15,25,23,.45);z-index:30;display:none}.sheet-backdrop.on{display:block}.sheet{position:absolute;left:0;right:0;bottom:0;max-height:88vh;overflow:auto;background:var(--paper);border-radius:16px 16px 0 0;padding:12px 14px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -10px 40px rgba(0,0,0,.18)}.sheet-handle{width:42px;height:4px;border-radius:4px;background:#aeb6b1;margin:0 auto 10px}.sheet-close{position:absolute;right:12px;top:10px;border:1px solid var(--line);background:var(--card);width:34px;height:34px;font-weight:800}.sheet .photo{height:190px;margin:10px -14px 12px}.sheet h2{margin:0 42px 0 0;font-size:1.25rem}.sheet-sub{font:.65rem var(--mono);color:var(--muted);margin-top:3px}.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}.info{background:var(--card);border:1px solid var(--line);padding:9px}.info b{display:block;font:.6rem var(--mono);color:var(--muted);margin-bottom:4px}.info span{font-size:.76rem}.sheet-section{margin-top:14px}.sheet-section h3{font-size:.74rem;margin:0 0 5px;border-bottom:1px solid var(--ink);padding-bottom:4px}.sheet-section p,.sheet-section li{font-size:.77rem}.sheet-section ul{padding-left:1.2em;margin:6px 0}.catch-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:13px}.catch-actions button{border:1px solid var(--ink);background:var(--card);padding:10px;font-weight:800}.catch-actions button.primary{background:var(--sea);color:#fff;border-color:var(--sea)}.danger-box{background:var(--danger-bg);border:2px solid var(--danger);padding:11px;color:#711d1d;font-size:.8rem;font-weight:700;margin-top:10px}
+.empty{padding:20px;border:1px dashed var(--line);color:var(--muted);font-size:.78rem;text-align:center}
+.loading{padding:35px;text-align:center;font:700 .7rem var(--mono);color:var(--muted)}
+@media(min-width:560px){.target-grid,.fish-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.photo{height:125px}.tide-events{grid-template-columns:repeat(4,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="kicker"><span>MORITO FISHING / FIELD TOOL</span><span>HAYAMA</span></div>
+  <h1>森戸釣り<small>森戸神社横・導流堤ホームポイント専用</small></h1>
+</header>
+<main>
+<section id="tab-home" class="tab on">
+  <div id="boot" class="loading">LOADING FIELD DATA...</div>
+  <div id="homeContent" hidden>
+    <div class="tide-hero">
+      <div id="dateRow" class="date-row"></div>
+      <div class="tide-title"><div id="tideDate" class="tide-date"></div><div id="tideState" class="tide-state"></div></div>
+      <div id="tideEvents" class="tide-events"></div>
+      <div id="tideSource" class="source-note"></div>
+    </div>
+    <div class="section-head"><h2>TODAY'S TARGET</h2><span>9月後半 / HOME POINT</span></div>
+    <div class="mode-toggle"><button class="mode-btn on" data-mode="bait">いつもの2本<br><small>ちょい投げ＋ブラクリ</small></button><button class="mode-btn" data-mode="lure">ルアーも試す<br><small>回遊魚チャンス</small></button></div>
+    <div id="targets" class="target-grid"></div>
+    <div class="section-head"><h2>MY FISH</h2><span>LOCAL DEVICE</span></div>
+    <div id="stats" class="stat-grid"></div>
+    <div class="quick"><button data-goto="knots">結び方を見る<small>毎回検索しないやつ</small></button><button data-goto="safety">危険魚・ルール<small>ゴンズイ含む</small></button></div>
+  </div>
+</section>
+<section id="tab-fish" class="tab">
+  <div class="section-head"><h2>FISH MASTER</h2><span>MORITO SHORE</span></div>
+  <div class="filter-row"><button class="filter on" data-filter="all">ALL</button><button class="filter" data-filter="unknown">未GET</button><button class="filter" data-filter="caught">GET</button><button class="filter" data-filter="danger">DANGER</button></div>
+  <div id="fishGrid" class="fish-grid"></div>
+</section>
+<section id="tab-knots" class="tab">
+  <div class="section-head"><h2>KNOTS</h2><span>現場で1タップ</span></div>
+  <p style="font-size:.76rem;color:var(--muted);margin:10px 2px 13px">まずはユニノットで十分。PEを使い始めたらFGノットへ。</p>
+  <div id="knotList"></div>
+</section>
+<section id="tab-safety" class="tab">
+  <div class="section-head"><h2>SAFETY / RULES</h2><span>確認日 2026-09-02</span></div>
+  <div id="ruleList"></div>
+  <div class="section-head"><h2>PHOTO CREDITS</h2><span>WIKIMEDIA COMMONS</span></div>
+  <div id="credits" class="credits"></div>
+</section>
+</main>
+</div>
+<nav aria-label="main navigation">
+  <button class="on" data-tab="home"><span class="ico">◉</span>HOME</button>
+  <button data-tab="fish"><span class="ico">◇</span>FISH</button>
+  <button data-tab="knots"><span class="ico">⌁</span>KNOTS</button>
+  <button data-tab="safety"><span class="ico">△</span>SAFETY</button>
+</nav>
+<div id="sheetBackdrop" class="sheet-backdrop" aria-hidden="true"><div id="sheet" class="sheet"><div class="sheet-handle"></div><button id="sheetClose" class="sheet-close" aria-label="閉じる">×</button><div id="sheetContent"></div></div></div>
+<script>
+const $=(s,p=document)=>p.querySelector(s), $$=(s,p=document)=>[...p.querySelectorAll(s)];
+const APP_KEY='morito-fishing-catches-v1';
+const methodLabel={choiNage:'ちょい投げ',burakuri:'ブラクリ',lure:'ルアー'};
+const statusLabel={caught:'GET',lost_at_landing:'BARA-SHI',encountered:'ENCOUNTERED',unknown:'未GET'};
+const seasonLabel={excellent:'9月 ◎',good:'9月 ○',possible:'9月 △',poor:'9月 ×','rule-check':'要ルール確認'};
+const handlingLabel={'ice':'氷締め・冷却','keep-cool':'早めに冷却','danger':'安全処理優先','do-not-eat':'食べない'};
+let DB=null, selectedDate=null, targetMode='bait', fishFilter='all', catchState={};
+
+async function loadJSON(name){const r=await fetch('./data/'+name+'.json',{cache:'no-store'});if(!r.ok)throw new Error(name);return r.json()}
+async function boot(){
+  try{
+    const [fish,catches,knots,rules,tides,images]=await Promise.all(['fish','catches','knots','rules','tides','images'].map(loadJSON));
+    DB={fish:fish.fish,catches:catches.catches,knots:knots.knots,rules:rules.rules,tides,images:images.images};
+    const stored=localStorage.getItem(APP_KEY);
+    if(stored){try{catchState=JSON.parse(stored)||{}}catch(e){catchState={}}}
+    if(!Object.keys(catchState).length){DB.catches.forEach(x=>catchState[x.fishId]={status:x.status,note:x.note||''});saveCatches()}
+    chooseInitialDate();
+    $('#boot').hidden=true;$('#homeContent').hidden=false;
+    renderAll();
+    if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  }catch(err){$('#boot').textContent='DATA LOAD ERROR — 再読み込みしてください';console.error(err)}
+}
+function saveCatches(){localStorage.setItem(APP_KEY,JSON.stringify(catchState))}
+function getStatus(id){return catchState[id]?.status||'unknown'}
+function setStatus(id,status){catchState[id]={...(catchState[id]||{}),status};saveCatches();renderAll();openFish(id)}
+function imgFor(id){return DB.images.find(x=>x.fishId===id)}
+function photoHTML(id){const im=imgFor(id);return `<div class="photo">${im?`<img loading="lazy" src="${im.imageUrl}" alt="${escapeHTML(fishById(id)?.nameJa||'魚')}" onerror="this.remove()">`:''}<span class="photo-fallback">PHOTO PENDING</span></div>`}
+function fishById(id){return DB.fish.find(f=>f.id===id)}
+function ruleById(id){return DB.rules.find(r=>r.id===id)}
+function escapeHTML(s=''){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function chooseInitialDate(){
+  const today=new Date();const iso=localISO(today);const exact=DB.tides.days.find(d=>d.date===iso);if(exact){selectedDate=iso;return}
+  const future=DB.tides.days.find(d=>d.date>=iso);selectedDate=(future||DB.tides.days[0]).date;
+}
+function localISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function renderAll(){renderDates();renderTide();renderTargets();renderStats();renderFish();renderKnots();renderRules();renderCredits()}
+function renderDates(){
+  $('#dateRow').innerHTML=DB.tides.days.map(d=>{const dt=new Date(d.date+'T00:00:00');return `<button class="date-btn ${d.date===selectedDate?'on':''}" data-date="${d.date}">${dt.getMonth()+1}/${dt.getDate()}</button>`}).join('');
+  $$('.date-btn').forEach(b=>b.onclick=()=>{selectedDate=b.dataset.date;renderDates();renderTide()});
+}
+function renderTide(){
+  const day=DB.tides.days.find(d=>d.date===selectedDate);if(!day)return;
+  const dt=new Date(day.date+'T00:00:00');$('#tideDate').textContent=`${dt.getMonth()+1}/${dt.getDate()} ${['日','月','火','水','木','金','土'][dt.getDay()]}`;
+  $('#tideEvents').innerHTML=day.events.map(e=>`<div class="tide-event ${e.type}"><div class="type">${e.type==='high'?'満潮 / HIGH':'干潮 / LOW'}</div><div class="time">${e.time}</div><div class="cm">${e.heightCm} cm</div></div>`).join('');
+  const today=localISO(new Date());let state='TRIP PLAN';
+  if(today===selectedDate){const now=new Date(),m=now.getHours()*60+now.getMinutes();const ev=day.events.map(e=>({...e,m:Number(e.time.slice(0,2))*60+Number(e.time.slice(3))}));const next=ev.find(e=>e.m>m),prev=[...ev].reverse().find(e=>e.m<=m);if(next&&prev)state=(prev.type==='low'&&next.type==='high'?'↑ 上げ潮':'↓ 下げ潮')+` / 次 ${next.time}`;else if(next)state=`次 ${next.type==='high'?'満潮':'干潮'} ${next.time}`;else state='本日の潮イベント終了'}
+  $('#tideState').textContent=state;
+  $('#tideSource').innerHTML=`<b>森戸参考値</b>：気象庁「${escapeHTML(DB.tides.source.station.nameJa)}」天文潮位。森戸そのものの観測点ではなく、風・気圧・波で実水位はずれる。`;
+}
+function scoreFish(f){
+  if(f.safetyLevel==='danger')return -99;
+  const season={excellent:5,good:3,possible:1,poor:-2,'rule-check':-3}[f.septemberLate]??0;
+  const val={excellent:4,good:3,possible:1,none:0};let method=0;
+  if(targetMode==='bait')method=Math.max(val[f.methods.choiNage]||0,val[f.methods.burakuri]||0);else method=val[f.methods.lure]||0;
+  if(method===0)return -20;
+  const st=getStatus(f.id),bonus=st==='unknown'?2:st==='lost_at_landing'?1:0;
+  return season+method+bonus;
+}
+function bestMethods(f){const vals=Object.entries(f.methods).filter(([,v])=>v==='excellent'||v==='good').map(([k])=>methodLabel[k]);return vals.length?vals:['狙い方確認']}
+function statusHTML(id){const s=getStatus(id);return `<span class="status ${s}">${statusLabel[s]}</span>`}
+function renderTargets(){
+  const list=[...DB.fish].sort((a,b)=>scoreFish(b)-scoreFish(a)).filter(f=>scoreFish(f)>0).slice(0,4);
+  $('#targets').innerHTML=list.map(f=>`<button class="target-card" data-fish="${f.id}">${photoHTML(f.id)}<div class="card-body"><div class="card-top"><div class="fish-name">${escapeHTML(f.nameJa)}</div>${statusHTML(f.id)}</div><div class="tags"><span class="tag hot">${seasonLabel[f.septemberLate]||f.septemberLate}</span>${bestMethods(f).slice(0,2).map(x=>`<span class="tag">${x}</span>`).join('')}</div><div class="recipe-line">${f.food.edible?'食：'+f.food.recipes.join(' / '):'食用案内なし'}</div></div></button>`).join('');
+  $$('#targets [data-fish]').forEach(x=>x.onclick=()=>openFish(x.dataset.fish));
+}
+function renderStats(){
+  const ids=DB.fish.map(f=>f.id), counts={caught:0,lost_at_landing:0,unknown:0,encountered:0};ids.forEach(id=>counts[getStatus(id)]++);
+  $('#stats').innerHTML=`<div class="stat"><strong>${counts.caught}</strong><small>GET</small></div><div class="stat"><strong>${counts.lost_at_landing}</strong><small>BARA-SHI</small></div><div class="stat"><strong>${counts.unknown}</strong><small>UNKNOWN</small></div><div class="stat"><strong>${counts.encountered}</strong><small>ENCOUNTER</small></div>`;
+}
+function visibleFish(f){const s=getStatus(f.id);if(fishFilter==='all')return true;if(fishFilter==='danger')return f.safetyLevel==='danger';return s===fishFilter}
+function renderFish(){
+  if(!DB)return;const list=DB.fish.filter(visibleFish);$('#fishGrid').innerHTML=list.length?list.map(f=>`<button class="fish-card ${f.safetyLevel==='danger'?'danger':''}" data-fish="${f.id}">${photoHTML(f.id)}<div class="card-body"><div class="card-top"><div class="fish-name">${escapeHTML(f.nameJa)}</div>${statusHTML(f.id)}</div><div class="tags"><span class="tag ${f.septemberLate==='excellent'?'hot':f.septemberLate==='rule-check'?'warn':''}">${seasonLabel[f.septemberLate]||f.septemberLate}</span></div><div class="recipe-line">${f.safetyLevel==='danger'?'⚠ '+escapeHTML(f.safetyNote||'取扱注意'):f.food.recipes.join(' / ')}</div></div></button>`).join(''):'<div class="empty">該当する魚はありません</div>';
+  $$('#fishGrid [data-fish]').forEach(x=>x.onclick=()=>openFish(x.dataset.fish));
+}
+function renderKnots(){
+  $('#knotList').innerHTML=DB.knots.map(k=>`<details class="knot" ${k.id==='uni'?'open':''}><summary>${escapeHTML(k.nameJa)}${k.recommendedForUser?'<span class="tag hot">おすすめ</span>':''}<span class="difficulty">${k.difficulty.toUpperCase()}</span></summary><div class="knot-body"><p>${escapeHTML(k.summary)}</p><div class="tags">${k.useFor.map(x=>`<span class="tag">${escapeHTML(x)}</span>`).join('')}</div><ol>${k.steps.map(s=>`<li>${escapeHTML(s)}</li>`).join('')}</ol><div class="check"><b>最後に確認：</b>${escapeHTML(k.check)}</div><div class="warning">${escapeHTML(k.warning)}</div></div></details>`).join('');
+}
+function renderRules(){
+  $('#ruleList').innerHTML=DB.rules.map(r=>`<article class="rule ${r.severity}"><h3>${r.severity==='danger'?'⚠ ':''}${escapeHTML(r.title)}</h3><p>${escapeHTML(r.message)}</p><div class="meta">${escapeHTML(r.type.toUpperCase())} / SHORE: ${String(r.appliesToShore).toUpperCase()} / VERIFIED ${escapeHTML(r.verifiedOn)}</div><a href="${r.sourceUrl}" target="_blank" rel="noopener">出典を見る</a></article>`).join('');
+}
+function renderCredits(){
+  $('#credits').innerHTML=DB.images.map(i=>`<div><b>${escapeHTML(fishById(i.fishId)?.nameJa||i.fishId)}</b> — ${escapeHTML(i.author)} / <a href="${i.sourceUrl}" target="_blank" rel="noopener">Wikimedia Commons</a> / <a href="${i.licenseUrl}" target="_blank" rel="noopener">${escapeHTML(i.license)}</a></div>`).join('');
+}
+function methodQuality(v){return {excellent:'◎',good:'○',possible:'△',none:'—'}[v]||v}
+function openFish(id){
+  const f=fishById(id);if(!f)return;const st=getStatus(id);const rules=f.ruleRefs.map(ruleById).filter(Boolean),im=imgFor(id);
+  const danger=f.safetyLevel==='danger'?`<div class="danger-box">⚠ ${escapeHTML(f.safetyNote||'危険部位に触れない。安全を優先。')}</div>`:'';
+  $('#sheetContent').innerHTML=`<h2>${escapeHTML(f.nameJa)}</h2><div class="sheet-sub">${escapeHTML(f.scientificName||f.kind.toUpperCase())} / SHORE ${escapeHTML(f.shoreConfidence)}</div>${photoHTML(f.id)}${danger}<div class="tags">${statusHTML(f.id)}<span class="tag ${f.septemberLate==='excellent'?'hot':f.septemberLate==='rule-check'?'warn':''}">${seasonLabel[f.septemberLate]||f.septemberLate}</span></div><div class="info-grid"><div class="info"><b>ちょい投げ</b><span>${methodQuality(f.methods.choiNage)}</span></div><div class="info"><b>ブラクリ</b><span>${methodQuality(f.methods.burakuri)}</span></div><div class="info"><b>ルアー</b><span>${methodQuality(f.methods.lure)}</span></div><div class="info"><b>エサ</b><span>${f.bait.length?escapeHTML(f.bait.join(' / ')):'—'}</span></div></div>${f.food.edible?`<div class="sheet-section"><h3>釣れた後 / FOOD</h3><p><b>${escapeHTML(handlingLabel[f.food.handling]||f.food.handling)}</b></p><div class="tags">${f.food.recipes.map(x=>`<span class="tag hot">${escapeHTML(x)}</span>`).join('')}</div></div>`:''}${rules.length?`<div class="sheet-section"><h3>注意 / RULE</h3>${rules.map(r=>`<p><b>${escapeHTML(r.title)}</b><br>${escapeHTML(r.message)}</p>`).join('')}</div>`:''}${im?`<div class="sheet-section"><h3>PHOTO</h3><p>${escapeHTML(im.author)} / Wikimedia Commons / ${escapeHTML(im.license)}</p></div>`:''}<div class="catch-actions">${f.safetyLevel==='danger'?`<button class="primary" data-set-status="encountered">遭遇した</button>`:`<button class="primary" data-set-status="caught">釣れた！ GET</button><button data-set-status="lost_at_landing">バラした</button>`}<button data-set-status="unknown">未GETに戻す</button></div>`;
+  $$('#sheetContent [data-set-status]').forEach(b=>b.onclick=()=>setStatus(id,b.dataset.setStatus));
+  $('#sheetBackdrop').classList.add('on');$('#sheetBackdrop').setAttribute('aria-hidden','false');document.body.style.overflow='hidden';
+}
+function closeSheet(){$('#sheetBackdrop').classList.remove('on');$('#sheetBackdrop').setAttribute('aria-hidden','true');document.body.style.overflow=''}
+function gotoTab(name){$$('.tab').forEach(s=>s.classList.toggle('on',s.id==='tab-'+name));$$('nav [data-tab]').forEach(b=>b.classList.toggle('on',b.dataset.tab===name));window.scrollTo({top:0,behavior:'smooth'})}
+$$('nav [data-tab]').forEach(b=>b.onclick=()=>gotoTab(b.dataset.tab));
+$$('[data-goto]').forEach(b=>b.onclick=()=>gotoTab(b.dataset.goto));
+$$('.mode-btn').forEach(b=>b.onclick=()=>{targetMode=b.dataset.mode;$$('.mode-btn').forEach(x=>x.classList.toggle('on',x===b));renderTargets()});
+$$('.filter').forEach(b=>b.onclick=()=>{fishFilter=b.dataset.filter;$$('.filter').forEach(x=>x.classList.toggle('on',x===b));renderFish()});
+$('#sheetClose').onclick=closeSheet;$('#sheetBackdrop').onclick=e=>{if(e.target===$('#sheetBackdrop'))closeSheet()};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+boot();
+</script>
+</body>
+</html>
