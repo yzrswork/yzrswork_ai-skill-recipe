@@ -33,7 +33,7 @@ main>section{display:none}.tab.on{display:block}
 .tide-hero{margin-top:14px;border:1.5px solid var(--ink);background:var(--card);padding:13px}
 .date-row{display:flex;gap:6px;overflow:auto;padding-bottom:3px;scrollbar-width:none}.date-row::-webkit-scrollbar{display:none}.date-btn{flex:none;border:1px solid var(--line);background:transparent;color:var(--muted);padding:7px 9px;font:700 .72rem var(--mono)}.date-btn.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .tide-title{display:flex;align-items:flex-end;justify-content:space-between;margin-top:12px;gap:12px}.tide-date{font:700 1.4rem var(--mono)}.tide-state{text-align:right;font:700 .68rem var(--mono);letter-spacing:.08em;color:var(--sea)}
-.tide-events{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:11px}.tide-event{border-top:3px solid var(--sea);background:var(--sea2);padding:9px}.tide-event.low{border-top-color:var(--orange);background:#f4e5dc}.tide-event .type{font-size:.68rem;font-weight:700;color:var(--muted)}.tide-event .time{font:800 1.28rem var(--mono);margin-top:2px}.tide-event .cm{font:.67rem var(--mono);color:var(--muted)}
+.tide-events{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:11px}.tide-pair{border-top:4px solid var(--sea);background:var(--sea2);padding:10px}.tide-pair.low{border-top-color:var(--orange);background:#f4e5dc}.tide-pair-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}.tide-pair-head b{font-size:.76rem}.tide-pair-head span{font:700 .56rem var(--mono);color:var(--muted);letter-spacing:.05em}.tide-slot{display:grid;grid-template-columns:30px 1fr auto;align-items:baseline;gap:6px;padding:6px 0;border-top:1px solid rgba(23,33,31,.13)}.tide-slot:first-of-type{border-top:0}.tide-slot .no{font:700 .55rem var(--mono);color:var(--muted)}.tide-slot .time{font:800 1.2rem var(--mono)}.tide-slot .cm{font:.64rem var(--mono);color:var(--muted);text-align:right}.tide-slot.missing .time{color:#8b928e}.tide-slot.missing .cm{font-size:.56rem;line-height:1.25;max-width:72px}
 .source-note{font-size:.66rem;color:var(--muted);margin:9px 1px 0}.source-note b{color:var(--ink)}
 .mode-toggle{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0 12px}.mode-btn{border:1px solid var(--line);background:var(--card);padding:9px 6px;color:var(--muted);font-size:.78rem;font-weight:700}.mode-btn.on{background:var(--sea);border-color:var(--sea);color:#fff}
 .target-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.target-card,.fish-card{border:1px solid var(--line);background:var(--card);overflow:hidden;text-align:left;padding:0;color:var(--ink)}
@@ -45,15 +45,16 @@ main>section{display:none}.tab.on{display:block}
 .quick{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.quick button{border:1px solid var(--ink);background:var(--card);padding:11px;text-align:left;font-weight:800}.quick small{display:block;color:var(--muted);font-size:.65rem;margin-top:3px;font-weight:500}
 .filter-row{display:flex;gap:6px;overflow:auto;margin:11px 0;scrollbar-width:none}.filter-row::-webkit-scrollbar{display:none}.filter{flex:none;border:1px solid var(--line);background:var(--card);padding:7px 10px;font:700 .67rem var(--mono);color:var(--muted)}.filter.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .fish-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.fish-card.danger{border-color:#dcaaaa}.fish-card.danger .photo{background:var(--danger-bg)}
-.knot{border:1px solid var(--line);background:var(--card);margin-bottom:9px}.knot summary{list-style:none;padding:12px;font-weight:800;display:flex;align-items:center;gap:8px}.knot summary::-webkit-details-marker{display:none}.knot .difficulty{margin-left:auto;font:700 .58rem var(--mono);color:var(--muted);border:1px solid var(--line);padding:3px 5px}.knot-body{border-top:1px solid var(--line);padding:10px 13px 13px}.knot-body p{font-size:.76rem;color:var(--muted);margin:0 0 8px}.knot-body ol{margin:0;padding-left:1.3em;font-size:.82rem}.knot-body li{margin:7px 0}.check{margin-top:11px;background:var(--sea2);padding:9px;font-size:.75rem}.warning{margin-top:7px;background:var(--warn-bg);padding:8px;font-size:.7rem;color:#5d491c}
+.knot{border:1px solid var(--line);background:var(--card);margin-bottom:9px}.knot summary{list-style:none;padding:12px;font-weight:800;display:flex;align-items:center;gap:8px}.knot summary::-webkit-details-marker{display:none}.knot .difficulty{margin-left:auto;font:700 .58rem var(--mono);color:var(--muted);border:1px solid var(--line);padding:3px 5px}.knot-body{border-top:1px solid var(--line);padding:10px 13px 13px}.knot-body p{font-size:.76rem;color:var(--muted);margin:0 0 8px}.check{margin-top:11px;background:var(--sea2);padding:9px;font-size:.75rem}.warning{margin-top:7px;background:var(--warn-bg);padding:8px;font-size:.7rem;color:#5d491c}
 .knot-visual{margin:11px 0 12px;border:1px solid var(--line);background:#fff;padding:8px}.knot-visual img{display:block;width:100%;height:auto;max-height:360px;object-fit:contain;background:#fff}.knot-visual figcaption{font-size:.62rem;color:var(--muted);margin-top:7px;line-height:1.45}.knot-visual figcaption a{font-size:inherit}.knot-reference{margin:11px 0;padding:10px;background:var(--sea2);border-left:4px solid var(--sea);font-size:.72rem}.knot-reference a{display:inline-block;font-weight:800;margin-bottom:4px}.knot-reference small{display:block;color:var(--muted);line-height:1.45}
+.knot-guide{margin-top:12px;border:1.5px solid var(--ink);background:var(--paper)}.knot-guide-head{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid var(--line)}.knot-guide-head b{font:800 .7rem var(--mono);letter-spacing:.05em}.knot-guide-head span{font:700 .6rem var(--mono);color:var(--muted)}.knot-step{min-height:112px;display:flex;align-items:center;padding:16px 12px;font-size:.96rem;font-weight:750;line-height:1.65}.knot-progress{display:flex;gap:4px;padding:0 10px 10px}.knot-dot{height:4px;flex:1;background:#d8dcd8}.knot-dot.on{background:var(--sea)}.knot-nav{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line)}.knot-nav button{border:0;background:var(--card);padding:11px;font-weight:800}.knot-nav button+button{border-left:1px solid var(--line)}.knot-nav button:disabled{color:#b0b5b2}.knot-nav .next{background:var(--sea);color:#fff}.knot-nav .next:disabled{background:#d5d9d6;color:#8c938f}.knot-overview-note{font-size:.64rem;color:var(--muted);margin:4px 0 0}
 .rule{border:1px solid var(--line);background:var(--card);padding:11px 12px;margin-bottom:8px}.rule.danger{border-left:5px solid var(--danger)}.rule.warning{border-left:5px solid var(--warn)}.rule.note{border-left:5px solid var(--sea)}.rule h3{font-size:.82rem;margin:0 0 5px}.rule p{font-size:.73rem;margin:0;color:#515b56}.rule .meta{font:.57rem var(--mono);color:var(--muted);margin-top:7px}.rule a{font-size:.68rem}
 .credits{font-size:.65rem;color:var(--muted);line-height:1.55}.credits div{padding:5px 0;border-bottom:1px dashed var(--line)}
 nav{position:fixed;z-index:20;left:0;right:0;bottom:0;background:rgba(255,253,247,.96);border-top:1.5px solid var(--ink);display:flex;padding-bottom:env(safe-area-inset-bottom);backdrop-filter:blur(8px)}nav button{flex:1;border:0;background:transparent;padding:10px 2px 8px;color:var(--muted);font:700 .61rem var(--mono);letter-spacing:.04em}nav button.on{color:var(--sea)}nav .ico{display:block;font-size:1rem;line-height:1.2;margin-bottom:2px}
 .sheet-backdrop{position:fixed;inset:0;background:rgba(15,25,23,.45);z-index:30;display:none}.sheet-backdrop.on{display:block}.sheet{position:absolute;left:0;right:0;bottom:0;max-height:88vh;overflow:auto;background:var(--paper);border-radius:16px 16px 0 0;padding:12px 14px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -10px 40px rgba(0,0,0,.18)}.sheet-handle{width:42px;height:4px;border-radius:4px;background:#aeb6b1;margin:0 auto 10px}.sheet-close{position:absolute;right:12px;top:10px;border:1px solid var(--line);background:var(--card);width:34px;height:34px;font-weight:800}.sheet .photo{height:190px;margin:10px -14px 12px}.sheet h2{margin:0 42px 0 0;font-size:1.25rem}.sheet-sub{font:.65rem var(--mono);color:var(--muted);margin-top:3px}.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}.info{background:var(--card);border:1px solid var(--line);padding:9px}.info b{display:block;font:.6rem var(--mono);color:var(--muted);margin-bottom:4px}.info span{font-size:.76rem}.sheet-section{margin-top:14px}.sheet-section h3{font-size:.74rem;margin:0 0 5px;border-bottom:1px solid var(--ink);padding-bottom:4px}.sheet-section p,.sheet-section li{font-size:.77rem}.sheet-section ul{padding-left:1.2em;margin:6px 0}.catch-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:13px}.catch-actions button{border:1px solid var(--ink);background:var(--card);padding:10px;font-weight:800}.catch-actions button.primary{background:var(--sea);color:#fff;border-color:var(--sea)}.danger-box{background:var(--danger-bg);border:2px solid var(--danger);padding:11px;color:#711d1d;font-size:.8rem;font-weight:700;margin-top:10px}
 .empty{padding:20px;border:1px dashed var(--line);color:var(--muted);font-size:.78rem;text-align:center}
 .loading{padding:35px;text-align:center;font:700 .7rem var(--mono);color:var(--muted)}
-@media(min-width:560px){.target-grid,.fish-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.photo{height:125px}.tide-events{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(min-width:560px){.target-grid,.fish-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.photo{height:125px}}
 </style>
 </head>
 <body>
@@ -86,8 +87,8 @@ nav{position:fixed;z-index:20;left:0;right:0;bottom:0;background:rgba(255,253,24
   <div id="fishGrid" class="fish-grid"></div>
 </section>
 <section id="tab-knots" class="tab">
-  <div class="section-head"><h2>KNOTS</h2><span>現場で1タップ</span></div>
-  <p style="font-size:.76rem;color:var(--muted);margin:10px 2px 13px">図版は再利用条件を確認できたものだけサイト内表示。まずはユニノットか改良クリンチで十分。</p>
+  <div class="section-head"><h2>KNOTS</h2><span>1 STEPずつ確認</span></div>
+  <p style="font-size:.76rem;color:var(--muted);margin:10px 2px 13px">参考図で全体像を見て、下のナビを1手順ずつ送る。まずはユニノットか改良クリンチで十分。</p>
   <div id="knotList"></div>
 </section>
 <section id="tab-safety" class="tab">
@@ -112,7 +113,7 @@ const methodLabel={choiNage:'ちょい投げ',burakuri:'ブラクリ',lure:'ル�
 const statusLabel={caught:'GET',lost_at_landing:'BARA-SHI',encountered:'ENCOUNTERED',unknown:'未GET'};
 const seasonLabel={excellent:'9月 ◎',good:'9月 ○',possible:'9月 △',poor:'9月 ×','rule-check':'要ルール確認'};
 const handlingLabel={'ice':'氷締め・冷却','keep-cool':'早めに冷却','danger':'安全処理優先','do-not-eat':'食べない'};
-let DB=null, selectedDate=null, targetMode='bait', fishFilter='all', catchState={};
+let DB=null, selectedDate=null, targetMode='bait', fishFilter='all', catchState={}, knotStepState={};
 
 async function loadJSON(name){const r=await fetch('./data/'+name+'.json',{cache:'no-store'});if(!r.ok)throw new Error(name);return r.json()}
 async function boot(){
@@ -146,14 +147,23 @@ function renderDates(){
   $('#dateRow').innerHTML=DB.tides.days.map(d=>{const dt=new Date(d.date+'T00:00:00');return `<button class="date-btn ${d.date===selectedDate?'on':''}" data-date="${d.date}">${dt.getMonth()+1}/${dt.getDate()}</button>`}).join('');
   $$('.date-btn').forEach(b=>b.onclick=()=>{selectedDate=b.dataset.date;renderDates();renderTide()});
 }
+function tideSlotHTML(e,index){
+  if(!e)return `<div class="tide-slot missing"><span class="no">${index}</span><span class="time">—</span><span class="cm">この日の極値なし</span></div>`;
+  return `<div class="tide-slot"><span class="no">${index}</span><span class="time">${e.time}</span><span class="cm">${e.heightCm} cm</span></div>`;
+}
 function renderTide(){
   const day=DB.tides.days.find(d=>d.date===selectedDate);if(!day)return;
   const dt=new Date(day.date+'T00:00:00');$('#tideDate').textContent=`${dt.getMonth()+1}/${dt.getDate()} ${['日','月','火','水','木','金','土'][dt.getDay()]}`;
-  $('#tideEvents').innerHTML=day.events.map(e=>`<div class="tide-event ${e.type}"><div class="type">${e.type==='high'?'満潮 / HIGH':'干潮 / LOW'}</div><div class="time">${e.time}</div><div class="cm">${e.heightCm} cm</div></div>`).join('');
-  const today=localISO(new Date());let state='TRIP PLAN';
-  if(today===selectedDate){const now=new Date(),m=now.getHours()*60+now.getMinutes();const ev=day.events.map(e=>({...e,m:Number(e.time.slice(0,2))*60+Number(e.time.slice(3))}));const next=ev.find(e=>e.m>m),prev=[...ev].reverse().find(e=>e.m<=m);if(next&&prev)state=(prev.type==='low'&&next.type==='high'?'↑ 上げ潮':'↓ 下げ潮')+` / 次 ${next.time}`;else if(next)state=`次 ${next.type==='high'?'満潮':'干潮'} ${next.time}`;else state='本日の潮イベント終了'}
+  const highs=day.events.filter(e=>e.type==='high'), lows=day.events.filter(e=>e.type==='low');
+  $('#tideEvents').innerHTML=`<div class="tide-pair high"><div class="tide-pair-head"><b>満潮</b><span>HIGH × 2</span></div>${tideSlotHTML(highs[0],1)}${tideSlotHTML(highs[1],2)}</div><div class="tide-pair low"><div class="tide-pair-head"><b>干潮</b><span>LOW × 2</span></div>${tideSlotHTML(lows[0],1)}${tideSlotHTML(lows[1],2)}</div>`;
+  const today=localISO(new Date());let state='予定日';
+  if(today===selectedDate){
+    const now=new Date(),m=now.getHours()*60+now.getMinutes();const ev=day.events.map(e=>({...e,m:Number(e.time.slice(0,2))*60+Number(e.time.slice(3))}));const next=ev.find(e=>e.m>m),prev=[...ev].reverse().find(e=>e.m<=m);if(next&&prev)state=(prev.type==='low'&&next.type==='high'?'↑ 上げ潮':'↓ 下げ潮')+` / 次 ${next.time}`;else if(next)state=`次 ${next.type==='high'?'満潮':'干潮'} ${next.time}`;else state='本日の潮イベント終了';
+  }else{
+    const today0=new Date();today0.setHours(0,0,0,0);const target=new Date(day.date+'T00:00:00');const diff=Math.round((target-today0)/86400000);state=diff>0?`あと ${diff}日`:diff<0?'過去データ':'予定日';
+  }
   $('#tideState').textContent=state;
-  $('#tideSource').innerHTML=`<b>森戸参考値</b>：気象庁「${escapeHTML(DB.tides.source.station.nameJa)}」天文潮位。森戸そのものの観測点ではなく、風・気圧・波で実水位はずれる。`;
+  $('#tideSource').innerHTML=`<b>森戸参考値</b>：気象庁「${escapeHTML(DB.tides.source.station.nameJa)}」天文潮位。満潮・干潮は各2枠表示し、気象庁データに2回目の極値がない日は「—」表示。`;
 }
 function scoreFish(f){
   if(f.safetyLevel==='danger')return -99;
@@ -181,12 +191,18 @@ function renderFish(){
   $$('#fishGrid [data-fish]').forEach(x=>x.onclick=()=>openFish(x.dataset.fish));
 }
 function knotVisualHTML(k){
-  if(k.image){const i=k.image;return `<figure class="knot-visual"><a href="${i.sourceUrl}" target="_blank" rel="noopener"><img loading="lazy" src="${i.imageUrl}" alt="${escapeHTML(i.caption||k.nameJa+'の参考図')}" onerror="this.closest('figure').remove()"></a><figcaption>${escapeHTML(i.caption||'参考図')} — ${escapeHTML(i.author)} / <a href="${i.sourceUrl}" target="_blank" rel="noopener">${escapeHTML(i.sourceName)}</a> / <a href="${i.licenseUrl}" target="_blank" rel="noopener">${escapeHTML(i.license)}</a></figcaption></figure>`}
+  if(k.image){const i=k.image;return `<figure class="knot-visual"><a href="${i.sourceUrl}" target="_blank" rel="noopener"><img loading="lazy" src="${i.imageUrl}" alt="${escapeHTML(i.caption||k.nameJa+'の参考図')}" onerror="this.closest('figure').remove()"></a><figcaption>${escapeHTML(i.caption||'参考図')} — ${escapeHTML(i.author)} / <a href="${i.sourceUrl}" target="_blank" rel="noopener">${escapeHTML(i.sourceName)}</a> / <a href="${i.licenseUrl}" target="_blank" rel="noopener">${escapeHTML(i.license)}</a></figcaption></figure><div class="knot-overview-note">↑ 図は全体像。下で1手順ずつ確認。</div>`}
   if(k.reference){return `<div class="knot-reference"><a href="${k.reference.url}" target="_blank" rel="noopener">↗ ${escapeHTML(k.reference.label)}</a><small>${escapeHTML(k.reference.note||'外部参考ページ')}</small></div>`}
   return '';
 }
+function knotGuideHTML(k){const step=knotStepState[k.id]||0;return `<div class="knot-guide" data-knot-guide="${k.id}"><div class="knot-guide-head"><b>STEP <span data-step-current>${step+1}</span></b><span>/ ${k.steps.length}</span></div><div class="knot-step" data-step-text>${escapeHTML(k.steps[step])}</div><div class="knot-progress">${k.steps.map((_,i)=>`<span class="knot-dot ${i<=step?'on':''}"></span>`).join('')}</div><div class="knot-nav"><button data-step-prev ${step===0?'disabled':''}>← 前へ</button><button class="next" data-step-next ${step===k.steps.length-1?'disabled':''}>次へ →</button></div></div>`}
+function refreshKnotGuide(id){const k=DB.knots.find(x=>x.id===id),box=$(`[data-knot-guide="${id}"]`);if(!k||!box)return;const step=knotStepState[id]||0;$('[data-step-current]',box).textContent=step+1;$('[data-step-text]',box).textContent=k.steps[step];$$('.knot-dot',box).forEach((d,i)=>d.classList.toggle('on',i<=step));const prev=$('[data-step-prev]',box),next=$('[data-step-next]',box);prev.disabled=step===0;next.disabled=step===k.steps.length-1}
+function bindKnotGuides(){
+  $$('[data-knot-guide]').forEach(box=>{const id=box.dataset.knotGuide,k=DB.knots.find(x=>x.id===id);if(!k)return;$('[data-step-prev]',box).onclick=()=>{knotStepState[id]=Math.max(0,(knotStepState[id]||0)-1);refreshKnotGuide(id)};$('[data-step-next]',box).onclick=()=>{knotStepState[id]=Math.min(k.steps.length-1,(knotStepState[id]||0)+1);refreshKnotGuide(id)}})
+}
 function renderKnots(){
-  $('#knotList').innerHTML=DB.knots.map(k=>`<details class="knot" ${k.id==='uni'?'open':''}><summary>${escapeHTML(k.nameJa)}${k.recommendedForUser?'<span class="tag hot">おすすめ</span>':''}<span class="difficulty">${k.difficulty.toUpperCase()}</span></summary><div class="knot-body"><p>${escapeHTML(k.summary)}</p><div class="tags">${k.useFor.map(x=>`<span class="tag">${escapeHTML(x)}</span>`).join('')}</div>${knotVisualHTML(k)}<ol>${k.steps.map(s=>`<li>${escapeHTML(s)}</li>`).join('')}</ol><div class="check"><b>最後に確認：</b>${escapeHTML(k.check)}</div><div class="warning">${escapeHTML(k.warning)}</div></div></details>`).join('');
+  $('#knotList').innerHTML=DB.knots.map(k=>`<details class="knot" ${k.id==='uni'?'open':''}><summary>${escapeHTML(k.nameJa)}${k.recommendedForUser?'<span class="tag hot">おすすめ</span>':''}<span class="difficulty">${k.difficulty.toUpperCase()}</span></summary><div class="knot-body"><p>${escapeHTML(k.summary)}</p><div class="tags">${k.useFor.map(x=>`<span class="tag">${escapeHTML(x)}</span>`).join('')}</div>${knotVisualHTML(k)}${knotGuideHTML(k)}<div class="check"><b>最後に確認：</b>${escapeHTML(k.check)}</div><div class="warning">${escapeHTML(k.warning)}</div></div></details>`).join('');
+  bindKnotGuides();
 }
 function renderRules(){
   $('#ruleList').innerHTML=DB.rules.map(r=>`<article class="rule ${r.severity}"><h3>${r.severity==='danger'?'⚠ ':''}${escapeHTML(r.title)}</h3><p>${escapeHTML(r.message)}</p><div class="meta">${escapeHTML(r.type.toUpperCase())} / SHORE: ${String(r.appliesToShore).toUpperCase()} / VERIFIED ${escapeHTML(r.verifiedOn)}</div><a href="${r.sourceUrl}" target="_blank" rel="noopener">出典を見る</a></article>`).join('');
