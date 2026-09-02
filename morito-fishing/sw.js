@@ -1,4 +1,4 @@
-const CACHE='morito-fishing-v2';
+const CACHE='morito-fishing-v3';
 const CORE=[
   './',
   './index.html',
