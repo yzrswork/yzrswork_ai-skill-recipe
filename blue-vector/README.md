@@ -18,11 +18,13 @@ python3 -m http.server 8000
 
 ## Controls
 
+- SHOT: 常時オートファイア
 - PC: Arrow / WASD = move
-- Z / Space = fire
-- X / B = bomb
+- PC: X / B = bomb
 - Power Select: 1–4
-- Touch: canvas drag = move, FIRE / BOMB buttons
+- Touch: canvas drag = move
+- Touch: aircraft is rendered 85 logical px above the finger so it remains visible
+- Touch: BOMB button only
 
 ## MVP systems
 
@@ -41,6 +43,10 @@ python3 -m http.server 8000
 - Boss HP bar, score, game over / restart, mission clear
 - Keyboard + touch controls
 
+## iPhone UX hotfix
+
+実機プレイで、手動射撃とドラッグ移動の同時操作が厳しく、指で自機が隠れる問題が確認されたため、SHOTを常時オート化し、自機をタッチ位置より上へオフセットした。
+
 ## Deferred after MVP
 
 - WIDE / FOCUS / GUARD formation switching
@@ -51,4 +57,4 @@ python3 -m http.server 8000
 
 ## Verification
 
-See `TEST_EVIDENCE.md` and `FINAL_REVIEW.md`.
+See `TEST_EVIDENCE.md`, `UX_HOTFIX_NOTE.md` and `FINAL_REVIEW.md`.

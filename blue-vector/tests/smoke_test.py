@@ -18,12 +18,33 @@ with sync_playwright() as p:
     page.on('console', lambda m: errors.append(m.text) if m.type == 'error' else None)
     page.set_content(html, wait_until='load')
     page.click('#startBtn')
-    page.wait_for_timeout(100)
+    page.wait_for_timeout(450)
     s = page.evaluate('__gameDebug.getState()')
     assert s['running'] is True
     assert s['player']['lives'] == 5
     assert s['player']['shot'] == 1
     assert s['player']['power'] == 0
+
+    # Auto-fire: bullets must appear without any fire key/button input.
+    assert s['bulletCount'] > 0
+    assert page.locator('#fireBtn').count() == 0
+
+    # Touch control keeps the aircraft above the finger by 85 logical px.
+    box = page.locator('#game').bounding_box()
+    assert box
+    client_x = box['x'] + box['width'] * 0.5
+    client_y = box['y'] + box['height'] * 0.75
+    page.dispatch_event('#game', 'pointerdown', {
+        'pointerId': 1,
+        'pointerType': 'touch',
+        'clientX': client_x,
+        'clientY': client_y,
+        'isPrimary': True,
+    })
+    page.wait_for_timeout(30)
+    touched = page.evaluate('__gameDebug.getState()')
+    expected_y = (client_y - box['y']) / box['height'] * 800 - 85
+    assert abs(touched['player']['y'] - expected_y) < 4
 
     # SHOT mapping: Lv1=1 bullet, Lv2=2, Lv3=3, Lv4=5.
     expected = {1: 1, 2: 2, 3: 3, 4: 5}
@@ -60,9 +81,16 @@ with sync_playwright() as p:
     page.wait_for_timeout(50)
     assert page.evaluate('__gameDebug.getState().paused') is False
 
-    # BOMB consumes one stock.
+    # Touch BOMB remains available and consumes one stock.
     before = page.evaluate('__gameDebug.getState().player.bombs')
-    page.evaluate('__gameDebug.bomb()')
+    page.dispatch_event('#bombBtn', 'pointerdown', {
+        'pointerId': 2,
+        'pointerType': 'touch',
+        'clientX': box['x'] + box['width'] - 30,
+        'clientY': box['y'] + box['height'] - 30,
+        'isPrimary': True,
+    })
+    page.wait_for_timeout(20)
     after = page.evaluate('__gameDebug.getState().player.bombs')
     assert after == before - 1
 
@@ -73,4 +101,4 @@ with sync_playwright() as p:
     assert not errors, errors
     browser.close()
 
-print('PASS: BLUE VECTOR final smoke test')
+print('PASS: BLUE VECTOR iPhone UX smoke test')
