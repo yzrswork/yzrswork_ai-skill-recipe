@@ -1,8 +1,10 @@
-# BLUE VECTOR — Recovery MVP
+# BLUE VECTOR — MVP
 
-2026-09-08のAstra / Sol / Lunaトリオ制作が、Workの5時間制限によりcommit/push直前でロックされたため、同チャットに残っていたユーザー仕様から再構成したリカバリーMVPです。
+青白の架空アクロバットジェットを操る、レトロ縦スクロール型2Dシューティングです。
 
-> 重要: これはロックされたWork workspaceのバイト同一コピーではありません。元成果物へアクセスできないため、仕様をauthorityとして再実装したものです。
+このMVPは、2026-09-08のAstra Light / GPT-5.6 Sol High / GPT-5.6 Luna MaxによるWorkセッションが5時間制限でcommit/push直前にロックされたため、ユーザー可視仕様をauthorityとしてChatGPT側で再構成・監査・仕上げしたものです。
+
+> 元Work workspaceのbyte-identical copyではありません。復旧境界は `RECOVERY_NOTE.md` を参照してください。
 
 ## Play
 
@@ -24,25 +26,29 @@ python3 -m http.server 8000
 
 ## MVP systems
 
-- Vertical scrolling Canvas 2D shooter
+- 480 × 800 Canvas 2D vertical shooter
 - 5 aircraft / lives
 - Normal enemies: scout / zig / ace
 - 1 boss
-- POWER CHIP drops; 3 chips pause the game and open an upgrade selection screen
-- SHOT / SPEED / SHIELD / LASER / WINGMAN / BOMB upgrades
-- Bomb clears enemy bullets and damages enemies/boss
-- Shield absorbs one hit
+- POWER CHIP drops; 3 chips pause the game and open POWER SELECT
+- SHOT: Single → Twin → 3-Way → 5-Way
+- POWER: projectile speed / damage / fire-rate upgrade
+- SPEED: movement speed upgrade
+- SHIELD: one-hit protection
+- LASER: periodic piercing shot
+- WINGMAN: up to two support aircraft
+- BOMB: clears enemy bullets and damages enemies/boss
 - Boss HP bar, score, game over / restart, mission clear
 - Keyboard + touch controls
 
-## Recovery boundary
+## Deferred after MVP
 
-This branch is intentionally conservative:
+- WIDE / FOCUS / GUARD formation switching
+- Formation gauge / large allied squadron super
+- Multiple stages and terrain themes
+- Audio / music polish
+- PWA packaging
 
-- no root gallery/README registration yet
-- no PWA/service worker yet
-- no external assets
-- no framework or dependency added to the site
-- no main write / no merge
+## Verification
 
-The first goal is to preserve a playable MVP in GitHub so another Work session limit cannot strand the whole implementation locally again.
+See `TEST_EVIDENCE.md` and `FINAL_REVIEW.md`.
