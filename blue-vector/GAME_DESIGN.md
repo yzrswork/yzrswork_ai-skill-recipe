@@ -1,16 +1,17 @@
-# GAME DESIGN — BLUE VECTOR Recovery MVP
+# GAME DESIGN — BLUE VECTOR MVP
 
 ## Core fantasy
-Blue/white fictional aerobatic jet in a vertical retro shooter, with arcade action plus deliberate build choices.
+Blue/white fictional aerobatic jet in a vertical retro shooter, combining arcade shooting with deliberate paused build choices.
 
 ## Core loop
 Move → shoot → destroy enemies → collect POWER CHIP → every 3 chips pause → choose one upgrade → resume → boss → clear.
 
 ## Lives
-Five aircraft per run. A hit consumes one life unless a shield is active. Death does not reset every upgrade; one offensive tier may be lost.
+Five aircraft per run. A hit consumes one life unless a shield is active. Death does not reset every upgrade; one offensive tier is reduced instead.
 
 ## Upgrade pool
-- SHOT: single → twin → 3-way → 5-way
+- SHOT: Single → Twin → 3-Way → 5-Way
+- POWER: projectile speed + fire-rate; higher tiers also raise damage
 - SPEED: 3 movement tiers
 - SHIELD: one-hit protection
 - LASER: periodic piercing beam
@@ -18,7 +19,10 @@ Five aircraft per run. A hit consumes one life unless a shield is active. Death 
 - BOMB+: stock recovery
 
 ## Bomb
-Defensive and offensive hybrid: clears enemy bullets and damages all current enemies, including the boss.
+Defensive and offensive hybrid: clears all current enemy bullets and damages all current enemies, including the boss.
 
 ## MVP stage
 One continuous stage with escalating normal enemies. Boss begins after approximately 50 seconds.
+
+## Deferred identity system
+Formation switching (WIDE / FOCUS / GUARD) and Formation Gauge remain the strongest Phase 2 identity feature, but are intentionally deferred until the core shooting loop is proven.
