@@ -1,20 +1,21 @@
-# TEST EVIDENCE — Recovery MVP
+# TEST EVIDENCE — BLUE VECTOR MVP
 
-2026-09-08 recovery validation in the current ChatGPT runtime:
+2026-09-08 final recovery validation:
 
-- Extracted inline JavaScript: `node --check` PASS.
-- Headless Chromium smoke test PASS using the tested local reconstruction loaded with `page.set_content`.
+- Inline JavaScript: `node --check` PASS.
+- Headless system Chromium smoke test: PASS.
 - Verified flow:
   - START MISSION
   - running state
   - LIFE = 5
-  - keyboard firing creates player bullets
-  - forced third POWER CHIP pauses gameplay and opens POWER SELECT
+  - SHOT progression = 1 / 2 / 3 / 5 bullets
+  - POWER caps at Lv3
+  - POWER Lv3 normal shots reach the expected higher projectile speed and damage
+  - SHIELD caps at one active charge
+  - third POWER CHIP pauses gameplay and opens POWER SELECT
   - keyboard selection resumes gameplay
   - BOMB consumes one stock
   - boss trigger runs without console error
-- Browser console errors: none during smoke flow.
+- Browser console errors during smoke flow: none.
 
-Environment note: the runtime's policy blocks navigation to localhost/file URLs, so the browser test injects the same standalone HTML directly rather than navigating to a local server.
-
-This evidence applies to the reconstruction tested in the recovery runtime. The locked original Work workspace remains inaccessible.
+The test loads the standalone HTML directly with Playwright `page.set_content` because this runtime blocks localhost navigation. The JavaScript and browser behavior are otherwise exercised by system Chromium.
