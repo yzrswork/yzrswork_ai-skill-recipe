@@ -1,4 +1,4 @@
-# TECH SPEC — Recovery MVP
+# TECH SPEC — BLUE VECTOR MVP
 
 ## Platform
 Static HTML + CSS + JavaScript, Canvas 2D. No framework, package manager, external asset, or build step.
@@ -22,6 +22,15 @@ Static HTML + CSS + JavaScript, Canvas 2D. No framework, package manager, extern
 - upgrade pause
 - mission failed
 - mission clear
+
+## Upgrade implementation
+- SHOT levels: 1 / 2 / 3 / 5 simultaneous shots
+- POWER levels 0–3: bullet speed and fire rate scale each tier; damage rises at Lv2 and Lv3
+- SPEED levels 0–3
+- SHIELD: max one active charge
+- LASER: max Lv2
+- WINGMAN: max 2
+- BOMB: stock capped at 6
 
 ## Test hook
 `window.__gameDebug` exposes state inspection and deterministic helper actions for smoke testing. It is not required for normal play.
