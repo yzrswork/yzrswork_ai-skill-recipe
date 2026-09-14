@@ -46,12 +46,19 @@ $("quickInput").addEventListener("paste", (event) => {
 });
 $("quickInput").addEventListener("input", () => updateQuick());
 function clearQuick() {
+  $("quickEditor").hidden = false;
+  $("quickEdit").hidden = true;
   $("quickInput").value = "";
   updateQuick();
   $("quickInput").focus();
 }
 $("quickClear").addEventListener("click", clearQuick);
 $("nextNumber").addEventListener("click", clearQuick);
+$("quickEdit").addEventListener("click", () => {
+  $("quickEditor").hidden = false;
+  $("quickEdit").hidden = true;
+  $("quickInput").focus();
+});
 async function paste(inputId, statusId, after) {
   const input = $(inputId),
     previous = input.value;
@@ -231,10 +238,13 @@ if (/[\r\n\u2028\u2029]/.test(launch.raw)) {
 $("quickInput").value = launch.raw;
 updateQuick();
 if (launch.error) message("quickMessage", launch.error, true);
-else if (quickPhone.ok && launch.raw)
+else if (quickPhone.ok && launch.raw) {
+  $("quickEditor").hidden = true;
+  $("quickEdit").hidden = false;
   message(
     "quickMessage",
     "URLから受け取りました。番号を確認して作成してください。",
   );
+}
 $("batchAdd").disabled = false;
 renderBatch();

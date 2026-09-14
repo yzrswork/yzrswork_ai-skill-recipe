@@ -58,21 +58,24 @@
             <span class="eyebrow">QUICK BLOCK</span>
           </div>
           <form id="quickForm" novalidate>
-            <label for="quickInput">電話番号</label>
-            <input
-              id="quickInput"
-              type="tel"
-              inputmode="tel"
-              autocomplete="off"
-              autocapitalize="off"
-              spellcheck="false"
-              placeholder="090-1234-5678"
-              aria-describedby="quickMessage"
-            />
-            <div class="input-actions">
-              <button type="button" id="quickPaste">貼り付け</button
-              ><button type="button" id="quickClear">入力を消す</button>
+            <div id="quickEditor">
+              <label for="quickInput">電話番号</label>
+              <input
+                id="quickInput"
+                type="tel"
+                inputmode="tel"
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false"
+                placeholder="090-1234-5678"
+                aria-describedby="quickMessage"
+              />
+              <div class="input-actions">
+                <button type="button" id="quickPaste">貼り付け</button
+                ><button type="button" id="quickClear">入力を消す</button>
+              </div>
             </div>
+            <button type="button" id="quickEdit" hidden>番号を編集</button>
             <p id="quickMessage" class="message" role="status"></p>
             <div id="quickPreview" class="preview" hidden>
               <span class="eyebrow">この番号で作成</span

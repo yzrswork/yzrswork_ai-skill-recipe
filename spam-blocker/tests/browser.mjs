@@ -119,10 +119,23 @@ try {
         );
         check(!page.url().includes("num="), "number removed from URL");
         check(
+          !(await page.locator("#quickInput").isVisible()),
+          "URL starts in confirmation view",
+        );
+        await page.screenshot({
+          path: `${evidence}/${engine}-url.png`,
+          fullPage: true,
+        });
+        check(
           await page.evaluate(() => document.activeElement.tagName !== "INPUT"),
           "URL does not open keyboard",
         );
       }
+      await page.locator("#quickEdit").click();
+      check(
+        await page.locator("#quickInput").isVisible(),
+        "URL number remains editable",
+      );
       for (const query of [
         "?num=",
         "?num=%ZZ",
