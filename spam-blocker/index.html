@@ -1,1020 +1,302 @@
 <!doctype html>
 <html lang="ja">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>迷惑電話ブロッカー - や印工務店</title>
-<meta name="theme-color" content="#f0ebe3" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="default" />
-<meta name="apple-mobile-web-app-title" content="電話ブロッカー" />
-<link rel="apple-touch-icon" href="../icons/icon-192.png" />
-<meta name="description" content="iPhone SE3 iOS 26の着信拒否バグ回避。番号からVCF連絡先を即作成してブロック+コールスクリーニング設定ガイド。" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
-<style>
-:root {
-  --paper: #f0ebe3; --paper-2: #e8e1d4; --card: #f6f2ea;
-  --ink: #1c1a16; --ink-soft: #2b2823; --muted: #6f675b;
-  --rule: #3a342c; --rule-soft: rgba(58,52,44,0.28);
-  --terracotta: #b5451b; --terracotta-deep: #8e3514;
-  --green: #2d6a3f; --green-bg: #e8f0e4;
-  --red: #b5231b; --red-bg: #f5e6e4;
-  --blue: #1b5eb5; --blue-bg: #e4edf5;
-  --serif: "EB Garamond","Times New Roman",serif;
-  --mono: "DM Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
-  --jp: "Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { margin: 0; padding: 0; }
-body {
-  background: var(--paper); color: var(--ink); font-family: var(--jp);
-  line-height: 1.65; -webkit-font-smoothing: antialiased; min-height: 100vh;
-  position: relative; overflow-x: hidden;
-}
-body::before {
-  content: ""; position: fixed; inset: 0; pointer-events: none;
-  background-image: radial-gradient(rgba(70,50,30,0.06) 1px, transparent 1px),
-    radial-gradient(rgba(70,50,30,0.04) 1px, transparent 1px);
-  background-size: 3px 3px, 7px 7px; background-position: 0 0, 1px 2px;
-  z-index: 0; mix-blend-mode: multiply; opacity: 0.9;
-}
-.page {
-  position: relative; z-index: 1; max-width: 480px;
-  margin: 0 auto; padding: 20px 16px calc(32px + env(safe-area-inset-bottom));
-}
-
-.topbar {
-  display: flex; justify-content: space-between; align-items: center;
-  font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em;
-  text-transform: uppercase; color: var(--muted);
-  padding-bottom: 12px; border-bottom: 1px solid var(--rule); margin-bottom: 20px;
-}
-.topbar a { color: var(--ink); text-decoration: none; }
-.topbar .dot { color: var(--terracotta); }
-
-.hero { margin-bottom: 20px; }
-.hero h1 {
-  font-weight: 700; font-size: clamp(26px, 7vw, 36px);
-  line-height: 1.15; margin: 0 0 6px;
-}
-.hero .en {
-  font-family: var(--serif); font-style: italic; color: var(--terracotta);
-  font-size: 14px; letter-spacing: 0.1em; display: block; margin-bottom: 8px;
-}
-.hero p { font-size: 13px; color: var(--ink-soft); margin: 0; }
-
-/* Tabs */
-.tabs {
-  display: flex; gap: 0; border-bottom: 2px solid var(--rule-soft);
-  margin-bottom: 20px;
-}
-.tab {
-  flex: 1; padding: 10px 6px; text-align: center;
-  font-size: 12px; font-weight: 500; color: var(--muted);
-  background: none; border: none; cursor: pointer;
-  border-bottom: 2px solid transparent; margin-bottom: -2px;
-  font-family: var(--jp); transition: color 150ms;
-}
-.tab.active {
-  color: var(--terracotta); border-bottom-color: var(--terracotta);
-  font-weight: 700;
-}
-.tab-panel { display: none; }
-.tab-panel.active { display: block; }
-
-/* Section headers */
-.section-head {
-  display: flex; align-items: baseline; gap: 8px;
-  margin: 0 0 14px; padding-bottom: 6px;
-  border-bottom: 1px solid var(--rule-soft);
-}
-.section-head .s-jp { font-weight: 700; font-size: 15px; letter-spacing: 0.06em; }
-.section-head .s-en {
-  font-family: var(--mono); font-size: 10px;
-  text-transform: uppercase; letter-spacing: 0.12em; color: var(--terracotta);
-}
-
-.card {
-  background: var(--card); border: 1px solid var(--rule-soft);
-  border-radius: 11px; padding: 16px; margin-bottom: 14px;
-}
-.card-accent { border-left: 3px solid var(--terracotta); }
-
-/* Steps */
-.steps { counter-reset: step; list-style: none; padding: 0; }
-.steps li {
-  counter-increment: step; position: relative;
-  padding: 0 0 14px 36px; font-size: 14px; line-height: 1.6;
-}
-.steps li:last-child { padding-bottom: 0; }
-.steps li::before {
-  content: counter(step);
-  position: absolute; left: 0; top: 1px;
-  width: 24px; height: 24px; border-radius: 50%;
-  background: var(--terracotta); color: #fff;
-  font-family: var(--mono); font-size: 12px; font-weight: 500;
-  display: flex; align-items: center; justify-content: center;
-}
-.steps .path {
-  display: inline-block; background: var(--paper-2);
-  border-radius: 4px; padding: 1px 6px; font-size: 12px;
-  font-family: var(--mono); color: var(--ink-soft);
-  word-break: break-all;
-}
-
-.recommend {
-  display: inline-block; background: var(--green-bg); color: var(--green);
-  font-size: 11px; font-weight: 700; border-radius: 4px;
-  padding: 2px 8px; margin-bottom: 8px;
-}
-.badge-blue {
-  display: inline-block; background: var(--blue-bg); color: var(--blue);
-  font-size: 11px; font-weight: 700; border-radius: 4px;
-  padding: 2px 8px; margin-bottom: 8px;
-}
-.badge-red {
-  display: inline-block; background: var(--red-bg); color: var(--red);
-  font-size: 11px; font-weight: 700; border-radius: 4px;
-  padding: 2px 8px; margin-bottom: 8px;
-}
-
-/* Big action button */
-.big-action {
-  display: block; width: 100%; padding: 18px 20px;
-  background: var(--terracotta); color: #fff;
-  font-size: 17px; font-weight: 700; font-family: var(--jp);
-  border: none; border-radius: 12px; cursor: pointer;
-  text-decoration: none; text-align: center;
-  transition: opacity 150ms, transform 100ms;
-  -webkit-tap-highlight-color: transparent;
-  margin-bottom: 10px;
-}
-.big-action:active { transform: scale(0.97); opacity: 0.9; }
-@keyframes pulse {
-  0%, 100% { box-shadow: none; }
-  50% { box-shadow: 0 0 0 6px rgba(181,69,27,0.35); }
-}
-.big-action-sub {
-  font-size: 12px; font-weight: 400; opacity: 0.85;
-  display: block; margin-top: 4px;
-}
-
-/* Buttons */
-.btn {
-  display: inline-flex; align-items: center; justify-content: center;
-  gap: 6px; padding: 12px 18px; font-size: 14px; font-weight: 700;
-  font-family: var(--jp); border: none; border-radius: 8px;
-  cursor: pointer; transition: opacity 150ms, transform 100ms;
-  -webkit-tap-highlight-color: transparent;
-}
-.btn:active { transform: scale(0.97); }
-.btn-primary { background: var(--terracotta); color: #fff; }
-.btn-secondary {
-  background: var(--paper-2); color: var(--ink-soft);
-  border: 1px solid var(--rule-soft);
-}
-.btn-danger {
-  background: var(--red-bg); color: var(--red);
-  border: 1px solid rgba(181,35,27,0.2);
-}
-.btn-success {
-  background: var(--green-bg); color: var(--green);
-  border: 1px solid rgba(45,106,63,0.2);
-}
-.btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.btn-full { width: 100%; }
-.btn-sm { padding: 8px 14px; font-size: 13px; }
-
-/* Input */
-.input-row { display: flex; gap: 8px; margin-bottom: 10px; }
-.input-row input {
-  flex: 1; min-width: 0; padding: 12px; font-size: 16px;
-  font-family: var(--mono); border: 1px solid var(--rule-soft);
-  border-radius: 8px; background: #fff; color: var(--ink);
-  -webkit-appearance: none; appearance: none;
-}
-.input-row input:focus {
-  outline: none; border-color: var(--terracotta);
-  box-shadow: 0 0 0 2px rgba(181,69,27,0.15);
-}
-.input-row input::placeholder { color: var(--muted); font-size: 14px; }
-
-/* Number list */
-.num-list { list-style: none; padding: 0; margin: 0; }
-.num-item {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 12px; background: #fff;
-  border: 1px solid var(--rule-soft); border-radius: 8px;
-  margin-bottom: 6px; font-family: var(--mono); font-size: 15px;
-}
-.num-item .num-del {
-  background: none; border: none; color: var(--muted);
-  font-size: 18px; cursor: pointer; padding: 4px 8px;
-  border-radius: 4px; line-height: 1;
-}
-.num-item .num-del:hover { color: var(--red); background: var(--red-bg); }
-.num-count {
-  font-size: 12px; color: var(--muted); margin-bottom: 10px;
-  font-family: var(--mono);
-}
-.empty-msg {
-  text-align: center; padding: 24px 16px;
-  color: var(--muted); font-size: 13px;
-}
-.actions { display: flex; gap: 8px; margin-top: 14px; }
-
-.info-box {
-  background: var(--card); border: 1px solid var(--rule-soft);
-  border-radius: 8px; padding: 12px 14px; margin-top: 14px;
-  font-size: 12px; color: var(--ink-soft); line-height: 1.7;
-}
-.info-box b { color: var(--ink); }
-
-/* Mode cards */
-.mode-card {
-  background: var(--card); border: 1px solid var(--rule-soft);
-  border-radius: 9px; padding: 12px 14px; margin-bottom: 10px;
-}
-.mode-card .mode-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
-.mode-card .mode-desc { font-size: 13px; color: var(--ink-soft); line-height: 1.6; }
-.mode-card.recommended {
-  border-color: var(--terracotta);
-  background: linear-gradient(135deg, var(--card), rgba(181,69,27,0.04));
-}
-
-/* Collapsible */
-.collapse-toggle {
-  width: 100%; background: none; border: none; cursor: pointer;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0; font-family: var(--jp); text-align: left;
-}
-.collapse-toggle .arrow-icon {
-  font-family: var(--mono); font-size: 12px; color: var(--terracotta);
-  transition: transform 200ms;
-}
-.collapse-toggle.open .arrow-icon { transform: rotate(90deg); }
-.collapse-body { display: none; margin-top: 12px; }
-.collapse-body.open { display: block; }
-
-/* Shortcut recipe */
-.shortcut-recipe {
-  background: linear-gradient(135deg, #f5f0ff, #efe8ff);
-  border: 1px solid rgba(100,60,180,0.2);
-  border-radius: 11px; padding: 16px; margin-bottom: 14px;
-}
-.shortcut-recipe .sr-title {
-  font-weight: 700; font-size: 15px; margin-bottom: 10px;
-  color: #4a2d8a;
-}
-
-/* Toast */
-.toast {
-  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-  background: var(--ink); color: var(--paper); padding: 10px 20px;
-  border-radius: 20px; font-size: 13px; font-weight: 500;
-  z-index: 100; opacity: 0; transition: opacity 200ms;
-  pointer-events: none; white-space: nowrap;
-}
-.toast.show { opacity: 1; }
-
-/* SE3 workaround visual */
-.workaround-flow {
-  display: grid; grid-template-columns: 1fr auto 1fr auto 1fr;
-  gap: 4px; align-items: center; margin: 14px 0;
-  font-size: 12px; text-align: center;
-}
-.wf-step {
-  background: var(--card); border: 1px solid var(--rule-soft);
-  border-radius: 8px; padding: 8px 4px; line-height: 1.4;
-}
-.wf-step b { display: block; font-size: 13px; color: var(--terracotta); }
-.wf-arrow { color: var(--muted); font-family: var(--mono); }
-
-footer {
-  margin-top: 28px; padding-top: 16px;
-  border-top: 1px solid var(--rule); font-size: 11px;
-  color: var(--muted); text-align: center;
-}
-footer a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule-soft); }
-footer a:hover { color: var(--terracotta); }
-
-@media (max-width: 375px) {
-  .page { padding: 16px 12px calc(28px + env(safe-area-inset-bottom)); }
-  .hero h1 { font-size: 24px; }
-  .workaround-flow { grid-template-columns: 1fr; gap: 6px; }
-  .wf-arrow { transform: rotate(90deg); }
-}
-</style>
-</head>
-<body>
-
-<main class="page">
-  <div class="topbar">
-    <a href="../tools/index.html"><span class="dot">&#x25CF;</span> や印工務店</a>
-    <span style="font-size:10px;">iPhone SE3 / iOS 26</span>
-  </div>
-
-  <header class="hero">
-    <h1>迷惑電話<br>ブロッカー<span class="en">-- Spam Call Blocker</span></h1>
-    <p>SE3で消えた着信拒否ボタンの代わり。番号を入れて連絡先を即作成、そこからブロック。</p>
-  </header>
-
-  <div class="tabs">
-    <button class="tab active" data-tab="onetap">ワンタップ</button>
-    <button class="tab" data-tab="screening">スクリーニング</button>
-    <button class="tab" data-tab="vcf">VCF一括</button>
-  </div>
-
-  <!-- ==================== Tab 1: One-Tap Block ==================== -->
-  <div id="panel-onetap" class="tab-panel active">
-
-    <div class="card card-accent">
-      <span class="badge-red">SE3 既知バグ対応（iOS 26.5でも未修正）</span>
-      <p style="font-size:14px;font-weight:700;margin-bottom:6px;">
-        電話アプリの(i)ボタンから着信拒否できない問題
-      </p>
-      <p style="font-size:13px;color:var(--ink-soft);">
-        SE2/SE3では電話アプリ履歴の(i)をタップすると画面が空白になり、
-        ブロック等の操作が表示されないバグがあります（iOS 26.0-26.5で継続中）。
-        <b>連絡先アプリ</b>や<b>設定アプリ</b>からのブロックは正常に動作するため、
-        このツールではそれらの経路を使って回避します。
-      </p>
-    </div>
-
-    <!-- === Quick block === -->
-    <div class="section-head">
-      <span class="s-jp">即ブロック</span>
-      <span class="s-en">Quick Block</span>
-    </div>
-
-    <p style="font-size:13px;color:var(--ink-soft);margin-bottom:12px;">
-      番号を入力して「連絡先を作成」をタップ。ダウンロードされたファイルを開くと
-      連絡先アプリが起動するので、保存してから<b>「この発信者を着信拒否」</b>で完了。
-    </p>
-
-    <div class="input-row">
-      <input type="tel" id="quickInput" placeholder="090-1234-5678"
-             inputmode="tel" autocomplete="off" />
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:8px;">
-      <button class="btn btn-secondary btn-sm" id="quickPaste" style="flex:1;">
-        クリップボードから貼付
-      </button>
-    </div>
-    <button class="big-action" id="quickBlock" disabled>
-      着信拒否用の連絡先を作成
-      <span class="big-action-sub">VCFをダウンロード → 連絡先アプリで開く</span>
-    </button>
-
-    <div class="section-head" style="margin-top:18px;">
-      <span class="s-jp">手順</span>
-      <span class="s-en">Flow</span>
-    </div>
-    <ol class="steps">
-      <li>
-        電話アプリの<b>履歴</b>で迷惑番号を<b>長押し → コピー</b>
-      </li>
-      <li>
-        このページに戻り<b>「クリップボードから貼付」→「連絡先を作成」</b>
-      </li>
-      <li>
-        ダウンロードされた.vcfファイルを開く（Safari下部のダウンロードボタン、または通知から）
-      </li>
-      <li>
-        連絡先アプリが開くので<b>「新規連絡先を作成」→「完了」</b>で保存
-      </li>
-      <li>
-        保存した連絡先を開き、一番下の<b>「この発信者を着信拒否」</b>をタップ
-      </li>
-    </ol>
-
-    <div class="info-box">
-      <b>ポイント:</b> 電話アプリ履歴画面の描画バグはSE2/SE3固有で、
-      連絡先アプリの「この発信者を着信拒否」と設定アプリの
-      「着信拒否した連絡先」はどちらも正常に動作します。
-      連絡先を先に作り、上記いずれかの経路でブロックしてください。
-    </div>
-
-    <!-- === Shortcut automation === -->
-    <div class="section-head" style="margin-top:20px;">
-      <span class="s-jp">更に時短: ショートカット自動化</span>
-      <span class="s-en">Shortcut</span>
-    </div>
-
-    <div class="card">
-      <button class="collapse-toggle" id="shortcutToggle">
-        <span>
-          <span class="s-jp" style="font-size:13px;">ショートカットで連絡先作成を自動化</span>
-        </span>
-        <span class="arrow-icon">&#x25B6;</span>
-      </button>
-      <div class="collapse-body" id="shortcutBody">
-        <p style="font-size:12px;color:var(--ink-soft);margin-bottom:10px;">
-          クリップボードの番号から連絡先を自動作成するショートカットを作れば、
-          このページを開く手間も省けます。
-        </p>
-        <div class="shortcut-recipe" style="margin-bottom:0;">
-          <div class="sr-title">初回セットアップ（1回だけ）</div>
-          <ol class="steps">
-            <li>
-              連絡先アプリで<b>新規連絡先</b>を作成。姓を<b>「SPAM」</b>にして保存
-            </li>
-            <li>
-              作成した連絡先を開き、一番下の<b>「この発信者を着信拒否」</b>をタップ
-            </li>
-          </ol>
-          <p style="font-size:12px;color:var(--ink-soft);margin:10px 0 4px;">
-            これで「SPAM」連絡先がブロック済みになります。以降はここに番号を追加するだけで自動ブロック。
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#f0ebe3" />
+    <meta name="color-scheme" content="light" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="電話ブロッカー" />
+    <meta
+      name="description"
+      content="番号を確認して、着信拒否用の連絡先ファイルを作成。iPhone向けQuick Block・一括登録・設定ガイド。"
+    />
+    <title>SPAM BLOCKER — 迷惑電話ブロッカー</title>
+    <link rel="apple-touch-icon" href="../icons/icon-192.png" />
+    <link rel="icon" href="../icons/icon-192.png" />
+    <link rel="stylesheet" href="./app.css" />
+    <script type="module" src="./app.mjs"></script>
+  </head>
+  <body>
+    <div class="page">
+      <header class="masthead">
+        <h1>SPAM BLOCKER <span>迷惑電話ブロッカー</span></h1>
+        <span class="version">v2</span>
+      </header>
+      <nav aria-label="機能を選ぶ" class="navigation">
+        <button
+          type="button"
+          data-view="quick"
+          aria-current="page"
+          aria-controls="quick"
+        >
+          Quick Block
+        </button>
+        <button type="button" data-view="batch" aria-controls="batch">
+          一括登録
+        </button>
+        <button type="button" data-view="help" aria-controls="help">
+          使い方・設定
+        </button>
+      </nav>
+      <noscript
+        ><p class="notice">
+          番号の処理にはJavaScriptが必要です。Safariの設定で有効にして再読み込みしてください。
+        </p></noscript
+      >
+      <main>
+        <section id="quick" aria-labelledby="quickTitle">
+          <div class="section-title">
+            <h2 id="quickTitle" tabindex="-1">番号を確認して、連絡先へ。</h2>
+          </div>
+          <form id="quickForm" novalidate>
+            <div id="quickEditor">
+              <label for="quickInput">電話番号</label>
+              <input
+                id="quickInput"
+                type="tel"
+                inputmode="tel"
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false"
+                placeholder="090-1234-5678"
+                aria-describedby="quickMessage"
+              />
+              <div class="input-actions">
+                <button type="button" id="quickPaste">貼り付け</button
+                ><button type="button" id="quickClear">入力を消す</button>
+              </div>
+            </div>
+            <button type="button" id="quickEdit" hidden>番号を編集</button>
+            <p id="quickMessage" class="message" role="status"></p>
+            <div id="quickPreview" class="preview" hidden>
+              <span class="eyebrow">この番号で作成</span
+              ><strong id="quickNumber" class="phone"></strong
+              ><span id="quickCanonical" class="sub-number"></span>
+            </div>
+            <button id="quickExport" class="primary" type="submit" disabled>
+              連絡先を作成（VCF）<span>保存後、iPhoneの設定で着信拒否</span>
+            </button>
+          </form>
+          <p class="caption">このページだけでは着信拒否は完了しません。</p>
+          <div id="quickResult" class="result" hidden tabindex="-1">
+            <h3>次は、iPhoneで保存・着信拒否</h3>
+            <p class="export-summary"></p>
+            <ol>
+              <li>SafariのダウンロードからVCFを開き、連絡先に保存。</li>
+              <li>
+                設定 → プライバシーとセキュリティ → 着信拒否した連絡先
+                →「着信拒否する連絡先を追加」で選択。
+              </li>
+            </ol>
+            <button type="button" id="nextNumber">次の番号を処理</button>
+          </div>
+        </section>
+        <section id="batch" aria-labelledby="batchTitle" hidden>
+          <div class="section-title">
+            <h2 id="batchTitle" tabindex="-1">まとめて、1つの連絡先へ。</h2>
+            <span class="eyebrow">BATCH</span>
+          </div>
+          <p class="caption">
+            リストはこの画面を開いている間だけ保持します。再読み込みすると消えます。
           </p>
-        </div>
-        <div class="shortcut-recipe" style="margin-bottom:0;margin-top:10px;">
-          <div class="sr-title">ショートカットの作り方（URL方式）</div>
-          <div class="info-box" style="margin-bottom:12px;border-left:3px solid var(--green);">
-            <b>仕組み:</b> ショートカットはクリップボードの番号を
-            このページのURLに付けてSafariで開くだけ。
-            番号が自動入力されるので、ボタンを1タップでVCFダウンロード。
-            iOS 26の共有シート問題を完全に回避できます。
+          <form id="batchForm" novalidate>
+            <label for="batchInput">電話番号（1行に1件）</label
+            ><textarea
+              id="batchInput"
+              rows="4"
+              autocomplete="off"
+              autocapitalize="off"
+              spellcheck="false"
+              placeholder="090-1234-5678&#10;03-1234-5678"
+              aria-describedby="batchMessage"
+            ></textarea>
+            <div class="input-actions">
+              <button type="button" id="batchPaste">貼り付け</button
+              ><button type="submit" id="batchAdd" disabled>
+                リストへ追加
+              </button>
+            </div>
+          </form>
+          <p id="batchMessage" class="message" role="status"></p>
+          <div class="list-header">
+            <h3 id="batchCount">0件</h3>
+            <button type="button" id="batchClear" disabled>全削除</button>
           </div>
-          <ol class="steps">
-            <li>
-              <b>ショートカット</b>アプリ → 右上<b>「+」</b>で新規作成
-            </li>
-            <li>
-              <b>「アクションを追加」</b> → 検索で<b>「クリップボードを取得」</b>を追加
-            </li>
-            <li>
-              続けて<b>「URL」</b>アクションを追加。<br>
-              URL欄に以下を入力:
-              <div style="background:#fff;border:1px solid rgba(100,60,180,0.2);border-radius:6px;padding:10px;margin:8px 0;font-family:var(--mono);font-size:11px;line-height:1.8;word-break:break-all;">https://yzrswork.github.io/yzrswork_ai-skill-recipe/spam-blocker/?num=<span style="background:#e0d4f5;padding:1px 4px;border-radius:3px;color:#4a2d8a;">クリップボード</span></div>
-              <span style="font-size:12px;color:var(--ink-soft);">
-                <b>?num=</b> の右側は手入力せず、キーボード上部の変数候補から
-                <b>「クリップボード」</b>をタップして挿入してください
-              </span>
-            </li>
-            <li>
-              続けて<b>「URLを開く」</b>アクションを追加<br>
-              <span style="font-size:12px;color:var(--ink-soft);">
-                入力が「URL」になっていることを確認
-              </span>
-            </li>
-            <li>
-              ショートカット名を<b>「迷惑電話ブロック」</b>に変更 →<br>
-              <b>「V」→「ホーム画面に追加」</b>
-            </li>
-          </ol>
-          <div style="background:#fff;border:1px solid rgba(100,60,180,0.2);border-radius:8px;padding:12px;margin-top:12px;font-size:12px;line-height:1.8;">
-            <b>完成形（上から順に3アクション）:</b><br>
-            1. クリップボードを取得<br>
-            2. URL（このページのアドレス + ?num=クリップボード）<br>
-            3. URLを開く
+          <p id="batchEmpty" class="empty">まだ番号はありません。</p>
+          <ul id="batchList" class="number-list"></ul>
+          <button type="button" id="batchExport" class="primary" disabled>
+            0件をまとめて作成（VCF）
+          </button>
+          <p class="caption">
+            「Spam
+            Blocker」という1つの連絡先にまとめます。作成前に全件を確認してください。
+          </p>
+          <div id="batchResult" class="result" hidden tabindex="-1">
+            <h3>VCFの保存後に着信拒否</h3>
+            <p class="export-summary"></p>
+            <p>
+              VCFを開いて保存し、設定の「着信拒否した連絡先」に「Spam
+              Blocker」を追加してください。
+            </p>
+            <button type="button" id="batchDone">リストを消して終了</button>
           </div>
-        </div>
-        <div class="info-box" style="margin-top:10px;">
-          <b>使い方:</b> 履歴で番号をコピー → ホーム画面のアイコンをタップ →
-          Safariでこのページが開き、番号が自動入力される →
-          光っている<b>「連絡先を作成」ボタンをタップ</b> →
-          Safari下部のダウンロードボタンからファイルを開く →
-          <b>「既存の連絡先に追加」から「SPAM」を選択</b>で完了。
-          ブロック済みの連絡先に番号が追加されるので、自動的にブロックされます。
-          <br><br>
-          <b>「クリップボードから貼り付けますか?」と聞かれたら:</b>
-          <b>「貼り付ける」</b>を選んでください。ホーム画面から起動した場合、
-          iOSがクリップボードの読み取り許可を求めることがあります。
-        </div>
-      </div>
+        </section>
+        <section id="help" aria-labelledby="helpTitle" hidden>
+          <div class="section-title">
+            <h2 id="helpTitle" tabindex="-1">使い方・iPhoneの設定</h2>
+            <span class="eyebrow">GUIDE</span>
+          </div>
+          <details>
+            <summary>VCFを作った後は？</summary>
+            <ol>
+              <li>
+                Safariのダウンロード、または「ファイル」アプリで .vcf
+                を開きます。
+              </li>
+              <li>
+                「新規連絡先を作成」で保存します。Quick Blockは「SPAM
+                番号」、一括登録は「Spam Blocker」という名前です。
+              </li>
+              <li>
+                iOS 26: 設定 → プライバシーとセキュリティ → 着信拒否した連絡先
+                →「着信拒否する連絡先を追加」で保存した連絡先を選びます。
+              </li>
+            </ol>
+            <p>
+              連絡先の詳細に「この発信者を着信拒否」があれば、そこからも操作できます。旧iOSでは設定
+              → アプリ → 電話（さらに古い版は設定 →
+              電話）の「着信拒否した連絡先」を確認してください。
+            </p>
+            <p>
+              このツールでは、取り込み・着信拒否の完了を検知できません。設定側で対象番号を確認してください。
+            </p>
+            <a href="https://support.apple.com/ja-jp/111104" rel="noreferrer"
+              >Apple: 着信拒否の操作</a
+            >
+          </details>
+          <details>
+            <summary>ショートカットから番号を渡す</summary>
+            <p>
+              番号をコピー → ショートカットを起動 →
+              このページで番号を確認し、VCFを作成します。
+            </p>
+            <ol>
+              <li>
+                ショートカットアプリで新規作成し、「クリップボードを取得」を追加。
+              </li>
+              <li>「URLエンコード」でクリップボードの文字列をエンコード。</li>
+              <li>
+                「URL」に下のアドレスを入力し、末尾にエンコードした結果の変数を挿入。
+              </li>
+              <li>
+                「URLを開く」を追加。名前を付け、必要ならホーム画面に追加。
+              </li>
+            </ol>
+            <code class="url"
+              >https://yzrswork.github.io/yzrswork_ai-skill-recipe/spam-blocker/?num=</code
+            >
+            <p>
+              既存の ?num=09012345678 も使えます。国際番号の + は %2B
+              にエンコードすると確実です。番号の自動入力だけを行い、VCFはタップ後に作成します。
+            </p>
+            <p>
+              共有シートにVCFを渡すショートカットが動かない場合も、URLからSafariを開く経路を使えます。
+            </p>
+          </details>
+          <details>
+            <summary>一括登録・既存のSPAM連絡先に追加</summary>
+            <p>
+              1行に1件ずつ入力し「リストへ追加」。同じ国内番号と +81
+              表記は重複としてまとめます。不正な行があると、その入力全体を追加せず行番号を表示します。
+            </p>
+            <p>
+              VCFを開く際に「既存の連絡先に追加」が選べる場合は、以前作った「SPAM」または「Spam
+              Blocker」に追加できます。追加後は連絡先の番号と、設定の着信拒否状態を必ず確認してください。同じ名前の連絡先が自動的に統合されるとは限りません。
+            </p>
+            <p>
+              リストからの削除は、この画面の作成対象だけに反映されます。iPhoneの連絡先や着信拒否設定は変更しません。
+            </p>
+          </details>
+          <details>
+            <summary>SE2 / SE3で履歴の詳細が空白になるとき</summary>
+            <p>
+              現行版で案内していた回避策です。すべての端末やiOSバージョンで起きるとは限りません。
+            </p>
+            <p>
+              履歴の詳細が表示できなくても、番号をコピーできればVCFから連絡先を保存し、設定アプリで着信拒否へ進めます。
+            </p>
+            <p>
+              電話アプリだけで試す場合: 履歴の表示メニューで「クラシック」を選択
+              → 番号の詳細を開く →
+              空白ならホーム画面へ戻って電話アプリを再表示、またはスクロール。項目が現れたら着信拒否を選択します。改善しなければ設定アプリの経路を使ってください。
+            </p>
+          </details>
+          <details>
+            <summary>不明な発信者のスクリーニング</summary>
+            <p>
+              iOSの設定 → アプリ → 電話
+              →「不明な発信者をスクリーニング」で選択します。提供状況は言語・地域などで異なります。
+            </p>
+            <dl>
+              <dt>通話の理由を尋ねる</dt>
+              <dd>着信音を鳴らす前に、相手に用件を尋ねます。</dd>
+              <dt>消音</dt>
+              <dd>連絡先にない番号の着信を消音にし、留守番電話へ送ります。</dd>
+              <dt>しない</dt>
+              <dd>連絡先にない番号も通常どおり鳴ります。</dd>
+            </dl>
+            <p>
+              迷惑電話を確実に判別する機能ではありません。配達・病院などの正当な電話にも影響します。重要な番号は連絡先に登録してください。ローミング中など、スクリーニングされない場合もあります。
+            </p>
+            <a href="https://support.apple.com/ja-jp/111106" rel="noreferrer"
+              >Apple: 不明な発信者の管理</a
+            >
+          </details>
+          <details>
+            <summary>貼り付け・ファイルが開けない・ホーム画面</summary>
+            <p>
+              貼り付けの許可が出たら許可してください。ボタンで貼り付けられない場合は、入力欄を長押しして「ペースト」を選びます。
+            </p>
+            <p>
+              VCFはSafariのダウンロード、または「ファイル」アプリから開いてください。ホーム画面やアプリ内ブラウザで取り込めない場合は、このページをSafariで開いて同じ番号を再作成してください。
+            </p>
+            <p>
+              ホーム画面に追加する場合は、番号を消したこのページをSafariで開き、共有メニューの「ホーム画面に追加」を選びます。初回の読み込みには通信が必要です。
+            </p>
+          </details>
+          <details>
+            <summary>番号の確認・プライバシー</summary>
+            <p>
+              ハイフン・空白・括弧・全角数字、先頭の TEL: / 電話
+              に対応します。+81と国内表記は同じ番号として扱います。その他の国際番号は
+              +
+              を維持します。桁数と書式を確認するだけで、番号の実在・所有者・迷惑電話かどうかは判定しません。
+            </p>
+            <p>
+              番号の自動保存・外部照会・アクセス解析は行いません。旧版の保存リストも自動では読み込みません。VCFは端末にダウンロードされ、取り込んだ連絡先はiPhoneの同期設定に従います。
+            </p>
+            <p>
+              URLで渡した番号は最初のページ要求に含まれ、ブラウザ履歴やホスティング側の記録に残る可能性があります。読み込み後にアドレスから除去しますが、既存の記録まで消せるものではありません。これを避ける場合は通常アクセス後に貼り付けてください。
+            </p>
+            <button type="button" id="legacyClear">
+              旧版の保存リストを端末から削除
+            </button>
+            <p id="legacyMessage" class="message" role="status"></p>
+          </details>
+        </section>
+      </main>
+      <footer>
+        番号の処理は、この端末内で。<a href="../tools/index.html"
+          >や印工務店 / 道具箱へ戻る ↗</a
+        >
+      </footer>
     </div>
-
-    <!-- === Classic View fallback === -->
-    <div class="section-head" style="margin-top:20px;">
-      <span class="s-jp">別の方法: Classic表示ワークアラウンド</span>
-      <span class="s-en">Fallback</span>
-    </div>
-
-    <div class="card">
-      <button class="collapse-toggle" id="classicToggle">
-        <span>
-          <span class="s-jp" style="font-size:13px;">電話アプリ内で完結する方法（手順多め）</span>
-        </span>
-        <span class="arrow-icon">&#x25B6;</span>
-      </button>
-      <div class="collapse-body" id="classicBody">
-        <ol class="steps">
-          <li>電話アプリの<b>履歴</b>タブを開く</li>
-          <li>右上の <b>三本線アイコン</b>から<b>「クラシック」</b>を選択</li>
-          <li>ブロックしたい番号の<b>(i)</b>をタップ</li>
-          <li>画面が空白のまま表示される（SE3固有バグ）</li>
-          <li>
-            <b>ホームボタンを押して</b>ホーム画面に戻り、再度電話アプリに戻る。
-            それでも空白なら<b>上方向に数回スクロール</b>すると
-            描画が走る場合がある
-          </li>
-          <li>
-            項目が表示されたら、一番下の<b>「連絡先を着信拒否」</b>をタップ
-          </li>
-        </ol>
-        <div class="info-box" style="margin-top:10px;">
-          <b>注意:</b> この方法はiOS 26.xのバージョンにより
-          成功率が変わります（26.5以降のGUI変更で動かない報告あり）。
-          確実にブロックしたい場合は上の<b>ワンタップ方式</b>か
-          <b>設定アプリ経由</b>（下記）を使ってください。
-        </div>
-      </div>
-    </div>
-
-    <!-- === Settings path === -->
-    <div class="section-head" style="margin-top:20px;">
-      <span class="s-jp">最も確実: 設定アプリから直接ブロック</span>
-      <span class="s-en">Settings</span>
-    </div>
-
-    <div class="card card-accent">
-      <span class="recommend">SE3で最も確実</span>
-      <p style="font-size:13px;color:var(--ink-soft);margin-bottom:10px;">
-        電話アプリのバグを完全に回避できます。連絡先を先に作成しておく必要があります。
-      </p>
-      <ol class="steps">
-        <li>
-          まず上の<b>「即ブロック」</b>でVCFをダウンロードし、
-          連絡先アプリで保存しておく（ブロックはまだしない）
-        </li>
-        <li>
-          <b>設定</b>アプリを開く
-        </li>
-        <li>
-          <span class="path">プライバシーとセキュリティ</span>をタップ
-        </li>
-        <li>
-          <span class="path">着信拒否した連絡先</span>をタップ
-        </li>
-        <li>
-          <b>「新規追加...」</b>から先ほど保存した連絡先を選択
-        </li>
-      </ol>
-      <div class="info-box" style="margin-top:10px;">
-        <b>補足:</b> この経路は電話アプリを経由しないため、
-        SE3の描画バグの影響を受けません。
-      </div>
-    </div>
-  </div>
-
-  <!-- ==================== Tab 2: Call Screening ==================== -->
-  <div id="panel-screening" class="tab-panel">
-    <div class="card card-accent">
-      <span class="recommend">最も効果的</span>
-      <p style="font-size:14px;font-weight:700;margin-bottom:6px;">iOS 26「通話スクリーニング」を有効にする</p>
-      <p style="font-size:13px;color:var(--ink-soft);">
-        一度だけ設定すれば、連絡先にない番号からの着信を自動でスクリーニング。
-        番号ごとにブロックする手間がなくなります。
-      </p>
-    </div>
-
-    <div class="section-head">
-      <span class="s-jp">設定手順</span>
-      <span class="s-en">Setup</span>
-    </div>
-
-    <ol class="steps">
-      <li><b>設定</b>アプリを開く</li>
-      <li><span class="path">アプリ</span> をタップ</li>
-      <li><span class="path">電話</span> をタップ</li>
-      <li>
-        下へスクロールし<br>
-        <span class="path">不明な発信者をスクリーニング</span> をタップ
-      </li>
-      <li>モードを選択（下記参照）</li>
-    </ol>
-
-    <div class="section-head" style="margin-top:20px;">
-      <span class="s-jp">3つのモード</span>
-      <span class="s-en">Modes</span>
-    </div>
-
-    <div class="mode-card recommended">
-      <span class="recommend">おすすめ</span>
-      <div class="mode-name">通話の理由を尋ねる</div>
-      <div class="mode-desc">
-        不明な番号から着信すると、iPhoneが自動応答して相手に名前と用件を聞きます。
-        内容がテキストで画面に表示され、出るかどうかを判断できます。
-        正当な電話（配達、病院等）はちゃんと繋がるので安心。
-      </div>
-    </div>
-
-    <div class="mode-card">
-      <div class="mode-name">消音</div>
-      <div class="mode-desc">
-        不明な番号からの着信を音なしで留守番電話へ直送。
-        履歴には残るので後から確認可能。最も強力だが、
-        初めての配達業者等も無音になる点に注意。
-      </div>
-    </div>
-
-    <div class="mode-card">
-      <div class="mode-name">なし（オフ）</div>
-      <div class="mode-desc">
-        スクリーニングを無効化。全ての着信が通常どおり鳴ります。
-      </div>
-    </div>
-
-    <div class="info-box">
-      <b>補足:</b> スクリーニングは連絡先に登録済みの番号には適用されません。
-      家族、友人、取引先は事前に連絡先に登録しておけば通常どおり着信します。
-      <br><br>
-      <b>通話の理由を尋ねるモード:</b> 迷惑電話業者はほぼ100%ここで切れます。
-      正当な用件のある相手だけが録音を残すので、事実上の自動選別になります。
-    </div>
-  </div>
-
-  <!-- ==================== Tab 3: VCF Batch Block ==================== -->
-  <div id="panel-vcf" class="tab-panel">
-    <div class="card card-accent">
-      <p style="font-size:14px;font-weight:700;margin-bottom:6px;">番号一括ブロック</p>
-      <p style="font-size:13px;color:var(--ink-soft);">
-        しつこい番号をまとめてVCF（連絡先ファイル）に書き出し、
-        iPhoneにインポートして一括着信拒否。
-      </p>
-    </div>
-
-    <div class="section-head">
-      <span class="s-jp">番号を追加</span>
-      <span class="s-en">Add Number</span>
-    </div>
-
-    <div class="input-row">
-      <input type="tel" id="numInput" placeholder="090-1234-5678"
-             inputmode="tel" autocomplete="off" />
-      <button class="btn btn-primary btn-sm" id="addBtn">追加</button>
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:16px;">
-      <button class="btn btn-secondary btn-sm" id="pasteBtn" style="flex:1;">
-        クリップボードから貼付
-      </button>
-    </div>
-
-    <div class="section-head">
-      <span class="s-jp">ブロックリスト</span>
-      <span class="s-en">Block List</span>
-    </div>
-    <div class="num-count" id="numCount">0 件</div>
-    <ul class="num-list" id="numList"></ul>
-    <div class="empty-msg" id="emptyMsg">
-      まだ番号が登録されていません。<br>上のフォームから追加してください。
-    </div>
-
-    <div class="actions">
-      <button class="btn btn-success btn-full" id="exportBtn" disabled>
-        VCFを書き出す
-      </button>
-    </div>
-    <div class="actions">
-      <button class="btn btn-danger btn-sm" id="clearBtn" disabled style="flex:1;">
-        全件削除
-      </button>
-    </div>
-
-    <div class="card" style="margin-top:16px;">
-      <button class="collapse-toggle" id="setupToggle">
-        <span>
-          <span class="s-jp" style="font-size:14px;">インポート手順（初回のみ）</span>
-        </span>
-        <span class="arrow-icon">&#x25B6;</span>
-      </button>
-      <div class="collapse-body" id="setupBody">
-        <ol class="steps" style="margin-top:4px;">
-          <li>
-            上の<b>「VCFを書き出す」</b>をタップしてファイルをダウンロード
-          </li>
-          <li>
-            ダウンロード完了の通知、またはSafariのダウンロードボタンをタップ
-          </li>
-          <li>
-            ファイルを開くと連絡先アプリが起動。<b>「新規連絡先を作成」</b>を選択して保存
-          </li>
-          <li>
-            <span class="path">設定 &gt; プライバシーとセキュリティ &gt; 着信拒否した連絡先</span>
-            を開き<b>「新規追加」</b>から「Spam Blocker」を選択
-          </li>
-        </ol>
-        <div class="info-box" style="margin-top:10px;">
-          <b>2回目以降:</b> 番号を追加したら再度VCFを書き出し、ファイルを開いて
-          <b>「既存の連絡先に追加」</b>で「Spam Blocker」を選ぶと、
-          新しい番号が追加されます。連絡先自体が着信拒否済みなので、
-          追加した番号も自動的にブロックされます。
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <footer>
-    <a href="../tools/index.html">道具箱に戻る</a>
-    &nbsp;/&nbsp;
-    <a href="../index.html">や印工務店</a>
-    <div style="margin-top:6px;font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;">
-      Spam Call Blocker -- YZRS WORK
-    </div>
-  </footer>
-</main>
-
-<div class="toast" id="toast"></div>
-
-<script>
-(function () {
-  'use strict';
-
-  var STORAGE_KEY = 'spam-blocker-numbers';
-
-  // --- DOM refs ---
-  var numInput  = document.getElementById('numInput');
-  var addBtn    = document.getElementById('addBtn');
-  var pasteBtn  = document.getElementById('pasteBtn');
-  var numList   = document.getElementById('numList');
-  var numCount  = document.getElementById('numCount');
-  var emptyMsg  = document.getElementById('emptyMsg');
-  var exportBtn = document.getElementById('exportBtn');
-  var clearBtn  = document.getElementById('clearBtn');
-  var toastEl   = document.getElementById('toast');
-  var numbers = loadNumbers();
-
-  // --- Tabs ---
-  document.querySelectorAll('.tab').forEach(function (tab) {
-    tab.addEventListener('click', function () {
-      document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('active'); });
-      document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('active'); });
-      tab.classList.add('active');
-      document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
-    });
-  });
-
-  // --- Collapsibles ---
-  setupCollapse('setupToggle', 'setupBody');
-
-  function setupCollapse(toggleId, bodyId) {
-    var toggle = document.getElementById(toggleId);
-    var body = document.getElementById(bodyId);
-    toggle.addEventListener('click', function () {
-      body.classList.toggle('open');
-      toggle.classList.toggle('open');
-    });
-  }
-
-  // --- Auto-fill from URL param (?num=) ---
-  function autoFillFromParam() {
-    var params = new URLSearchParams(window.location.search);
-    var raw = params.get('num');
-    if (!raw) return;
-    var n = normalizeNumber(raw.trim());
-    if (!n || n.length < 6) {
-      showToast('URLの番号が不正です');
-      return;
-    }
-    var quickInput = document.getElementById('quickInput');
-    var quickBlock = document.getElementById('quickBlock');
-    quickInput.value = formatDisplay(n);
-    quickBlock.disabled = false;
-    quickBlock.style.animation = 'pulse 1s ease-in-out 2';
-    history.replaceState(null, '', window.location.pathname);
-  }
-
-  // --- Quick Block (Tab 1) ---
-  var quickInput = document.getElementById('quickInput');
-  var quickBlock = document.getElementById('quickBlock');
-  var quickPaste = document.getElementById('quickPaste');
-
-  quickInput.addEventListener('input', function () {
-    quickBlock.disabled = !quickInput.value.trim();
-  });
-
-  quickPaste.addEventListener('click', function () {
-    if (navigator.clipboard && navigator.clipboard.readText) {
-      navigator.clipboard.readText().then(function (text) {
-        var cleaned = text.trim();
-        if (cleaned) {
-          quickInput.value = cleaned;
-          quickBlock.disabled = false;
-          showToast('貼り付けました');
-        } else {
-          showToast('クリップボードが空です');
-        }
-      }).catch(function () {
-        quickInput.focus();
-        showToast('入力欄を長押しして貼り付けてください');
-      });
-    } else {
-      quickInput.focus();
-      showToast('入力欄を長押しして貼り付けてください');
-    }
-  });
-
-  quickBlock.addEventListener('click', function () {
-    var raw = quickInput.value.trim();
-    var n = normalizeNumber(raw);
-    if (!n || n.length < 6) {
-      showToast('有効な電話番号を入力してください');
-      return;
-    }
-    var tel = n;
-    if (/^0/.test(tel)) tel = '+81' + tel.slice(1);
-    var displayNum = formatDisplay(n);
-    var lines = [
-      'BEGIN:VCARD',
-      'VERSION:3.0',
-      'FN:SPAM ' + displayNum,
-      'N:' + displayNum + ';SPAM;;;',
-      'TEL;TYPE=CELL:' + tel,
-      'NOTE:Spam blocker - ya-jirushi',
-      'END:VCARD'
-    ];
-    var blob = new Blob([lines.join('\r\n')], { type: 'text/vcard;charset=utf-8' });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = 'spam-' + n + '.vcf';
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(function () {
-      URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    }, 1000);
-    quickInput.value = '';
-    quickBlock.disabled = true;
-    showToast('VCFを作成しました - ダウンロードから開いてください');
-  });
-
-  // --- Collapsibles ---
-  setupCollapse('shortcutToggle', 'shortcutBody');
-  setupCollapse('classicToggle', 'classicBody');
-
-  // --- Number Management ---
-  function loadNumbers() {
-    try {
-      var raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch (e) { return []; }
-  }
-
-  function saveNumbers() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(numbers));
-  }
-
-  function normalizeNumber(raw) {
-    var n = raw.replace(/[\s　\-‐‑‒–—―−－()（）]/g, '');
-    if (/^\+/.test(n)) return n;
-    if (/^0/.test(n)) return n;
-    return '';
-  }
-
-  function formatDisplay(num) {
-    var n = num.replace(/^\+81/, '0');
-    if (/^0[789]0\d{8}$/.test(n))
-      return n.slice(0,3) + '-' + n.slice(3,7) + '-' + n.slice(7);
-    if (/^0120\d{6}$/.test(n))
-      return n.slice(0,4) + '-' + n.slice(4,7) + '-' + n.slice(7);
-    if (/^0800\d{7}$/.test(n))
-      return n.slice(0,4) + '-' + n.slice(4,7) + '-' + n.slice(7);
-    if (/^050\d{8}$/.test(n))
-      return n.slice(0,3) + '-' + n.slice(3,7) + '-' + n.slice(7);
-    if (/^0[3-6]\d{8}$/.test(n))
-      return n.slice(0,2) + '-' + n.slice(2,6) + '-' + n.slice(6);
-    return num;
-  }
-
-  function addNumber(raw) {
-    var n = normalizeNumber(raw);
-    if (!n || n.length < 6) {
-      showToast('有効な電話番号を入力してください');
-      return false;
-    }
-    if (numbers.indexOf(n) !== -1) {
-      showToast('この番号は登録済みです');
-      return false;
-    }
-    numbers.push(n);
-    saveNumbers();
-    renderList();
-    showToast('追加しました: ' + formatDisplay(n));
-    return true;
-  }
-
-  function removeNumber(index) {
-    numbers.splice(index, 1);
-    saveNumbers();
-    renderList();
-  }
-
-  function clearAll() {
-    if (!confirm(numbers.length + ' 件の番号を全て削除しますか?')) return;
-    numbers = [];
-    saveNumbers();
-    renderList();
-    showToast('全件削除しました');
-  }
-
-  function renderList() {
-    numList.innerHTML = '';
-    numCount.textContent = numbers.length + ' 件';
-    emptyMsg.style.display = numbers.length ? 'none' : 'block';
-    exportBtn.disabled = !numbers.length;
-    clearBtn.disabled = !numbers.length;
-
-    numbers.forEach(function (num, i) {
-      var li = document.createElement('li');
-      li.className = 'num-item';
-      li.innerHTML =
-        '<span>' + formatDisplay(num) + '</span>' +
-        '<button class="num-del" data-i="' + i + '">x</button>';
-      numList.appendChild(li);
-    });
-  }
-
-  numList.addEventListener('click', function (e) {
-    if (e.target.classList.contains('num-del')) {
-      removeNumber(parseInt(e.target.dataset.i, 10));
-    }
-  });
-
-  addBtn.addEventListener('click', function () {
-    if (addNumber(numInput.value)) {
-      numInput.value = '';
-      numInput.focus();
-    }
-  });
-
-  numInput.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      addBtn.click();
-    }
-  });
-
-  pasteBtn.addEventListener('click', function () {
-    if (navigator.clipboard && navigator.clipboard.readText) {
-      navigator.clipboard.readText().then(function (text) {
-        var cleaned = text.trim();
-        if (cleaned) {
-          numInput.value = cleaned;
-          addNumber(cleaned);
-          numInput.value = '';
-        } else {
-          showToast('クリップボードが空です');
-        }
-      }).catch(function () {
-        numInput.focus();
-        showToast('入力欄を長押しして貼り付けてください');
-      });
-    } else {
-      numInput.focus();
-      showToast('入力欄を長押しして貼り付けてください');
-    }
-  });
-
-  exportBtn.addEventListener('click', function () {
-    if (!numbers.length) return;
-    var lines = [
-      'BEGIN:VCARD',
-      'VERSION:3.0',
-      'FN:Spam Blocker',
-      'N:Blocker;Spam;;;'
-    ];
-    numbers.forEach(function (num) {
-      var tel = num;
-      if (/^0/.test(tel)) tel = '+81' + tel.slice(1);
-      lines.push('TEL;TYPE=CELL:' + tel);
-    });
-    lines.push('NOTE:Generated by ya-jirushi Spam Blocker');
-    lines.push('END:VCARD');
-
-    var blob = new Blob([lines.join('\r\n')], { type: 'text/vcard;charset=utf-8' });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = 'spam-blocker.vcf';
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(function () {
-      URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    }, 1000);
-    showToast(numbers.length + ' 件のVCFを書き出しました');
-  });
-
-  clearBtn.addEventListener('click', clearAll);
-
-  var toastTimer = null;
-  function showToast(msg) {
-    toastEl.textContent = msg;
-    toastEl.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () {
-      toastEl.classList.remove('show');
-    }, 2200);
-  }
-
-  renderList();
-  autoFillFromParam();
-})();
-</script>
-</body>
+  </body>
 </html>
