@@ -1,0 +1,35 @@
+name: SPAM BLOCKER checks
+on:
+  pull_request:
+    paths:
+      - "spam-blocker/**"
+      - ".github/workflows/spam-blocker-tests.yml"
+  push:
+    branches: ["astra/spam-blocker-v2"]
+    paths:
+      - "spam-blocker/**"
+      - ".github/workflows/spam-blocker-tests.yml"
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node --test spam-blocker/tests/core.test.mjs
+      - name: Install test-only browsers
+        run: |
+          npm install --prefix "$RUNNER_TEMP/spam-tests" --no-audit --no-fund playwright@1.62.1
+          node "$RUNNER_TEMP/spam-tests/node_modules/playwright/cli.js" install --with-deps chromium webkit
+      - name: Browser regression
+        run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/spam-tests/node_modules/playwright/index.mjs" node spam-blocker/tests/browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: spam-blocker-browser-evidence
+          path: /tmp/spam-blocker-evidence/
+          if-no-files-found: ignore
