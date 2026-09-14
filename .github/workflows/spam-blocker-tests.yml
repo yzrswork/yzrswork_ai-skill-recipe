@@ -4,11 +4,6 @@ on:
     paths:
       - "spam-blocker/**"
       - ".github/workflows/spam-blocker-tests.yml"
-  push:
-    branches: ["astra/spam-blocker-v2"]
-    paths:
-      - "spam-blocker/**"
-      - ".github/workflows/spam-blocker-tests.yml"
 permissions:
   contents: read
 jobs:

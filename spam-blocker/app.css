@@ -81,7 +81,7 @@ textarea:focus {
   justify-content: space-between;
   gap: 8px;
   border-bottom: 1px solid var(--ink);
-  padding-bottom: 10px;
+  padding-bottom: 4px;
   font-size: 12px;
 }
 .masthead a {
@@ -100,10 +100,10 @@ textarea:focus {
   color: var(--muted);
 }
 h1 {
-  font-size: 27px;
+  font-size: 24px;
   letter-spacing: -0.04em;
   line-height: 1.25;
-  margin: 20px 0;
+  margin: 12px 0;
 }
 h1 span {
   display: block;
@@ -127,7 +127,7 @@ h3 {
   grid-template-columns: 1.1fr 0.8fr 1fr;
   gap: 3px;
   border-bottom: 1px solid var(--line);
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 .navigation button {
   border: 0;
@@ -135,7 +135,7 @@ h3 {
   border-radius: 0;
   background: transparent;
   font-size: 13px;
-  padding: 12px 4px;
+  padding: 10px 4px;
   color: var(--muted);
 }
 .navigation [aria-current] {
@@ -144,7 +144,7 @@ h3 {
   font-weight: 700;
 }
 .section-title {
-  margin: 0 0 20px;
+  margin: 0 0 12px;
 }
 .section-title .eyebrow {
   display: block;
@@ -163,7 +163,7 @@ textarea {
   min-width: 0;
   border: 1px solid var(--line);
   border-radius: 9px;
-  padding: 14px 12px;
+  padding: 10px 12px;
   background: #fff;
   color: var(--ink);
   font-size: 18px;
@@ -215,8 +215,8 @@ button {
   color: var(--error);
 }
 .preview {
-  margin: 16px 0;
-  padding: 16px 12px;
+  margin: 12px 0;
+  padding: 12px;
   border-left: 3px solid var(--accent);
   background: var(--card);
 }
@@ -242,14 +242,14 @@ button {
 }
 .primary {
   width: 100%;
-  margin-top: 14px;
+  margin-top: 8px;
   background: var(--accent);
   border-color: var(--accent);
   color: #fff;
   font-size: 17px;
   font-weight: 700;
   min-height: 58px;
-  padding: 15px 12px;
+  padding: 12px;
 }
 .primary span {
   display: block;

@@ -220,6 +220,10 @@ try {
         (await page.locator("#batchCount").innerText()) === "2件",
         "batch dedup",
       );
+      await page.screenshot({
+        path: `${evidence}/${engine}-batch.png`,
+        fullPage: true,
+      });
       check(
         (await page.locator("#batchMessage").innerText()).includes("重複1件"),
         "duplicate feedback",
@@ -331,6 +335,16 @@ try {
           .getByRole("button", { name: "Quick Block", exact: true })
           .click();
         await page.locator("#quickInput").fill("+123456789012345");
+        if (height >= 568)
+          check(
+            await page
+              .locator("#quickExport")
+              .evaluate(
+                (e, h) => e.getBoundingClientRect().bottom <= h,
+                height,
+              ),
+            "primary action visible in portrait viewport",
+          );
         await page.screenshot({
           path: `${evidence}/${engine}-${width}x${height}-quick.png`,
           fullPage: true,
@@ -341,6 +355,11 @@ try {
             await page
               .locator("details")
               .evaluateAll((es) => es.forEach((e) => (e.open = true)));
+          if (view === "help" && width === 375)
+            await page.screenshot({
+              path: `${evidence}/${engine}-help.png`,
+              fullPage: true,
+            });
           check(
             await page.evaluate(
               () => document.documentElement.scrollWidth <= innerWidth,
