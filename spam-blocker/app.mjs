@@ -145,7 +145,7 @@ function renderBatch(focusIndex = null) {
   $("batchClear").disabled = numbers.length === 0;
   $("batchExport").disabled =
     numbers.length === 0 || Boolean($("batchInput").value.trim());
-  $("batchExport").textContent = numbers.length + "件の連絡先を作成（VCF）";
+  $("batchExport").textContent = numbers.length + "件をまとめて作成（VCF）";
   $("batchResult").hidden = true;
   if (focusIndex !== null) {
     const buttons = $("batchList").querySelectorAll("button");
