@@ -32,7 +32,10 @@ export function masteryWeight(fact, mastery = {}, recentFacts = []) {
     * (recentFacts.includes(fact.id) ? 0.15 : 1);
 }
 export function sampleFacts(count, { pool = FACTS, mastery = {}, recentFacts = [], rng = Math.random } = {}) {
-  const remaining = [...new Map(pool.map(fact => [fact.id, fact])).values()];
+  const unique = [...new Map(pool.map(fact => [fact.id, fact])).values()];
+  const fresh = unique.filter(fact => !recentFacts.includes(fact.id));
+  // Avoid consecutive encounters repeating recent facts whenever the pool permits.
+  const remaining = fresh.length >= count ? fresh : unique;
   const selected = [];
   while (selected.length < count && remaining.length) {
     const weights = remaining.map(fact => masteryWeight(fact, mastery, recentFacts));

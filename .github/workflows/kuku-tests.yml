@@ -1,0 +1,32 @@
+name: KUKU RPG checks
+on:
+  pull_request:
+    paths:
+      - 'kuku/**'
+      - '.github/workflows/kuku-tests.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test kuku/tests/core.test.js
+      - name: Install test-only browsers
+        run: |
+          npm install --prefix "$RUNNER_TEMP/kuku-tests" --no-audit --no-fund playwright@1.62.1 @axe-core/playwright@4.11.1
+          node "$RUNNER_TEMP/kuku-tests/node_modules/playwright/cli.js" install --with-deps chromium webkit
+      - name: Browser regression and accessibility
+        env:
+          KUKU_EVIDENCE: /tmp/kuku-evidence
+        run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/kuku-tests/node_modules/playwright/index.mjs" AXE_MODULE="$RUNNER_TEMP/kuku-tests/node_modules/@axe-core/playwright/dist/index.mjs" node kuku/tests/browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kuku-browser-evidence
+          path: /tmp/kuku-evidence/
+          if-no-files-found: ignore

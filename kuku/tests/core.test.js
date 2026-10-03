@@ -69,6 +69,11 @@ test('weighted sampling is without replacement for every dungeon encounter', () 
     assert.deepEqual(questions, buildFloorQuestions(metadata, save.dungeon, save.mastery));
   }
   const all = sampleFacts(100, { rng: seededRng(1) }); assert.equal(all.length, 72);
+  const recentFacts = FACTS.slice(0,18).map(fact=>fact.id);
+  for (let seed=0;seed<100;seed++) {
+    const fresh = sampleFacts(12,{recentFacts,rng:seededRng(seed)});
+    assert.ok(fresh.every(fact=>!recentFacts.includes(fact.id)));
+  }
 });
 test('mastery weighting favours less-secure facts and reduces recent facts', () => {
   const fact = FACTS[0], learned = { [fact.id]: { attempts: 10, firstCorrect: 10 } };
