@@ -1,0 +1,23 @@
+export const TITLE_BADGES = [
+    { id: "first-step", level: 1, title: "はじめの いっぽ", start: 0, symbol: "badge-sprout", tone: "#79a866", accent: "#31563f" },
+    { id: "idea-rookie", level: 2, title: "ひらめき ルーキー", start: 6, symbol: "badge-spark", tone: "#f2bd4b", accent: "#a6482f" },
+    { id: "answer-finder", level: 3, title: "こたえ みつけ", start: 14, symbol: "badge-key", tone: "#d17956", accent: "#7e3525" },
+    { id: "crystal-picker", level: 4, title: "クリスタル ひろい", start: 24, symbol: "badge-crystal", tone: "#70a9b7", accent: "#315b68" },
+    { id: "streak-star", level: 5, title: "れんぞく スター", start: 36, symbol: "badge-flame", tone: "#e8834f", accent: "#8b3129" },
+    { id: "chest-finder", level: 6, title: "たからばこ はっけん", start: 50, symbol: "badge-chest", tone: "#e8a93b", accent: "#81511c" },
+    { id: "tower-fighter", level: 7, title: "とうのぼり せんし", start: 66, symbol: "badge-tower", tone: "#c57858", accent: "#713425" },
+    { id: "kuku-wizard", level: 8, title: "九九の まほうつかい", start: 84, symbol: "badge-wand", tone: "#8c78bd", accent: "#4d3b7b" },
+    { id: "idea-knight", level: 9, title: "ひらめき ナイト", start: 105, symbol: "badge-shield", tone: "#6f9aa8", accent: "#315563" },
+    { id: "terracotta-guard", level: 10, title: "テラコッタ ガード", start: 128, symbol: "badge-brick", tone: "#bc5b3d", accent: "#652d21" },
+    { id: "multiply-ranger", level: 11, title: "かけざん レンジャー", start: 154, symbol: "badge-arrow", tone: "#5f9c72", accent: "#31563f" },
+    { id: "crystal-master", level: 12, title: "クリスタル マスター", start: 182, symbol: "badge-gem", tone: "#5aa7b9", accent: "#245d70" },
+    { id: "kuku-hero", level: 13, title: "九九の ゆうしゃ", start: 212, symbol: "badge-sword", tone: "#da6d4b", accent: "#713425" },
+    { id: "tower-challenger", level: 14, title: "とうの しれんしゃ", start: 245, symbol: "badge-flag", tone: "#d99246", accent: "#78501f" },
+    { id: "star-collector", level: 15, title: "ほしの コレクター", start: 280, symbol: "badge-stars", tone: "#e8b83e", accent: "#8e5a18" },
+    { id: "kuku-expert", level: 16, title: "九九の たつじん", start: 318, symbol: "badge-scroll", tone: "#a77955", accent: "#5c3b27" },
+    { id: "crown-hunter", level: 17, title: "おうかん ハンター", start: 358, symbol: "badge-crown", tone: "#e1aa2f", accent: "#81511c" },
+    { id: "terracotta-hero", level: 18, title: "テラコッタ ヒーロー", start: 400, symbol: "badge-wings", tone: "#c76348", accent: "#652d21" },
+    { id: "kuku-legend", level: 19, title: "九九の でんせつ", start: 445, symbol: "badge-comet", tone: "#8b76bd", accent: "#47356e" },
+    { id: "tower-king", level: 20, title: "とうの おうさま", start: 500, symbol: "badge-castle", tone: "#d49a29", accent: "#6f4616" },
+  ];
+

@@ -1,0 +1,97 @@
+/* v2 extends the v1 layout, badge artwork and responsive foundations. */
+:root { --ink:#fff9ed; --muted:#b9c5d8; --white:#19263d; --sand-100:#fff9ed; --sand-200:#202e46; --sand-300:#667999; --clay-950:#080d17; --clay-900:#122039; --clay-800:#233856; --clay-700:#415777; --clay-600:#527098; --clay-500:#839bb9; --clay-300:#c8d6eb; --shadow:rgba(0,0,0,.4); --berry:#ffb9b1; --leaf:#b0e0c2; --leaf-deep:#c2efcb; }
+html { background:#080d17; }
+body { background:radial-gradient(ellipse at 50% 0,#223452,#080d17 70%); color:#fff9ed; }
+.app-shell { background:#101827; width:min(100%,640px); border-radius:16px; }
+.title-block { padding:12px 0; }
+h1 { color:#fff9ed; font-size:clamp(28px,7vw,40px); text-shadow:0 3px #080d17; }
+.eyebrow,.subtitle,.gentle-note { color:#c8d6eb; }
+.profile-strip,.quest-card,.finish-card,.map-panel { background:#101c30; border:2px solid #c8d6eb; border-radius:12px; color:#fff9ed; box-shadow:0 5px 0 #050811; }
+.profile-strip { margin-top:10px; padding:10px; }
+.rank-name,.rank-level,.crystal-pill,.badge-book-button,.rank-progress-label,.status-caption,.status-value { color:#fff9ed; }
+.crystal-pill { background:#263c59; }
+.badge-book-button-copy > span { color:#c8d6eb; font-size:9px; }
+.rank-progress,.progress-track { background:#263c59; }
+.rank-progress-fill,.progress-fill { background:#b7d9ee; }
+.map-panel { padding:16px; }
+.map-panel h2,.map-panel h3 { margin:0 0 12px; }
+.map-panel p { font-size:14px; line-height:1.8; }
+.map-panel button,.battle-controls button,#fallback-button { padding:12px; min-height:44px; border:1px solid #8295b2; border-radius:8px; background:#1b2c47; color:#fff9ed; text-align:left; cursor:pointer; }
+.map-panel button:disabled { color:#9aa8be; opacity:.7; cursor:default; }
+.map-panel button[aria-pressed="true"] { border:2px solid #fff9ed; background:#2d4263; }
+#stage-list { display:grid; gap:8px; margin:14px 0 22px; }
+.route-list { display:grid; gap:10px; }
+.equipment-line { padding:8px; background:#1a2a44; border-radius:6px; }
+.untimed-setting { display:flex; align-items:center; gap:10px; font-size:14px; min-height:44px; }
+.untimed-setting input { width:24px; height:24px; accent-color:#bedbf2; }
+#save-status { color:#ffd28f; }
+#save-status:empty { display:none; }
+#dungeon-entry { border-top:1px solid #8295b2; margin-top:20px; padding-top:20px; }
+.quest-card { padding:12px; }
+.battle-heading { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; font-size:14px; margin-bottom:8px; }
+.battle-heading span { color:#b9c5d8; font-size:12px; }
+.battle-controls { display:flex; justify-content:space-between; gap:8px; margin-bottom:10px; }
+.battle-controls button { padding:8px 12px; font-size:12px; }
+.status-row { margin-bottom:8px; }
+.status-caption { font-size:11px; }
+.status-value { font-size:18px; }
+.streak-row { margin:8px 0; }
+.streak-chip { background:#263c59; color:#fff9ed; }
+.timer-track { height:3px; background:#263c59; margin-bottom:8px; }
+#timer-meter { display:block; height:100%; background:#c8d6eb; }
+.battle-scene { position:relative; height:240px; border:1px solid #566e91; border-radius:8px; background-size:cover; background-position:center; overflow:hidden; display:flex; flex-direction:column; align-items:center; }
+.enemy-caption { position:relative; z-index:1; display:flex; justify-content:space-between; gap:10px; width:100%; padding:8px; font-size:13px; background:#080d17e8; }
+#hp-meter { width:90%; height:12px; margin:4px 0; }
+.enemy-art { width:210px; height:176px; object-fit:contain; filter:drop-shadow(0 6px 5px #0006); }
+.weapon-caption { position:absolute; bottom:4px; right:6px; display:flex; align-items:center; font-size:10px; border-radius:4px; padding:2px 5px; background:#101827e8; }
+#weapon-art { object-fit:contain; width:42px; height:34px; }
+.problem-area { margin:10px 0 8px; min-height:0; padding:8px; border:1px solid #8295b2; background:#080d17; border-radius:8px; }
+.equation { color:#fff9ed; font-size:clamp(38px,10vw,54px); line-height:1.3; text-shadow:none; }
+.question-label { color:#b9c5d8; font-size:12px; margin:0 0 4px; }
+.feedback { color:#fff9ed; font-size:14px; min-height:24px; margin:8px 0; }
+.hint { color:#ffdf9a; font-size:14px; line-height:1.6; margin:4px 0 8px; }
+.hint:empty { display:none; }
+.answers { gap:8px; margin-top:8px; }
+.answer-button { min-height:62px; color:#fff9ed; background:linear-gradient(#293e5e,#16253d); border:2px solid #b7c7e0; border-radius:8px; box-shadow:0 3px #050811; font-size:28px; }
+.answer-button:hover,.answer-button:active { color:#fff9ed; background:#334f72; }
+.answer-button:disabled { opacity:.6; }
+.is-keypad { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+.is-keypad .answer-button { min-height:48px; font-size:22px; }
+.keypad-display { display:block; text-align:right; padding:8px 16px; border:1px solid #c8d6eb; border-radius:6px; background:#080d17; color:#fff9ed; font-size:26px; min-height:48px; }
+#fallback-button { width:100%; margin:8px 0; text-align:center; }
+.battle-log { padding:10px 10px 10px 26px; border:1px solid #566e91; border-radius:6px; background:#080d17; color:#c8d6eb; font-size:12px; line-height:1.6; min-height:48px; margin:12px 0 0; }
+.battle-log li { padding:2px 0; }
+.tower-heading,.tower-node-label { color:#c8d6eb; }
+.tower-node-marker { background:#1b2c47; color:#fff9ed; border-color:#8295b2; }
+.tower-node.is-current .tower-node-marker { background:#fff9ed; color:#101827; }
+.tower-node.is-complete .tower-node-marker { background:#b0e0c2; color:#101827; }
+.finish-title,.finish-message,.finish-kicker,.result-item span,.result-item strong,.finish-rank-heading,.best-message { color:#fff9ed; }
+.result-item,.finish-rank { background:#1b2c47; border-color:#8295b2; }
+.restart-button { color:#101827; background:#fff9ed; border-color:#c8d6eb; }
+.badge-book-sheet,.badge-unlock-card { background:#101c30; border-color:#c8d6eb; color:#fff9ed; }
+.badge-book-title,.badge-book-guide,.badge-book-summary,.badge-card-title,.badge-card-condition,.badge-book-kicker { color:#fff9ed; }
+.badge-card { background:#1b2c47; border-color:#8295b2; }
+.badge-card.is-selected { background:#2d4263; border-color:#fff9ed; }
+.badge-book-close { color:#fff9ed; background:#1b2c47; }
+:focus-visible { outline:3px solid #ffd28f !important; outline-offset:3px; }
+[hidden] { display:none !important; }
+@keyframes hit { 50% { transform:translateX(5px); filter:brightness(1.5); } }
+@keyframes attack { 50% { transform:translateY(-5px) rotate(-8deg); } }
+.is-hit { animation:hit .3s ease; }
+.is-attack { animation:attack .3s ease; }
+.streak-chip.is-hot { color:#ffdf9a; background:#293e5e; border:1px solid #ffdf9a; }
+#weapon-beads { color:#ffdf9a; font-size:8px; letter-spacing:2px; }
+@keyframes bead-click { 30% { transform:translateY(-4px); } 55% { transform:translateY(1px); } }
+@keyframes critical-impact { 50% { box-shadow:inset 0 0 0 3px #ffdf9a; } }
+.is-click { animation:bead-click .16s ease; }
+.is-critical { animation:critical-impact .4s ease; }
+.is-battle .title-block > .eyebrow,.is-battle .title-block > h1,.is-battle .title-block > .subtitle { display:none; }
+.is-battle .title-block { padding:4px 0 8px; }
+.is-battle .profile-strip { margin-top:0; padding:6px; }
+.is-battle .profile-strip .rank-progress-row { display:none; }
+.is-battle .battle-scene { height:180px; }
+.is-battle .enemy-art { height:126px; width:176px; }
+.is-battle .battle-log { max-height:74px; overflow:auto; }
+@media (max-width:360px) { .quest-card { padding:8px; } .battle-scene { height:212px; } .enemy-art { height:152px; } .profile-heading { gap:5px; } }
+@media (min-width:700px) { .app-shell { border-color:#566e91; border-radius:16px; } }
+@media (prefers-reduced-motion:reduce) { .is-hit,.is-attack,.is-click,.is-critical { animation:none; } }
