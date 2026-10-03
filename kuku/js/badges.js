@@ -20,4 +20,3 @@ export const TITLE_BADGES = [
     { id: "kuku-legend", level: 19, title: "九九の でんせつ", start: 445, symbol: "badge-comet", tone: "#8b76bd", accent: "#47356e" },
     { id: "tower-king", level: 20, title: "とうの おうさま", start: 500, symbol: "badge-castle", tone: "#d49a29", accent: "#6f4616" },
   ];
-
