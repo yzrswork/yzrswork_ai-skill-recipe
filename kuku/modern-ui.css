@@ -516,6 +516,9 @@ body[data-screen="result"] .finish-card.is-stage-clear > * { position: relative;
 .route-sheet-facts { margin: 0 0 6px; color: var(--accent); font-size: clamp(25px, 7vw, 34px); font-weight: 850; letter-spacing: -.03em; text-align: center; }
 .route-sheet-description { margin: 0 0 16px; color: var(--muted); font-size: 13px; text-align: center; }
 .bottom-sheet-dialog .primary-cta { margin-top: 12px; }
+#route-sheet { color: #1d2a42; background-color: #f6f4ed; }
+#route-sheet #route-sheet-description { color: #354255; background-color: #f6f4ed; }
+#route-sheet #route-sheet-start { color: #fff; background-color: #17243a; }
 .settings-dialog { width: min(100%, 500px); }
 .setting-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 70px; margin-top: 9px; padding: 11px 12px; border-radius: 17px; background: white; }
 .setting-row > span, .setting-row > div { display: grid; gap: 2px; }
@@ -546,7 +549,7 @@ body[data-screen="result"] .finish-card.is-stage-clear > * { position: relative;
 .confetti-layer { z-index: 35; }
 .is-modal-open { overflow: hidden; }
 
-@keyframes sheet-in { from { opacity: .5; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes sheet-in { from { transform: translateY(18px); } to { transform: translateY(0); } }
 @media (max-width: 360px) {
   .app-shell { padding-right: 13px; padding-left: 13px; }
   .app-header { margin-right: -13px; margin-left: -13px; padding-right: 13px; padding-left: 13px; }

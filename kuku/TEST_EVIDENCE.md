@@ -73,6 +73,6 @@ CIにも追加の素材テストとビジュアル検証を登録しています
 - `browser.mjs`：Chromium/WebKit 160項目成功。進行、移行、タイマー、音OFF、focus、axeの回帰確認。
 - `modern-ui-browser.mjs`：Chromium/WebKit 120項目成功。初回HOME、縦MAP、Sheet、戦闘、結果、全画面Stage Clear、Stage6武器獲得、Stage4ボス、Stage5テンキー、Stage7タイマー、図鑑、バッジ、51F、設定、320/375/390/430/768/1280px横幅、axeを確認。
 - `visual-browser.mjs`：Chromium/WebKit 292項目成功。既存WebPの実ブラウザ読み込み、画像寸法、比較GalleryとSave保持を再確認。
-- axeのWCAG 2 A/AA・2.1 AA違反、JavaScript例外、失敗した素材リクエスト、指定幅での横はみ出しはゼロ。WebKitで見つかった設定文字のコントラストを濃くし、再実行で解消しました。
+- axeのWCAG 2 A/AA・2.1 AA違反、JavaScript例外、失敗した素材リクエスト、指定幅での横はみ出しはゼロ。WebKitで検出した設定文字を濃くし、Sheetはopacityを伴わないスライド表示と明示色に調整。ローカルWebKitの既存回帰80件・Modern UI 60件で再確認しました。
 
 画面証跡は [更新前HOME](evidence/modern-ui/before-home.png)、[更新後HOME](evidence/modern-ui/home-after.png)、[冒険MAP](evidence/modern-ui/adventure-map.png)、[Stage1戦闘](evidence/modern-ui/stage-1-battle.png)、[Stage4ボス](evidence/modern-ui/stage-4-boss.png)、[Stage5テンキー](evidence/modern-ui/stage-5-keypad.png)、[Stage7タイマー](evidence/modern-ui/stage-7-timer.png)、[結果](evidence/modern-ui/result.png)、[Stage Clear](evidence/modern-ui/stage-clear.png)、[武器獲得演出](evidence/modern-ui/stage-6-weapon-clear.png)、[モンスター図鑑](evidence/modern-ui/collection-monsters.png)、[バッジ](evidence/modern-ui/collection-badges.png)、[深淵51F](evidence/modern-ui/abyss-51f.png)です。実機iPhone Safari、VoiceOver、セーフエリア、縦横回転はこの環境では未確認です。
