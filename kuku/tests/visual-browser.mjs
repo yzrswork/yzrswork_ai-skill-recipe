@@ -28,7 +28,7 @@ await new Promise(done => server.listen(0, '127.0.0.1', done));
 const base = `http://127.0.0.1:${server.address().port}${prefix}kuku/`;
 let checks = 0;
 const check = (condition, label) => { assert.ok(condition, label); checks++; };
-const loaded = page => page.waitForFunction(() => Array.from(document.images).every(image => image.complete && image.naturalWidth > 0));
+const loaded = page => page.waitForFunction(() => Array.from(document.images).filter(image => !image.closest('[hidden]')).every(image => image.complete && image.naturalWidth > 0));
 async function fixture(page, stage, floor = null) {
   await page.goto(base);
   await page.evaluate(async ({stage, floor}) => {
@@ -42,6 +42,8 @@ async function fixture(page, stage, floor = null) {
     localStorage.setItem('yzrs-kuku-save-v2',JSON.stringify(save));
   }, {stage, floor});
   await page.reload();
+  if (floor) { await page.locator('#home-continue').click(); await page.locator('#abyss-panel').waitFor({state:'visible'}); }
+  else { await page.locator('#home-map-open').click(); await page.locator('#stage-list button').first().waitFor({state:'visible'}); }
 }
 try {
   for (const engine of (process.env.KUKU_ENGINES || 'chromium,webkit').split(',')) {
@@ -72,6 +74,7 @@ try {
           else {
             await page.locator('#stage-list button').nth(stage - 1).click();
             await page.locator('#route-list button').nth(stage === 9 ? 0 : 3).click();
+            await page.locator('#route-sheet-start').click();
           }
           await loaded(page);
           check((await page.locator('#enemy-art').getAttribute('src')).endsWith(id+'.webp'), 'battle resolves '+id);

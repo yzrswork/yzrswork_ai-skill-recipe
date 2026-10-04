@@ -23,6 +23,9 @@ export function createProfileUI(save, persist, onModal = () => {}) {
     badgeBookCount: document.querySelector("#badge-book-count"),
     badgeNextMessage: document.querySelector("#badge-next-message"),
     badgeGrid: document.querySelector("#badge-grid"),
+    mainBadgeCount: document.querySelector("#main-badge-count"),
+    mainBadgeNext: document.querySelector("#main-badge-next"),
+    mainBadgeGrid: document.querySelector("#main-badge-grid"),
     badgeUnlock: document.querySelector("#badge-unlock"),
   };
 
@@ -187,45 +190,50 @@ export function createProfileUI(save, persist, onModal = () => {}) {
     elements.badgeNextMessage.textContent = info.next
       ? `つぎは「${info.next.title}」 あと ${info.remaining} ◇`
       : "20こ ぜんぶ あつまった！";
-    elements.badgeGrid.replaceChildren();
+    if (elements.mainBadgeCount) elements.mainBadgeCount.textContent = String(unlockedBadges.length);
+    if (elements.mainBadgeNext) elements.mainBadgeNext.textContent = info.next
+      ? `つぎは「${info.next.title}」 あと ${info.remaining} ◇`
+      : "20こ ぜんぶ あつまった！";
+    const grids = [elements.badgeGrid, elements.mainBadgeGrid].filter(Boolean);
+    for (const grid of grids) grid.replaceChildren();
 
     for (const badge of TITLE_BADGES) {
       const unlocked = badge.start <= state.profile.crystals;
       const selected = badge.id === selectedBadge.id;
-      const card = document.createElement("button");
-      const graphic = document.createElement("span");
-      const title = document.createElement("strong");
-      const condition = document.createElement("span");
+      for (const grid of grids) {
+        const card = document.createElement("button");
+        const graphic = document.createElement("span");
+        const title = document.createElement("strong");
+        const condition = document.createElement("span");
 
-      card.className = "badge-card";
-      card.type = "button";
-      card.classList.toggle("is-locked", !unlocked);
-      card.classList.toggle("is-selected", selected);
-      card.disabled = !unlocked;
-      card.dataset.badgeId = badge.id;
-      card.setAttribute(
-        "aria-label",
-        unlocked
-          ? `${badge.title}${selected ? "、いま つけている バッジ" : "を つける"}`
-          : `${badge.title}、${badge.start}クリスタルで ひらく`,
-      );
+        card.className = "badge-card";
+        card.type = "button";
+        card.classList.toggle("is-locked", !unlocked);
+        card.classList.toggle("is-selected", selected);
+        card.disabled = !unlocked;
+        card.dataset.badgeId = badge.id;
+        card.setAttribute(
+          "aria-label",
+          unlocked
+            ? `${badge.title}${selected ? "、いま つけている バッジ" : "を つける"}`
+            : `${badge.title}、${badge.start}クリスタルで ひらく`,
+        );
 
-      graphic.className = "badge-card-graphic";
-      graphic.append(createBadgeGraphic(badge, !unlocked));
-      title.className = "badge-card-title";
-      title.textContent = badge.title;
-      condition.className = "badge-card-condition";
-      condition.textContent = selected
-        ? "つけてる！"
-        : unlocked
-          ? "つける"
-          : `${badge.start} ◇`;
+        graphic.className = "badge-card-graphic";
+        graphic.append(createBadgeGraphic(badge, !unlocked));
+        title.className = "badge-card-title";
+        title.textContent = badge.title;
+        condition.className = "badge-card-condition";
+        condition.textContent = selected
+          ? "つけてる！"
+          : unlocked
+            ? "つける"
+            : `${badge.start} ◇`;
 
-      card.append(graphic, title, condition);
-      if (unlocked) {
-        card.addEventListener("click", () => selectBadge(badge.id));
+        card.append(graphic, title, condition);
+        if (unlocked) card.addEventListener("click", () => selectBadge(badge.id));
+        grid.append(card);
       }
-      elements.badgeGrid.append(card);
     }
   }
 
@@ -242,7 +250,8 @@ export function createProfileUI(save, persist, onModal = () => {}) {
     renderFinishProfile();
     elements.badgeBookGuide.textContent = `「${badge.title}」を つけたよ！`;
     renderBadgeBook();
-    elements.badgeGrid.querySelector(`[data-badge-id="${badge.id}"]`)?.focus({ preventScroll: true });
+    const activeGrid = elements.badgeBook.hidden ? elements.mainBadgeGrid : elements.badgeGrid;
+    activeGrid?.querySelector(`[data-badge-id="${badge.id}"]`)?.focus({ preventScroll: true });
   }
 
   function setModalOpen(isOpen) {
@@ -293,5 +302,5 @@ export function createProfileUI(save, persist, onModal = () => {}) {
       if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     }
   });
-  return { render: renderProfile, renderFinish: renderFinishProfile };
+  return { render: renderProfile, renderFinish: renderFinishProfile, renderBadges: renderBadgeBook };
 }

@@ -16,6 +16,7 @@ node --test kuku/tests/*.test.js
 npm install --prefix /tmp/kuku-tests --no-audit --no-fund playwright@1.62.1 @axe-core/playwright@4.11.1
 node /tmp/kuku-tests/node_modules/playwright/cli.js install --with-deps chromium webkit
 PLAYWRIGHT_MODULE=/tmp/kuku-tests/node_modules/playwright/index.mjs AXE_MODULE=/tmp/kuku-tests/node_modules/@axe-core/playwright/dist/index.mjs node kuku/tests/browser.mjs
+PLAYWRIGHT_MODULE=/tmp/kuku-tests/node_modules/playwright/index.mjs AXE_MODULE=/tmp/kuku-tests/node_modules/@axe-core/playwright/dist/index.mjs node kuku/tests/modern-ui-browser.mjs
 PLAYWRIGHT_MODULE=/tmp/kuku-tests/node_modules/playwright/index.mjs AXE_MODULE=/tmp/kuku-tests/node_modules/@axe-core/playwright/dist/index.mjs node kuku/tests/visual-browser.mjs
 ```
 
@@ -37,7 +38,7 @@ PLAYWRIGHT_MODULE=/tmp/kuku-tests/node_modules/playwright/index.mjs AXE_MODULE=/
 | `js/profile.js` / `badges.js` | 既存称号とずかんを抽出、フォーカス管理 |
 | `js/audio.js` | 既存の独自合成音。音OFF時はAudioContextを生成しない |
 | `js/story.ja.js` / `messages.ja.js` | ストーリーと戦闘文言 |
-| `style.css` / `rpg.css` | 既存のレイアウトと称号描画 / v2の拡張 |
+| `style.css` / `rpg.css` / `modern-ui.css` | 既存スタイル / RPG拡張 / モバイルUI刷新 |
 | `js/assets.js` | 表示専用の素材URL・名前。ゲームIDを維持 |
 | `assets/` | 従来SVG65点とVisual Pass 2の独自WebP62点 |
 
@@ -45,9 +46,17 @@ PLAYWRIGHT_MODULE=/tmp/kuku-tests/node_modules/playwright/index.mjs AXE_MODULE=/
 
 敵・ボス・武器を透過WebP、背景を不透明WebPへ変更しました。重点ボス5体から始め、全ボス11体、守護者8体、Stage1〜8の通常敵24体と深淵3体、武器5種、背景11枚へ展開しています。体型・顔・装備・構えを個別に設計し、既存作品や作家の直接模倣はしていません。
 
-戦闘の敵表示はスマートフォンでも全身と構えを読める大きさへ拡大。問題・回答・ログの配置とUI部品は従来のCSS/SVGを維持しています。保存形式、進行、出題、戦闘計算、音、既存テストは変更していません。通常敵と守護者の名前の調整は表示専用です。
+戦闘の敵表示はスマートフォンでも全身と構えを読める大きさへ拡大。問題・回答と従来のSVG UI部品を保ったまま表示を刷新しています。保存形式、進行、出題、戦闘計算、音は変更していません。通常敵と守護者の名前の調整は表示専用です。
 
 比較と一覧は [Visual Pass 2 素材比較](visual-pass-2.html)。形式・生成方法・圧縮・保持するSVGについては [素材README](assets/visual-pass-2/README.md)、個別の生成指示は [PROMPTS.json](assets/visual-pass-2/PROMPTS.json) を参照してください。内蔵画像生成で制作し、配信時はリポジトリ内の静的ファイルのみを読みます。
+
+## Modern Mobile UI Refresh
+
+既存のゲーム進行を保ったまま、画面構成をHOME / 冒険MAP / BATTLE / RESULT / COLLECTION / ABYSSに整理しました。HOMEは次の冒険を主CTAで案内し、MAPのルートはBottom Sheetから開始します。戦闘は敵・式・回答を主役にし、ログはアクセシビリティ用のlive regionとして残して画面上では隠します。通常CLEARは簡潔に保ち、エリアボスCLEARだけ全画面のStage演出にして、新しい武器を取得した場合はWebPと名前を表示します。
+
+アイボリーとネイビーを基調に、角丸カード・余白・Stage色で情報を整理し、下部ナビ、44px以上の操作領域、safe-area、reduced-motion、キーボードフォーカスを維持します。既存のWebP背景・モンスター・武器をそのまま使用しています。更新前の公開HOME、更新後HOME、MAP、戦闘、結果、図鑑は [UI証跡](evidence/modern-ui/) を参照してください。画面構成と判断根拠は [Modern UI設計仕様](MODERN_UI_SPEC.md) に記録しています。
+
+Modern UIの自動検証は `tests/modern-ui-browser.mjs` で実行します。HOMEから次の冒険、ルートSheet、戦闘、結果、Stage Clear、テンキー、タイマー、Collection、Abyss、フォーカス復帰、axe、320〜1280pxの横はみ出しをChromium/WebKitで確認します。UI刷新ではSave v2、問題生成、進行、戦闘計算、mastery、Stageデータを変更していません。
 
 ## 保存互換
 
