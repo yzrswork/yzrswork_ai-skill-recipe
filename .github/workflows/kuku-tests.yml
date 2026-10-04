@@ -15,7 +15,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test kuku/tests/core.test.js
+      - run: node --test kuku/tests/*.test.js
       - name: Install test-only browsers
         run: |
           npm install --prefix "$RUNNER_TEMP/kuku-tests" --no-audit --no-fund playwright@1.62.1 @axe-core/playwright@4.11.1
@@ -24,6 +24,10 @@ jobs:
         env:
           KUKU_EVIDENCE: /tmp/kuku-evidence
         run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/kuku-tests/node_modules/playwright/index.mjs" AXE_MODULE="$RUNNER_TEMP/kuku-tests/node_modules/@axe-core/playwright/dist/index.mjs" node kuku/tests/browser.mjs
+      - name: Visual assets and comparison gallery
+        env:
+          KUKU_EVIDENCE: /tmp/kuku-evidence
+        run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/kuku-tests/node_modules/playwright/index.mjs" AXE_MODULE="$RUNNER_TEMP/kuku-tests/node_modules/@axe-core/playwright/dist/index.mjs" node kuku/tests/visual-browser.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

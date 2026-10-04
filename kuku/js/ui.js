@@ -9,6 +9,7 @@ import { generateFloor, buildFloorQuestions, completeFloor } from './dungeon.js'
 import { STORY } from './story.ja.js';
 import { MESSAGES } from './messages.ja.js';
 import { TITLE_BADGES } from './badges.js';
+import { assetUrl, assetName } from './assets.js';
 
 const $ = id => document.getElementById(id);
 const text = (id, value) => { $(id).textContent = String(value); };
@@ -171,10 +172,10 @@ export function startApp() {
     text('battle-place', battle.kind === 'dungeon' ? `九九の深淵 ${battle.metadata.floor}F` : battle.kind === 'midboss' ? 'きかいのまち地下' : stage.name);
     text('battle-route', battle.kind === 'route' ? ROUTES.find(route => route.id === battle.route).name : 'ボスの しれん');
     text('weapon-name', WEAPONS[weaponIndex]);
-    $('weapon-art').src = `assets/weapon-${weaponIndex}.svg`;
+    $('weapon-art').src = assetUrl(`weapon-${weaponIndex}`);
     $('weapon-art').alt = WEAPONS[weaponIndex];
     $('weapon-beads').hidden = weaponIndex !== 0;
-    $('battle-scene').style.backgroundImage = `url("assets/bg-${battle.kind === 'dungeon' ? 'abyss' : battle.kind === 'midboss' ? 'reactor' : stage.theme}.svg")`;
+    $('battle-scene').style.backgroundImage = `url("${assetUrl(`bg-${battle.kind === 'dungeon' ? 'abyss' : battle.kind === 'midboss' ? 'reactor' : stage.theme}`)}")`;
     $('fallback-button').hidden = selectedStage !== 5;
     log(battle.kind === 'midboss' ? STORY.midboss : selectedStage === 5 ? STORY.tutorial : '九九の力で こうげきしよう！');
     renderTower(); renderQuestion(true);
@@ -205,7 +206,8 @@ export function startApp() {
     } else if (battle.kind === 'boss') { name = stage.boss; source = `boss-${stage.id}`; }
     else if (battle.guardian) { name = 'まよいの守護者'; source = `guardian-${stage.id}`; }
     else { name = stage.enemies[battle.wave - 1]; source = `enemy-${stage.id}-${battle.wave - 1}`; }
-    text('enemy-name', name); $('enemy-art').src = `assets/${source}.svg`; $('enemy-art').alt = name;
+    if (battle.kind !== 'dungeon') name = assetName(source, name);
+    text('enemy-name', name); $('enemy-art').src = assetUrl(source); $('enemy-art').alt = name;
     renderHp();
   }
   function renderHp(hp = battle.hp) {

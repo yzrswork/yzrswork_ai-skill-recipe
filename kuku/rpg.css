@@ -95,3 +95,13 @@ h1 { color:#fff9ed; font-size:clamp(28px,7vw,40px); text-shadow:0 3px #080d17; }
 @media (max-width:360px) { .quest-card { padding:8px; } .battle-scene { height:212px; } .enemy-art { height:152px; } .profile-heading { gap:5px; } }
 @media (min-width:700px) { .app-shell { border-color:#566e91; border-radius:16px; } }
 @media (prefers-reduced-motion:reduce) { .is-hit,.is-attack,.is-click,.is-critical { animation:none; } }
+
+/* Visual Pass 2: full-body raster sprites need a readable silhouette on phones. */
+.is-battle .battle-scene { height:288px; }
+.is-battle .enemy-art { width:min(100%,330px); height:234px; object-fit:contain; }
+.weapon-caption { max-width:75%; background:#101827e0; }
+#weapon-art { width:58px; height:46px; }
+@media (max-width:360px) {
+  .is-battle .battle-scene { height:268px; }
+  .is-battle .enemy-art { height:214px; }
+}

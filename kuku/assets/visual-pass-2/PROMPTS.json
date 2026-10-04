@@ -1,0 +1,551 @@
+{
+  "制作モード": "内蔵画像生成",
+  "説明": "共通スタイル指示と個別デザイン指示。しさんゴーレムは初回指示の要点を記録。他の素材は生成時の個別指示を記録。透過修正も併記。",
+  "assets": [
+    {
+      "id": "boss-1",
+      "name": "にしちオーガ",
+      "kind": "boss",
+      "stage": 1,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "NISHICHI OGRE. Stocky round green small ogre with two unequal ivory horns, a very broad pig-like nose, one protruding blunt tooth, squinting delighted eyes and shaggy orange eyebrows. Wide squat hips and short heavy feet, one foot stepping forward while brandishing a lumpy wood club overhead with both hands. Grass tufts and worn belt pouches, earthy green and tan. Mischievous brawler, funny but strong, muscular forearms, no rock body, no visor, no identical round mascot face."
+    },
+    {
+      "id": "boss-2",
+      "name": "さざんキング",
+      "kind": "boss",
+      "stage": 2,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "SAZAN KING. LARGE FOUR-LEGGED FOREST BEAST, broad leonine chest, flowing fern-leaf mane, three branching leaf-covered horns like a living crown. One heavy forepaw raised forward, back twisting in a proud springing pose, long mossy tail curving up. Sleepy regal almond eyes, long feline muzzle, expressive whisker pads, a tiny wry fang. Emerald, moss and warm ivory, acorn ornaments. NOT humanoid, NOT upright, NOT a recoloured ogre or dragon. Friendly forest monarch with splendid organic silhouette."
+    },
+    {
+      "id": "boss-3",
+      "name": "ごいちまじん",
+      "kind": "boss",
+      "stage": 3,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "GOICHI MAJIN, imperious sovereign of a crystal mine. Massive upper body, small rock-plinth lower body, five-point emerald-gold mineral crystals erupting from shoulders and back; enormous rough-hewn mining hammer resting across one shoulder, the other hand gesturing arrogantly 'come challenge me'. Craggy uneven boulder face, heavy angular brow, small amber eyes deep in cavities, a broad crooked grin with one visible blunt tusk. No round button eyeballs. Warm ochre slate, teal pentagonal crystals, worn brass bracers. Asymmetric leaning regal stance, floating dust and a few pebble shards as part of the sprite, no full background. Hand-drawn believable mineral facets, substantial physical weight."
+    },
+    {
+      "id": "boss-4",
+      "name": "しさんゴーレム",
+      "kind": "boss",
+      "stage": 4,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "SHISAN GOLEM. Huge forward-leaning angular mechanical stone statue, oversized fist thrust toward the player and the other fist cocked back. Twelve armour blocks suggest a four-by-three torso construction, geared shoulders, very short powerful legs, dark glowing eye slit instead of a shared mascot face. Navy iron, ivory stone, worn brass gears and warm amber lights. Original bold hand-painted classic JRPG boss, humorous but unmistakably a heavy punching opponent. Dynamic three-quarter full-body pose, no straight standing icon."
+    },
+    {
+      "id": "boss-5",
+      "name": "ろくろくドラゴン",
+      "kind": "boss",
+      "stage": 5,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "ROKUROKU DRAGON, volcanic heavyweight dragon lord. Low, broad, heavily muscled six-sided-scaled chest, hunched forward with one claw braced and the other lifted ready to strike, large angular bat wings spread in an uneven powerful arc, long hooked horns and a huge curling tail ending in obsidian spikes. Warm rust-red skin with amber hexagonal chest scales, charcoal armour plates, golden fire highlights. Dragon snout with one raised thick eyebrow, confident mischievous toothy grin and narrow reptile eyes, no humanoid mascot face. Strong diagonal silhouette and believable claws, thick neck, compact haunches; adorable enough for children but unmistakably a boss. No flames hiding the body."
+    },
+    {
+      "id": "boss-6",
+      "name": "しちはゴースト",
+      "kind": "boss",
+      "stage": 6,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "SHICHIHA GHOST. An extremely long narrow wavy floating ghost body like a curling ribbon, with tiny tapered hands held in sly theatrical gestures. Seven individual warm violet fireballs orbit at different heights, face set in an elongated porcelain-mask-like head, sleepy mismatched drooping eyelids, a crooked playful smirk, no scary teeth. Silvery lilac and deep navy, a few old desert talisman ribbons, spiral taper instead of legs. Body bends into a sweeping S-curve. Dreamy mischievous enchanter, not a round blob."
+    },
+    {
+      "id": "boss-7",
+      "name": "はっぱビースト",
+      "kind": "boss",
+      "stage": 7,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "HAPPA BEAST. Low FOUR-LEGGED powerful snow predator with thick ivory fur and broad padded paws, eight long crystalline ice feathers spreading from the shoulders and back like an angular fan. Crouched sideways preparing to pounce, long sweeping fluffy tail, short rounded mammal ears, chunky snout, determined blue almond eyes and bushy eyebrows, warm humorous personality without a smiling emoji face. Cool pale blue, ivory and navy, frost on feather edges. Great difference from a dragon: no reptile scales, no bat wings, no horns."
+    },
+    {
+      "id": "boss-8",
+      "name": "くくナイト",
+      "kind": "boss",
+      "stage": 8,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "KUKU KNIGHT. Tall armoured sky-castle knight leaning forward in a dynamic sweeping-lance pose, long spear diagonally across the silhouette, open oval shield hanging from far arm, flowing pale cloud-blue cape, nine distinctive feather-like gold decorations forming a crest around helmet and upper shoulders. Helmet visor hides the face except a confident asymmetrical glowing eye slit; no flesh mascot head. Long legs, waist armour distinct from bulky golem. Ivory steel, muted gold, midnight navy. Full spear and boots visible."
+    },
+    {
+      "id": "boss-9",
+      "name": "わすれまおう ムゲン",
+      "kind": "boss",
+      "stage": 9,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "MUGEN, the forgetful demon sovereign of knowledge. Tall slender HUMANOID wizard-king with cold intelligent asymmetrical eyes and a composed angular face, small severe mouth, no cute round mascot eyes. Long dark navy and deep plum cloak whipping around a leaning commanding pose, raised elegant gloved hand manipulating a ring of glowing calculation signs behind his upper body: + − × =. Ivory collar, understated old brass arcane armour, stylized horn-like crown entirely original, long boots planted apart. His other hand holds a closed rune tablet. Thin elongated vertical silhouette, refined sinister intellect rather than beast, still friendly enough for an elementary adventure with no horror. No skulls, no gore, no resemblance to known fantasy villains. Entire cloak and ring visible."
+    },
+    {
+      "id": "boss-mid",
+      "name": "こんらんまじん",
+      "kind": "boss",
+      "stage": 4,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "KONRAN MAJIN. Asymmetrical machine-magic jester guardian, one squat side is riveted steel with a giant coil-spring arm, the other side is airy violet magic with a curling cloth sleeve and glowing hovering calculation symbols. Unequal legs, body tilts and gestures in two directions like a comic conductor, one eye is a round brass lens, the other a narrow violet slit, crooked theatrical brow and tiny surprised mouth. A mismatched mechanic-magician hat and playful determined expression. Full body, whimsical, NOT a recoloured stone boss."
+    },
+    {
+      "id": "boss-zero",
+      "name": "九九喰らい ゼロ",
+      "kind": "boss",
+      "stage": 10,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "ZERO, the alien final presence of a mathematical abyss. An ABSTRACT NONHUMANOID entity: massive floating near-black faceted spherical core split by a curved thin luminous ivory fissure; uncertain face suggested only by asymmetrical small eye-like slits, NOT a smiling face or round eyes. Broken stone numeral fragments 2, 3, 4, 5, 6, 7, 8, 9 clearly floating around it in an irregular spiral, each number once, interspersed with jagged purple crystal splinters, delicate dark energy ribbons. Strong circular core silhouette with uneven orbit extensions, shadow-plum body and eerie turquoise rim illumination. Mysterious endgame presence that feels utterly different from all creature bosses, wonder outweighs fear. Thick hand-inked contours and richly painted facets, child-safe magic, no horror eyes or teeth. Transparent between ALL fragments and around core."
+    },
+    {
+      "id": "guardian-1",
+      "name": "ふたごの盾アナグマ",
+      "kind": "guardian",
+      "stage": 1,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "Route guardian of twin grassland. A very WIDE low woodland TWIN-SHIELDED BADGER, furry brown and ivory, two wooden round shield plates carried in heavy forepaws, beetle-like plated leaf pauldrons, two unequal stubby horns on a helmet. Facing player while lunging laterally, squat mammal body on four feet, alert small brown eyes and broad black muzzle, determined puffed cheeks. Double gate motif. Child-safe mighty gatekeeper, no mascot smile template."
+    },
+    {
+      "id": "guardian-2",
+      "name": "みつばの古樹",
+      "kind": "guardian",
+      "stage": 2,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "Route guardian of clover forest. Living ANCIENT TREE with a twisting root lower body and three large broad leaf lobes forming a canopy like a clover crown. Long branch arms curl around a small acorn shield; one branch sweeps forward in a protective gesture. Gnarled expressive woody face set low in the trunk, deep narrow eyes, gentle stern brows and a crooked mouth made from bark cracks. Broad top, skinny winding roots. Moss green, warm bark, amber sap lights, not humanoid body."
+    },
+    {
+      "id": "guardian-3",
+      "name": "ごしょうの鉱獣",
+      "kind": "guardian",
+      "stage": 3,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "Route guardian of five-crystal mine. HEAVY LOW CRYSTAL BOAR, muscular four-legged body, five faceted teal pentagonal crystal blades on the back, a huge plated digging snout, two blunt shovel-shaped tusks and small fierce humorous eyes. Stamping one forefoot and lowering its head toward the player, brass miner harness with a small lantern swinging sideways. Ochre, teal and dark slate, no upright rock golem. Broad rectangular animal silhouette."
+    },
+    {
+      "id": "guardian-4",
+      "name": "しかくの時計タコ",
+      "kind": "guardian",
+      "stage": 4,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "Route guardian of machine city. An asymmetric FLOATING CLOCKWORK OCTOPUS, compact square clock housing for torso, four robust articulated cable-tentacles reaching forward and four lighter curled stabilizers behind, single tilted amber camera lens instead of a face. Brass gears, navy-blue steel, one gripping clamp and one little crank handle. Hovering dynamic spiral pose, playfully official gate inspector. Strong radial silhouette, no legs or humanoid arms, no shared smiling face."
+    },
+    {
+      "id": "guardian-5",
+      "name": "ろっかく岩ガメ",
+      "kind": "guardian",
+      "stage": 5,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "Route guardian of hexagonal volcano. Massive ROCK-SHELLED SIX-LEGGED TORTOISE, very broad low basalt shell formed from hexagonal blocks with warm magma glowing along seams, a narrow long neck tilted up, small orange reptile eyes under a stony brow and a humorous grumpy beak. One heavy front foot raised, lava-red ornaments and steaming pebbles attached to sprite only. Weighty, defensive, adorable enough, no dragon wings."
+    },
+    {
+      "id": "guardian-6",
+      "name": "ななつぼしの砂王",
+      "kind": "guardian",
+      "stage": 6,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "Route guardian of seven-star desert. Towering NARROW WHIRLING SAND DJINN, upper torso like an elegant ribbon-clothed desert guardian above a twisting sand-vortex lower half. Seven small star-shaped brass charms trail around its sash; long thin fingers held in a challenging pose. Face is a single carved golden mask with angular tilted eye-holes and no mouth, tall bent hat. Sand gold, indigo, purple. Very different body from stone bosses, no humanoid feet."
+    },
+    {
+      "id": "guardian-7",
+      "name": "やつがねの白ヤク",
+      "kind": "guardian",
+      "stage": 7,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "Route guardian of icy snowfield. HUGE FLUFFY SNOW YAK with two enormous curled icy horns, shaggy ivory round body held LOW over four stout legs, eight crystal pendants swinging from neck armour. Stepping forward and tossing its head, small watchful black eyes largely hidden by bangs, one flared warm nose, magnificent oversized brows, icy slate hooves. Protective humorous animal, not a bipedal mascot, no shared face arrangement."
+    },
+    {
+      "id": "guardian-8",
+      "name": "ここのつの翼獣",
+      "kind": "guardian",
+      "stage": 8,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "Route guardian of sky castle. A soaring MECHANICAL GRIFFIN with avian hooked beak, narrow expressive navy eyes, long spread brass-and-ivory articulated wings and feather plates, feline haunches tucked under as it dives toward player. Nine gold hanging feather charms along neck harness, long streaming cloud-blue tail ribbons. Airborne curled dynamic diagonal pose, proud small head and massive wings. No humanoid helmet or standing feet, no bat dragon design."
+    },
+    {
+      "id": "enemy-1-0",
+      "name": "まるくさコロ",
+      "kind": "enemy",
+      "stage": 1,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "A round rolling GRASSLAND MOSS CREATURE, no human torso: barrel-shaped shaggy turf body with little root feet tucked beneath, tiny low-set beady eyes far apart, protruding knobbly seed nose and a wide offset grin. Two unequal fern tufts and a woven acorn satchel. It bounces diagonally on one tiny foot with bits of grass trailing. Warm moss-green, ivory belly, humorous wild creature, not a slime or known blob character."
+    },
+    {
+      "id": "enemy-1-1",
+      "name": "くさかりコブリン",
+      "kind": "enemy",
+      "stage": 1,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "A squat little GRASSLAND GOBLIN, wide pear-shaped belly, very thin crooked calves, huge pointed ears, messy grassy hair, broad flat nose and one raised thick eyebrow, one small blunt tooth. It leans sideways lifting a wooden rake like a playful spear, one hand making a cocky gesture. Patched tan vest and leaf slippers, ochre skin, expressive narrowed uneven eyes, no generic circular smiley face."
+    },
+    {
+      "id": "enemy-1-2",
+      "name": "つのうさぎ",
+      "kind": "enemy",
+      "stage": 1,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "An agile HORNED RABBIT BEAST springing in mid-leap, exceptionally long upright ears, compact furry chest, powerful extended hind legs, small curved single ivory horn between ears. Three-quarter body stretched along a diagonal, long-toed paws visible. Brown-and-ivory fur, black expressive mammalian eyes, puffed focused cheeks and whisker marks, NOT upright humanoid. Playfully determined adventure animal."
+    },
+    {
+      "id": "enemy-2-0",
+      "name": "きのこドラム",
+      "kind": "enemy",
+      "stage": 2,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "A broad-capped MUSHROOM MONSTER bouncing on two stubby unequal stalk feet, enormous russet and ivory cap with hand-painted speckles, short stout cream stem body, tiny eyes peeking from under cap rim with worried comical brows. Two flexible mushroom arms clutch a little bark drum and drumstick in an energetic drumming pose. Strong top-heavy silhouette, forest green sash, not a human body with a mushroom hat."
+    },
+    {
+      "id": "enemy-2-1",
+      "name": "つたからまり",
+      "kind": "enemy",
+      "stage": 2,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "A twisting VINE PLANT SERPENT MONSTER with no human limbs, three curling leafy stems knotted into an S-shaped body, pointed leaves opening like hands, a little flower-bud head with sharp playful petal eyebrows, slim leaf-shaped eyes and a puckered seed mouth. It coils and reaches a long tendril at the player, green roots, warm yellow flower accents. Highly organic asymmetrical branching silhouette."
+    },
+    {
+      "id": "enemy-2-2",
+      "name": "こえだリス",
+      "kind": "enemy",
+      "stage": 2,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "A tiny mischievous FOREST SQUIRREL clinging diagonally to its own oversized crooked twig staff, enormous curving fluffy tail making a tall comma silhouette, tiny round ears, long pointed muzzle, lively side-looking dark eyes, an acorn in one cheek. Mossy leaf scarf and little nut pouch, warm cinnamon and ivory fur. One paw reaches forward while rear paws grip twig, dynamic nonhumanoid animal."
+    },
+    {
+      "id": "enemy-3-0",
+      "name": "こうせきモグラ",
+      "kind": "enemy",
+      "stage": 3,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "A stout MINERAL MOLE bursting upward into a digging lunge, small deep-set squinting eyes behind brass miner goggles, long rubbery round nose, huge flared shovel claws on very short forearms, squat furry torso. Dark brown fur with brass helmet and a teal crystal lamp, two little pebbles under feet as sprite accents. One claw extended close to player, head ducked behind it. Not humanoid goblin or rock golem."
+    },
+    {
+      "id": "enemy-3-1",
+      "name": "ツルハシコブリン",
+      "kind": "enemy",
+      "stage": 3,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "A lanky MINER GOBLIN with very long bony arms, short bent knees, pointy ears, long hooked nose, one large amber eye visible behind a crooked single-lens miner goggle and a crooked cheeky toothy grin. It swings an oversized iron pickaxe diagonally with both hands, front foot stamped forward. Ochre skin, patched indigo work overalls and worn leather belt. Uneven shoulders and lively gangly silhouette, not grassland goblin's round body."
+    },
+    {
+      "id": "enemy-3-2",
+      "name": "けっしょうイノシシ",
+      "kind": "enemy",
+      "stage": 3,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "A low four-legged CRYSTAL WILD BOAR charging at a three-quarter angle, massive wedge snout, little black eyes under a heavy rock brow, two small blunt mineral tusks. Shaggy grey fur and pentagonal turquoise crystals clustered on its back, thick short legs and little curly tail. One hoof kicked out sideways, rock chips trailing. Compact horizontal beast silhouette, NOT an upright crystal man."
+    },
+    {
+      "id": "enemy-4-0",
+      "name": "ぜんまい兵",
+      "kind": "enemy",
+      "stage": 4,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "A lanky CLOCKWORK TIN SOLDIER in a winding-up marching attack, long narrow rectangular torso, absurdly long hinged shin plates, one knee raised, a huge brass wind-up key protruding behind the back. Helmet is a hinged kettle-like head with a single thin horizontal eye slit and triangular vent mouth, no round mascot eyes. Navy steel, ivory enamel, brass rivets; a short square hammer gripped in one mechanical hand."
+    },
+    {
+      "id": "enemy-4-1",
+      "name": "はぐるまねずみ",
+      "kind": "enemy",
+      "stage": 4,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "A small low RUNNING GEAR MOUSE, long pointed snout, one enormous exposed brass gear forming a hind wheel, furry-looking segmented steel spine, wire whiskers and a cable tail curling behind. One lens eye is large, the other is hidden by tilted metal ear, small mischievous mouth beneath muzzle. Navy and bronze, a tiny screw carried in front paws, dynamic skittering diagonal quadruped pose, no humanoid torso."
+    },
+    {
+      "id": "enemy-4-2",
+      "name": "でんきゅうドローン",
+      "kind": "enemy",
+      "stage": 4,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "A floating LIGHTBULB-HEADED DRONE, translucent warm ivory bulb atop a squat navy metal socket, brass cage arms spread asymmetrically, three dangling cable feelers and tiny stabilizer propellers. The filament forms a bent thoughtful eyebrow over a single amber instrument lens; no human face, no smiling mouth. It tips forward ready to flash a beam, small comic inventor-machine personality. Round top tapering mechanical bottom silhouette."
+    },
+    {
+      "id": "enemy-5-0",
+      "name": "ひのこコウモリ",
+      "kind": "enemy",
+      "stage": 5,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "A VOLCANIC BAT in a diving swoop, huge angular charcoal wings stretched in an uneven V, very small rusty-orange furry torso, oversized pointed ears, short upturned snout, narrow amused fiery eyes, one tiny blunt fang. Wing membranes lit by warm ember-orange accents, little ash scarf fluttering behind. Strong wing silhouette rather than a humanoid body, playful aerial predator, no raging fire obscuring it."
+    },
+    {
+      "id": "enemy-5-1",
+      "name": "ようがんトカゲ",
+      "kind": "enemy",
+      "stage": 5,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "A quick LAVA LIZARD on four splayed little clawed legs, long low sinuous body and very long whipping tail, obsidian hexagonal back plates with small amber glow seams, rust-red belly. Head is a broad gecko snout with bulging slanted side eyes and a crooked inquisitive mouth. Front foot lunges forward while back twists, mischievous child-safe reptile. No wings, no standing biped dragon."
+    },
+    {
+      "id": "enemy-5-2",
+      "name": "ろっかくカブト",
+      "kind": "enemy",
+      "stage": 5,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "A heavy ROCK STAG BEETLE lifting broad stone mandibles, huge hexagonal basalt shell over six spiny splayed legs, tiny curved antennae and jewel-like compound eyes tucked under shell rim. One shell panel slightly lifted, warm magma-red edges, little brass bell charm. It braces low and advances sideways, chunky horizontal insect body, completely nonhuman face and limbs."
+    },
+    {
+      "id": "enemy-6-0",
+      "name": "すなの亡霊",
+      "kind": "enemy",
+      "stage": 6,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "A SAND WRAITH with an enormous elongated hood-like floating sandstone head above a thin twisting sand ribbon body, a long wavy scarf streaming sideways and two wispy mitten-like hands. Face is two drooping irregular hollow amber eyes and a tiny lopsided surprised O mouth, humorous and child-safe rather than horror. Warm sand, dusk violet and navy. It swoops sideways, no legs and no round ghost-blob body."
+    },
+    {
+      "id": "enemy-6-1",
+      "name": "すなサソリ",
+      "kind": "enemy",
+      "stage": 6,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "A desert SCORPION with low broad segmented sandy stone body, two oversize rounded brass claws held at unequal heights, eight short bent legs and a curled indigo segmented tail poised overhead. Small keen gem-like side eyes embedded in an angular shell, no human smile or nose. Worn ancient mosaic bands on shell, comic determined predator, blunt safe-looking tail tip, no horror realism."
+    },
+    {
+      "id": "enemy-6-2",
+      "name": "いせきの精霊",
+      "kind": "enemy",
+      "stage": 6,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "An ANCIENT RUIN SPIRIT made of three unequal floating carved sandstone fragments and a cracked clay lantern core, no flesh body, no feet. Two tilted luminous rune slits suggest a thoughtful face, a single thin carved mouth notch, patterned cloth streamers wrapping the drifting pieces. One huge fragment-arm points forward while smaller stones orbit like fingers. Sand-gold, muted turquoise and deep purple; diagonal magical pose, not stone humanoid template."
+    },
+    {
+      "id": "enemy-7-0",
+      "name": "こおりうさぎ",
+      "kind": "enemy",
+      "stage": 7,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "A fluffy SNOW RABBIT BEAST with very large long floppy ears streaming behind, an angular white furry chest and thin long hind legs tucked into a sideways leap. Icy blue ear tips and tiny ice crystals on paws, inquisitive narrow black rabbit eyes, petite pink muzzle, puffed asymmetrical cheeks and expressive whiskers. A tiny navy neck-wrap; exaggerated leaping animal silhouette, no horns and no humanoid stance."
+    },
+    {
+      "id": "enemy-7-1",
+      "name": "つららバード",
+      "kind": "enemy",
+      "stage": 7,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "An ICE BIRD sweeping one immense crystalline wing toward the player while the other folds back, long sharp cobalt beak, angular tufted brow with alert slanted avian eyes, stout feathered chest and tiny tucked talons. Eight-sided crystal accents on navy-and-ivory wing feathers, pale blue translucent tail plume. Diagonal aerial pose, face entirely birdlike, no dragon head or mascot smile."
+    },
+    {
+      "id": "enemy-7-2",
+      "name": "ゆきだるま兵",
+      "kind": "enemy",
+      "stage": 7,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "A funny SNOWMAN SOLDIER made of three unequal snow lumps stacked off balance, stout bottom ball and narrow tilted middle, oversized wooden mitten fists, one bent twig arm carrying a small wooden practice shield. Head is very small under a drooping navy winter helmet, tiny uneven charcoal eyes, bent carrot nose and a puckered determined mouth. It waddles into a punch with one snow foot lifted, blue scarf fluttering, distinct top-heavy brawler silhouette."
+    },
+    {
+      "id": "enemy-8-0",
+      "name": "こぐもワイバーン",
+      "kind": "enemy",
+      "stage": 8,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "A SMALL AIRBORNE WYVERN, narrow turquoise reptile body suspended between oversized cloud-white wings, long hook-shaped tail curling below, little crest horns, tiny tucked hind claws. Long beaked dragon snout with one large curious side eye and a playful cheeky fang grin. It banks sharply toward the player, three-quarter profile, pale gold armour straps. A nimble wing-first silhouette, NOT a mini recolour of the heavy volcanic dragon."
+    },
+    {
+      "id": "enemy-8-1",
+      "name": "そらの騎兵",
+      "kind": "enemy",
+      "stage": 8,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "A SKY CAVALRY UNIT: a tiny masked ivory-armoured rider leaning forward on a slender long-necked mechanical cloud bird, brass bird beak thrust ahead, articulated wings banking hard, spear tucked diagonally against rider's shoulder and navy pennant streaming far behind. Rider face mostly hidden in a narrow oval visor, bird has one small alert lens eye. Whole mounted unit visible, elongated horizontal airborne silhouette, not standing humanoid knight.",
+      "edits": [
+        "Edit the supplied original sky cavalry sprite only. Preserve the original bird-mounted knight, navy/ivory/brass colours, wings, spear, flags, equipment, pose, ink outlines, painterly cel shading and child-friendly appearance. Remove ALL of the brown/blue/black gradient backdrop and any smoke or atmospheric haze. Everything outside the actual bird, rider, spear, flags and reins must be genuinely transparent alpha, including all gaps between feathers, above the spear, below the wings and between bird and flag. No opaque or semi-opaque coloured rectangle, no shadow backdrop, no checkerboard drawn into image. Refine as one single complete isolated sprite on a SQUARE transparent canvas with all wing tips, spear tip and flags visible and 5 percent safe margin. Keep the wide airborne silhouette readable. No new scenery or ground. Transparent background is essential."
+      ]
+    },
+    {
+      "id": "enemy-8-2",
+      "name": "くも精霊",
+      "kind": "enemy",
+      "stage": 8,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "A whimsical CLOUD SPIRIT with no legs: uneven swirling ivory cloud ribbons wind around a small luminous gold central knot, two extremely long curling wispy arms reach out at different heights. Face sits off-center in one cloud puff, thin wave-like squinting eyes, one comically raised cloud eyebrow and a small sideways mouth. Navy shadow accents and tiny floating compass-like ring, airy diagonal spiral silhouette, not a known smiling cloud icon."
+    },
+    {
+      "id": "enemy-abyss-0",
+      "name": "しるしの番人",
+      "kind": "enemy",
+      "stage": 10,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "A low creeping ABYSS STONE COMPASS CRAB, broad cracked midnight-purple disk carapace with ivory rune fragments, four heavy jointed claw legs and two delicate curled feelers. A single narrow cyan instrument slit in the disk is its uncertain face, no smiling mouth. It crawls sideways with one massive claw raised, angular broken-stone and brass textures, child-safe mysterious mechanical creature."
+    },
+    {
+      "id": "enemy-abyss-1",
+      "name": "しんえんブックモス",
+      "kind": "enemy",
+      "stage": 10,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "An ABYSS BOOK MOTH fluttering in a spiral: huge asymmetrical parchment wings resembling open book pages with scattered abstract calculation marks, small indigo furry abdomen and curled antennae. Tiny thoughtful violet side eyes and a nib-like snout, no human face. One wing tilted forward, long navy bookmark ribbons trailing. Pale ivory, purple ink, worn old gold, graceful airborne elongated insect silhouette."
+    },
+    {
+      "id": "enemy-abyss-2",
+      "name": "しんえんの燈火",
+      "kind": "enemy",
+      "stage": 10,
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. One single full-body enemy sprite for an original first-person Japanese classic JRPG for 7–8 year-olds. Polished hand-painted 2D cel illustration, thick confident dark ink outlines, lively organic linework, clean light/shadow planes, rich material accents, charming and humorous adventure-monster energy, cute 60% formidable 40%. Entirely ORIGINAL: no imitation of a specific artist, game, character, or famous monster. NOT clipart, NOT diagram, NOT flat geometric SVG, NOT 3D, NOT an icon. Isolated on genuinely transparent alpha, no backdrop, no ground plane, no text labels, no logos, no frame. Full silhouette and equipment visible, tight square framing with 6% safe margin, readable at 220px tall. Dynamic three-quarter pose towards the player. Faces, body proportions, eyes, mouth and pose must be individual rather than a shared mascot template. ",
+      "designBrief": "An ABSTRACT FLOATING ABYSS LANTERN SPIRIT, cracked ivory ceramic lantern body suspended inside a tall crooked brass cage, one cyan flame curling out through a jagged opening, tiny uneven rune-like eyes on the ceramic and no mouth. Three flowing indigo cloth tails curl below, fragment rings rotate at different angles. Wobbling inquisitive diagonal pose, mysterious and endearing, no human anatomy or mascot body."
+    },
+    {
+      "id": "weapon-0",
+      "name": "ひのきのそろばん",
+      "kind": "weapon",
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. Asset type: one original equipment illustration for a child-friendly classic Japanese first-person JRPG. Polished hand-painted 2D cel-style game prop, thick confident dark ink contours, warm tactile materials, clear light/shadow planes, playful adventure toy and slightly mechanical tool design. Not a geometric SVG icon, not flat clipart, not a photoreal photograph, not a 3D render, not a phone. One equipment item only, full silhouette visible in a tight square composition with safe margin, gently angled three-quarter view, genuinely transparent alpha with no floor, no backdrop, no hands or characters. No labels, logos, borders or captions, no existing franchise or artist imitation. Strong readable silhouette at 60px and enough craftsmanship for a larger equipment gallery. ",
+      "designBrief": "HINOKI WOOD ABACUS, humble starter equipment. A thick rounded rectangular honey-coloured hand-carved wooden frame with warm visible grain, five stout vertical rods, a dividing horizontal wooden rail, each rod carrying one chunky polished bead above the rail and four below. Exaggerated large glossy reddish-brown beads, small brass corner braces, a simple braided carry loop. Friendly sturdy handmade toy-tool, comforting wooden warmth, no ornate magic, no numeric text."
+    },
+    {
+      "id": "weapon-1",
+      "name": "たびびとの電卓",
+      "kind": "weapon",
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. Asset type: one original equipment illustration for a child-friendly classic Japanese first-person JRPG. Polished hand-painted 2D cel-style game prop, thick confident dark ink contours, warm tactile materials, clear light/shadow planes, playful adventure toy and slightly mechanical tool design. Not a geometric SVG icon, not flat clipart, not a photoreal photograph, not a 3D render, not a phone. One equipment item only, full silhouette visible in a tight square composition with safe margin, gently angled three-quarter view, genuinely transparent alpha with no floor, no backdrop, no hands or characters. No labels, logos, borders or captions, no existing franchise or artist imitation. Strong readable silhouette at 60px and enough craftsmanship for a larger equipment gallery. ",
+      "designBrief": "TRAVELLER CALCULATOR. Lightweight compact rounded rectangular ivory and muted teal calculator in a worn brown leather half-holster, big clear raised cream buttons in a 3-column grid and one larger equal-sign attack key at the bottom, navy display window softly reflecting the sky, practical little brass corner screws, slim braided wrist strap and a tiny clipped compass. Off-center jaunty three-quarter angle, simple portable adventure equipment, no wings, no large magic ring, no face. Only key text is a small clear =."
+    },
+    {
+      "id": "weapon-2",
+      "name": "ゆうしゃの電卓",
+      "kind": "weapon",
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. Asset type: one original equipment illustration for a child-friendly classic Japanese first-person JRPG. Polished hand-painted 2D cel-style game prop, thick confident dark ink contours, warm tactile materials, clear light/shadow planes, playful adventure toy and slightly mechanical tool design. Not a geometric SVG icon, not flat clipart, not a photoreal photograph, not a 3D render, not a phone. One equipment item only, full silhouette visible in a tight square composition with safe margin, gently angled three-quarter view, genuinely transparent alpha with no floor, no backdrop, no hands or characters. No labels, logos, borders or captions, no existing franchise or artist imitation. Strong readable silhouette at 60px and enough craftsmanship for a larger equipment gallery. ",
+      "designBrief": "HERO CALCULATOR. Upgraded toy-like calculator with a stout ivory body, navy display, nine reinforced raised cream button pads in a three-column grid, large gold = attack key, strong old-brass protective side guards shaped like a shield, amber central gem on a little crown crest, leather carrying grip. Two small engraved heroic feather flourishes and riveted mechanical reinforcement, a few pale gold sparkles as sprite accents. Dependable sturdy adventurous gear, not a smartphone, not a creature. Only text is =."
+    },
+    {
+      "id": "weapon-3",
+      "name": "伝説の電卓",
+      "kind": "weapon",
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. Asset type: one original equipment illustration for a child-friendly classic Japanese first-person JRPG. Polished hand-painted 2D cel-style game prop, thick confident dark ink contours, warm tactile materials, clear light/shadow planes, playful adventure toy and slightly mechanical tool design. Not a geometric SVG icon, not flat clipart, not a photoreal photograph, not a 3D render, not a phone. One equipment item only, full silhouette visible in a tight square composition with safe margin, gently angled three-quarter view, genuinely transparent alpha with no floor, no backdrop, no hands or characters. No labels, logos, borders or captions, no existing franchise or artist imitation. Strong readable silhouette at 60px and enough craftsmanship for a larger equipment gallery. ",
+      "designBrief": "LEGENDARY CALCULATOR. Special elegant navy-and-ivory calculator with old gold carved trim, an arched crest holding a luminous turquoise jewel, raised ivory button pads in three columns and a wide gold = attack key, two slender curled ornamental gold wings at the sides. A thin incomplete ring of softly glowing calculation signs + − × = floats behind the upper half. Antique magical scientific instrument, mystical pale cyan rim light with generous transparency between ornaments, no violent flare. Special equipment for a final-boss battle. No captions or logos."
+    },
+    {
+      "id": "weapon-4",
+      "name": "伝説の電卓・覚醒",
+      "kind": "weapon",
+      "transparent_background": true,
+      "styleBrief": "Use case: stylized-concept. Asset type: one original equipment illustration for a child-friendly classic Japanese first-person JRPG. Polished hand-painted 2D cel-style game prop, thick confident dark ink contours, warm tactile materials, clear light/shadow planes, playful adventure toy and slightly mechanical tool design. Not a geometric SVG icon, not flat clipart, not a photoreal photograph, not a 3D render, not a phone. One equipment item only, full silhouette visible in a tight square composition with safe margin, gently angled three-quarter view, genuinely transparent alpha with no floor, no backdrop, no hands or characters. No labels, logos, borders or captions, no existing franchise or artist imitation. Strong readable silhouette at 60px and enough craftsmanship for a larger equipment gallery. ",
+      "designBrief": "AWAKENED LEGENDARY CALCULATOR. Same equipment family: tall navy-and-ivory calculator body, ornate old gold frame, arched crest with a large turquoise central jewel, raised ivory button pads in three columns, wide gold = attack key, curled gold side wings. Now the jewel sends strong ivory and cyan light along engraved channels; a double broken orbit of calculation signs + − × = and purple crystal sparks surrounds the device. Powerful abyss-specific awakening, carefully separated glowing rays and darker core keep it readable at small size. The object remains visible, no opaque glow cloud, not a phone, no face or captions."
+    },
+    {
+      "id": "bg-grass",
+      "name": "ふたごのそうげん",
+      "kind": "background",
+      "transparent_background": false,
+      "styleBrief": "Use case: illustration-story. Asset type: one original LANDSCAPE battle stage background, wide approximately 3:2 composition, for a charming classic Japanese first-person JRPG for 7–8 year-old children. Polished 2D hand-painted game scenery, confident ink contours with soft atmospheric distant shapes, clean broad cel shading, painterly texture very restrained. Entirely original with no famous game or artist imitation. NO characters, NO monsters, NO weapons, NO interface, NO title text or logos. A quiet three-layer theatrical set: distant atmosphere/sky, recognisable midground landmarks, and a DARK OPEN foreground floor occupying the lower third. Keep the center and especially center-lower half clear and low detail so a large enemy sprite and maths UI remain readable; put the main identifying props slightly to the sides within the central 70% so they survive mobile center cropping. Low-to-moderate saturation, strong navy shadow family, warm ivory highlights. Inviting adventure with wonder, never horror. Full opaque backdrop, no transparency. ",
+      "designBrief": "Twin grassland, gently rolling green hills beneath a luminous soft blue sky, exactly TWO friendly rounded broad-canopy trees standing apart on the midground left and right, a few paired rocks and tiny grass tufts at the sides. A deep green open dirt-and-grass fighting clearing in the foreground, subtle navy shadows. Welcoming sunny beginning of an adventure, airy depth, no dense foliage or visual noise."
+    },
+    {
+      "id": "bg-forest",
+      "name": "みつばのもり",
+      "kind": "background",
+      "transparent_background": false,
+      "styleBrief": "Use case: illustration-story. Asset type: one original LANDSCAPE battle stage background, wide approximately 3:2 composition, for a charming classic Japanese first-person JRPG for 7–8 year-old children. Polished 2D hand-painted game scenery, confident ink contours with soft atmospheric distant shapes, clean broad cel shading, painterly texture very restrained. Entirely original with no famous game or artist imitation. NO characters, NO monsters, NO weapons, NO interface, NO title text or logos. A quiet three-layer theatrical set: distant atmosphere/sky, recognisable midground landmarks, and a DARK OPEN foreground floor occupying the lower third. Keep the center and especially center-lower half clear and low detail so a large enemy sprite and maths UI remain readable; put the main identifying props slightly to the sides within the central 70% so they survive mobile center cropping. Low-to-moderate saturation, strong navy shadow family, warm ivory highlights. Inviting adventure with wonder, never horror. Full opaque backdrop, no transparency. ",
+      "designBrief": "Clover forest, broad emerald tree trunks and overlapping deep-green canopies forming a gentle woodland arch, a few clear THREE-LOBED CLOVER plants at the sides, soft shafts of ivory light and hazy distant trunks. Empty mossy dark navy-green clearing at the bottom, center open. Slightly magical and curious but safe, rich forest air, no dense tangled underbrush."
+    },
+    {
+      "id": "bg-mine",
+      "name": "ごいちこうざん",
+      "kind": "background",
+      "transparent_background": false,
+      "styleBrief": "Use case: illustration-story. Asset type: one original LANDSCAPE battle stage background, wide approximately 3:2 composition, for a charming classic Japanese first-person JRPG for 7–8 year-old children. Polished 2D hand-painted game scenery, confident ink contours with soft atmospheric distant shapes, clean broad cel shading, painterly texture very restrained. Entirely original with no famous game or artist imitation. NO characters, NO monsters, NO weapons, NO interface, NO title text or logos. A quiet three-layer theatrical set: distant atmosphere/sky, recognisable midground landmarks, and a DARK OPEN foreground floor occupying the lower third. Keep the center and especially center-lower half clear and low detail so a large enemy sprite and maths UI remain readable; put the main identifying props slightly to the sides within the central 70% so they survive mobile center cropping. Low-to-moderate saturation, strong navy shadow family, warm ivory highlights. Inviting adventure with wonder, never horror. Full opaque backdrop, no transparency. ",
+      "designBrief": "Five-crystal mine, a large arched old stone mine tunnel with timber braces, narrow rail tracks disappearing toward the distant tunnel mouth behind the empty middle, a few pentagonal teal-and-gold mineral crystals protruding from rocks to either side, subdued warm miner lanterns. Empty dark slate floor in foreground with very little debris. Treasure discovery and earthy atmospheric depth, not horror."
+    },
+    {
+      "id": "bg-machine",
+      "name": "きかいのまち",
+      "kind": "background",
+      "transparent_background": false,
+      "styleBrief": "Use case: illustration-story. Asset type: one original LANDSCAPE battle stage background, wide approximately 3:2 composition, for a charming classic Japanese first-person JRPG for 7–8 year-old children. Polished 2D hand-painted game scenery, confident ink contours with soft atmospheric distant shapes, clean broad cel shading, painterly texture very restrained. Entirely original with no famous game or artist imitation. NO characters, NO monsters, NO weapons, NO interface, NO title text or logos. A quiet three-layer theatrical set: distant atmosphere/sky, recognisable midground landmarks, and a DARK OPEN foreground floor occupying the lower third. Keep the center and especially center-lower half clear and low detail so a large enemy sprite and maths UI remain readable; put the main identifying props slightly to the sides within the central 70% so they survive mobile center cropping. Low-to-moderate saturation, strong navy shadow family, warm ivory highlights. Inviting adventure with wonder, never horror. Full opaque backdrop, no transparency. ",
+      "designBrief": "Old mechanical town plaza, four chunky rectangular industrial buildings in the middle distance, readable brass gear assemblies, a few broad riveted pipes, small warm amber indicator lamps. Steel grey and muted navy, quiet stone-and-metal open floor foreground. Retro mechanical whimsical craft rather than neon cyberpunk, soft hazy sky above, spacious center."
+    },
+    {
+      "id": "bg-reactor",
+      "name": "きかいのまち地下",
+      "kind": "background",
+      "transparent_background": false,
+      "styleBrief": "Use case: illustration-story. Asset type: one original LANDSCAPE battle stage background, wide approximately 3:2 composition, for a charming classic Japanese first-person JRPG for 7–8 year-old children. Polished 2D hand-painted game scenery, confident ink contours with soft atmospheric distant shapes, clean broad cel shading, painterly texture very restrained. Entirely original with no famous game or artist imitation. NO characters, NO monsters, NO weapons, NO interface, NO title text or logos. A quiet three-layer theatrical set: distant atmosphere/sky, recognisable midground landmarks, and a DARK OPEN foreground floor occupying the lower third. Keep the center and especially center-lower half clear and low detail so a large enemy sprite and maths UI remain readable; put the main identifying props slightly to the sides within the central 70% so they survive mobile center cropping. Low-to-moderate saturation, strong navy shadow family, warm ivory highlights. Inviting adventure with wonder, never horror. Full opaque backdrop, no transparency. ",
+      "designBrief": "Mechanical town underground reactor chamber, old large cylindrical furnace in the distance with a modest warm amber glowing aperture, thick cables and brass valves mainly to the sides, stone-and-steel walls fading into deep navy and muted purple. Empty open dark metal floor lower third. Dramatic halfway-boss chamber, mysterious but child-safe, no alarming red lighting or busy sparks."
+    },
+    {
+      "id": "bg-volcano",
+      "name": "ろっかくかざん",
+      "kind": "background",
+      "transparent_background": false,
+      "styleBrief": "Use case: illustration-story. Asset type: one original LANDSCAPE battle stage background, wide approximately 3:2 composition, for a charming classic Japanese first-person JRPG for 7–8 year-old children. Polished 2D hand-painted game scenery, confident ink contours with soft atmospheric distant shapes, clean broad cel shading, painterly texture very restrained. Entirely original with no famous game or artist imitation. NO characters, NO monsters, NO weapons, NO interface, NO title text or logos. A quiet three-layer theatrical set: distant atmosphere/sky, recognisable midground landmarks, and a DARK OPEN foreground floor occupying the lower third. Keep the center and especially center-lower half clear and low detail so a large enemy sprite and maths UI remain readable; put the main identifying props slightly to the sides within the central 70% so they survive mobile center cropping. Low-to-moderate saturation, strong navy shadow family, warm ivory highlights. Inviting adventure with wonder, never horror. Full opaque backdrop, no transparency. ",
+      "designBrief": "Hexagonal volcanic plateau, chunky six-sided basalt columns along the sides, distant volcanic peak under a soft warm ash-orange sky, narrow amber lava channels at the far edges. Quiet cool charcoal hexagonal ground and a large clear fighting platform in foreground. Weighty adventurous volcanic landscape with warm glow against deep navy shadows, no raging eruption, no lava covering the center."
+    },
+    {
+      "id": "bg-desert",
+      "name": "ななつぼしのさばく",
+      "kind": "background",
+      "transparent_background": false,
+      "styleBrief": "Use case: illustration-story. Asset type: one original LANDSCAPE battle stage background, wide approximately 3:2 composition, for a charming classic Japanese first-person JRPG for 7–8 year-old children. Polished 2D hand-painted game scenery, confident ink contours with soft atmospheric distant shapes, clean broad cel shading, painterly texture very restrained. Entirely original with no famous game or artist imitation. NO characters, NO monsters, NO weapons, NO interface, NO title text or logos. A quiet three-layer theatrical set: distant atmosphere/sky, recognisable midground landmarks, and a DARK OPEN foreground floor occupying the lower third. Keep the center and especially center-lower half clear and low detail so a large enemy sprite and maths UI remain readable; put the main identifying props slightly to the sides within the central 70% so they survive mobile center cropping. Low-to-moderate saturation, strong navy shadow family, warm ivory highlights. Inviting adventure with wonder, never horror. Full opaque backdrop, no transparency. ",
+      "designBrief": "Seven-star desert at gentle dusk, pale gold sand dunes with soft violet navy shadows, exactly SEVEN small bright stars in the upper sky and no other visible star field, a few worn ancient stone pillars and a partial archway off to the sides. Empty shadowed sandy fighting clearing at bottom. Quiet contemplative desert air, soft wind haze, tasteful muted sunset colours."
+    },
+    {
+      "id": "bg-snow",
+      "name": "やつがねのせつげん",
+      "kind": "background",
+      "transparent_background": false,
+      "styleBrief": "Use case: illustration-story. Asset type: one original LANDSCAPE battle stage background, wide approximately 3:2 composition, for a charming classic Japanese first-person JRPG for 7–8 year-old children. Polished 2D hand-painted game scenery, confident ink contours with soft atmospheric distant shapes, clean broad cel shading, painterly texture very restrained. Entirely original with no famous game or artist imitation. NO characters, NO monsters, NO weapons, NO interface, NO title text or logos. A quiet three-layer theatrical set: distant atmosphere/sky, recognisable midground landmarks, and a DARK OPEN foreground floor occupying the lower third. Keep the center and especially center-lower half clear and low detail so a large enemy sprite and maths UI remain readable; put the main identifying props slightly to the sides within the central 70% so they survive mobile center cropping. Low-to-moderate saturation, strong navy shadow family, warm ivory highlights. Inviting adventure with wonder, never horror. Full opaque backdrop, no transparency. ",
+      "designBrief": "Icy snowfield, soft white distant mountains under a pale blue sky, tall translucent ice pillars and a few distinctly eight-sided crystal shapes at the sides, restrained snow flurries only far away. Open deep navy-blue icy floor in foreground with a small amount of white edge snow so white enemy sprites remain clear. Beautiful crisp wintry air, calm rather than stormy."
+    },
+    {
+      "id": "bg-sky",
+      "name": "ここのつのそらじろ",
+      "kind": "background",
+      "transparent_background": false,
+      "styleBrief": "Use case: illustration-story. Asset type: one original LANDSCAPE battle stage background, wide approximately 3:2 composition, for a charming classic Japanese first-person JRPG for 7–8 year-old children. Polished 2D hand-painted game scenery, confident ink contours with soft atmospheric distant shapes, clean broad cel shading, painterly texture very restrained. Entirely original with no famous game or artist imitation. NO characters, NO monsters, NO weapons, NO interface, NO title text or logos. A quiet three-layer theatrical set: distant atmosphere/sky, recognisable midground landmarks, and a DARK OPEN foreground floor occupying the lower third. Keep the center and especially center-lower half clear and low detail so a large enemy sprite and maths UI remain readable; put the main identifying props slightly to the sides within the central 70% so they survive mobile center cropping. Low-to-moderate saturation, strong navy shadow family, warm ivory highlights. Inviting adventure with wonder, never horror. Full opaque backdrop, no transparency. ",
+      "designBrief": "Castle floating above clouds, ivory stone terraces and a distant castle cluster with nine narrow gold-tipped spires arranged in three groups of three, luminous cloud banks on the sides and blue sky behind. Empty muted navy-blue stone courtyard in lower foreground, a few restrained gold inlay lines at edges. Serene high-altitude magical climax, elegant airy depth, no clutter in central fighting area."
+    },
+    {
+      "id": "bg-castle",
+      "name": "ムゲンじょう",
+      "kind": "background",
+      "transparent_background": false,
+      "styleBrief": "Use case: illustration-story. Asset type: one original LANDSCAPE battle stage background, wide approximately 3:2 composition, for a charming classic Japanese first-person JRPG for 7–8 year-old children. Polished 2D hand-painted game scenery, confident ink contours with soft atmospheric distant shapes, clean broad cel shading, painterly texture very restrained. Entirely original with no famous game or artist imitation. NO characters, NO monsters, NO weapons, NO interface, NO title text or logos. A quiet three-layer theatrical set: distant atmosphere/sky, recognisable midground landmarks, and a DARK OPEN foreground floor occupying the lower third. Keep the center and especially center-lower half clear and low detail so a large enemy sprite and maths UI remain readable; put the main identifying props slightly to the sides within the central 70% so they survive mobile center cropping. Low-to-moderate saturation, strong navy shadow family, warm ivory highlights. Inviting adventure with wonder, never horror. Full opaque backdrop, no transparency. ",
+      "designBrief": "Mugen castle throne chamber, tall dark navy and muted-purple gothic-like columns, an imposing ORIGINAL ivory-and-brass throne in the far distance, thin floating calculation symbols + − × = in the upper side air. Broad empty dark polished stone floor lower third with just a few subtle lines, calm dim ambient ivory light. Cold intellectual majesty and mystery, child-safe magical final-boss space, no skulls or horror décor."
+    },
+    {
+      "id": "bg-abyss",
+      "name": "九九の深淵",
+      "kind": "background",
+      "transparent_background": false,
+      "styleBrief": "Use case: illustration-story. Asset type: one original LANDSCAPE battle stage background, wide approximately 3:2 composition, for a charming classic Japanese first-person JRPG for 7–8 year-old children. Polished 2D hand-painted game scenery, confident ink contours with soft atmospheric distant shapes, clean broad cel shading, painterly texture very restrained. Entirely original with no famous game or artist imitation. NO characters, NO monsters, NO weapons, NO interface, NO title text or logos. A quiet three-layer theatrical set: distant atmosphere/sky, recognisable midground landmarks, and a DARK OPEN foreground floor occupying the lower third. Keep the center and especially center-lower half clear and low detail so a large enemy sprite and maths UI remain readable; put the main identifying props slightly to the sides within the central 70% so they survive mobile center cropping. Low-to-moderate saturation, strong navy shadow family, warm ivory highlights. Inviting adventure with wonder, never horror. Full opaque backdrop, no transparency. ",
+      "designBrief": "Abstract mathematical abyss, deep black/navy/deep-purple space with a small number of broken stone monoliths in the far sides, luminous ivory and cyan numeral fragments drifting high in the distance, broad simple abstract stone fighting platform foreground edged with subtle violet light. Empty central lower area, layered atmospheric mist, mysterious boundless depth, restrained sparse design, no characters or overwhelming cosmic effects."
+    }
+  ]
+}

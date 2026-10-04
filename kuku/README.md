@@ -7,7 +7,7 @@
 リポジトリ直下で `python -m http.server 8000` を実行し、`http://localhost:8000/kuku/` を開きます。ES Modulesのため `file://` での起動は対象外です。GitHub Pagesのサブパスにも対応しています。
 
 ```sh
-node --test kuku/tests/core.test.js
+node --test kuku/tests/*.test.js
 ```
 
 ブラウザ検証にはテスト用のPlaywrightとaxeを、リポジトリ外の一時ディレクトリへインストールします。アプリ本体に実行時依存は追加していません。
@@ -16,6 +16,7 @@ node --test kuku/tests/core.test.js
 npm install --prefix /tmp/kuku-tests --no-audit --no-fund playwright@1.62.1 @axe-core/playwright@4.11.1
 node /tmp/kuku-tests/node_modules/playwright/cli.js install --with-deps chromium webkit
 PLAYWRIGHT_MODULE=/tmp/kuku-tests/node_modules/playwright/index.mjs AXE_MODULE=/tmp/kuku-tests/node_modules/@axe-core/playwright/dist/index.mjs node kuku/tests/browser.mjs
+PLAYWRIGHT_MODULE=/tmp/kuku-tests/node_modules/playwright/index.mjs AXE_MODULE=/tmp/kuku-tests/node_modules/@axe-core/playwright/dist/index.mjs node kuku/tests/visual-browser.mjs
 ```
 
 スクリーンショットは `KUKU_EVIDENCE` で指定したディレクトリ（既定はリポジトリ外の `../kuku-evidence`）へ出力します。
@@ -37,7 +38,16 @@ PLAYWRIGHT_MODULE=/tmp/kuku-tests/node_modules/playwright/index.mjs AXE_MODULE=/
 | `js/audio.js` | 既存の独自合成音。音OFF時はAudioContextを生成しない |
 | `js/story.ja.js` / `messages.ja.js` | ストーリーと戦闘文言 |
 | `style.css` / `rpg.css` | 既存のレイアウトと称号描画 / v2の拡張 |
-| `assets/` | 独自SVGの敵・背景・武器65点 |
+| `js/assets.js` | 表示専用の素材URL・名前。ゲームIDを維持 |
+| `assets/` | 従来SVG65点とVisual Pass 2の独自WebP62点 |
+
+## Visual Pass 2
+
+敵・ボス・武器を透過WebP、背景を不透明WebPへ変更しました。重点ボス5体から始め、全ボス11体、守護者8体、Stage1〜8の通常敵24体と深淵3体、武器5種、背景11枚へ展開しています。体型・顔・装備・構えを個別に設計し、既存作品や作家の直接模倣はしていません。
+
+戦闘の敵表示はスマートフォンでも全身と構えを読める大きさへ拡大。問題・回答・ログの配置とUI部品は従来のCSS/SVGを維持しています。保存形式、進行、出題、戦闘計算、音、既存テストは変更していません。通常敵と守護者の名前の調整は表示専用です。
+
+比較と一覧は [Visual Pass 2 素材比較](visual-pass-2.html)。形式・生成方法・圧縮・保持するSVGについては [素材README](assets/visual-pass-2/README.md)、個別の生成指示は [PROMPTS.json](assets/visual-pass-2/PROMPTS.json) を参照してください。内蔵画像生成で制作し、配信時はリポジトリ内の静的ファイルのみを読みます。
 
 ## 保存互換
 

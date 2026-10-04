@@ -44,3 +44,20 @@ Playwright 1.62.1、Chromium / WebKit。GitHub Pagesと同じ `/yzrswork_ai-skil
 iPhone実機のSafariとVoiceOverは未実施です。このWindows環境のWebKitにはWeb Audio APIがないため、WebKitでは音機能が利用不能でもゲームが継続することを検証しました。実音の再生・再開はChromiumと実機で分けて確認してください。CIのLinux WebKitではWeb Audio APIがある場合の初期化も検証します。
 
 実機のセーフエリア、縦横回転、OSへの切替、効果音、VoiceOverの項目はREADMEに記載しています。PRに追加したCIは、Nodeテスト、両ブラウザ回帰、axe、スクリーンショット保存を再実行します。
+
+## Visual Pass 2（2026-10-04）
+
+PR #89 の `878e04e` をベースに、同じ `feat/kuku-rpg-v2` へ追記。確認時の最新mainは `05c953a` のままでした。戦闘計算・進行・保存・問題生成・Stage config・RNG・深淵生成・既存23件のロジックテスト・既存ブラウザテストの差分はゼロです。ゲーム側の変更は、表示専用の素材URL/名前とCSSの敵・武器サイズのみです。
+
+- 内蔵画像生成による独自WebP62点：ボス11、守護者8、Stage1〜8通常敵24、深淵通常敵3、武器5、背景11。旧SVG65点を保持。
+- 透過素材51点の実ピクセルをRGBAとして検査。アルファ範囲0〜255、透明領域15%以上、四隅は透明（縮小補間の最大2/255を許容）。背景11点は全ピクセル不透明。
+- 画像合計11,466,434 bytes、最大289,092 bytes。透過素材768×768、背景1280×853。ゲーム内では62点の一括読み込みなし。
+- `node --test kuku/tests/*.test.js`：26/26成功。従来23件に、形式・寸法・容量・アルファ・個別ハッシュ・旧SVG保持・主要5体のID・未登録素材のSVG参照を確認する3件を追加。
+- `browser.mjs`：既存144項目がChromium/WebKitで再成功。セーブ移行・拒否・誤答・★・ルートとボス・タイマー・本編/100F・覚醒・音OFF・reduced-motionの回帰を確認。主要ゲーム画面のaxe WCAG A/AA違反ゼロ。
+- `visual-browser.mjs`：Chromium/WebKit計292項目成功。62枚すべてを実ブラウザでデコードし、素材404・JS例外ゼロ。素材比較ページのaxe WCAG A/AA違反ゼロ。
+- 比較ページの一覧46体、武器5、背景11を確認。主要ボス5体は320/390/768pxの実戦画面でWebP参照・敵表示200px以上・戦闘枠内に収まること・横はみ出しなし・開始表示で保存内容が変わらないことを検証。
+- 全46体の一覧、武器の進化、主要5体の旧SVGとの比較、390px戦闘画面を目視確認。空騎兵の生成画像に残った背景は、内蔵画像編集で透過へ修正してから採用。
+
+証跡：[主要5体の比較](evidence/visual-pass-2/boss-comparison.png)、[戦闘・改修前](evidence/visual-pass-2/battle-before.png)、[戦闘・改修後](evidence/visual-pass-2/battle-after.png)、[モンスター一覧](evidence/visual-pass-2/roster.png)、[武器5種](evidence/visual-pass-2/weapons.png)。改修前の戦闘画像は `878e04e` のアーカイブを別サーバーで起動して撮影したものです。改修後の素材は [比較ページ](visual-pass-2.html) でも確認できます。
+
+CIにも追加の素材テストとビジュアル検証を登録しています。iPhone実機Safari/VoiceOverに関する上記の未実施範囲は引き続き残ります。
