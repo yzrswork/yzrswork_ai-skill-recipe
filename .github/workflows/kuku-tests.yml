@@ -24,6 +24,10 @@ jobs:
         env:
           KUKU_EVIDENCE: /tmp/kuku-evidence
         run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/kuku-tests/node_modules/playwright/index.mjs" AXE_MODULE="$RUNNER_TEMP/kuku-tests/node_modules/@axe-core/playwright/dist/index.mjs" node kuku/tests/browser.mjs
+      - name: Modern mobile screens and accessibility
+        env:
+          KUKU_EVIDENCE: /tmp/kuku-evidence
+        run: PLAYWRIGHT_MODULE="$RUNNER_TEMP/kuku-tests/node_modules/playwright/index.mjs" AXE_MODULE="$RUNNER_TEMP/kuku-tests/node_modules/@axe-core/playwright/dist/index.mjs" node kuku/tests/modern-ui-browser.mjs
       - name: Visual assets and comparison gallery
         env:
           KUKU_EVIDENCE: /tmp/kuku-evidence

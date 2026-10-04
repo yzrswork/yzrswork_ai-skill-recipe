@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#101827" />
+  <meta name="theme-color" content="#f6f4ed" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="format-detection" content="telephone=no" />
@@ -14,6 +14,7 @@
   <title>九九クエスト｜や印工務店</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="rpg.css" />
+  <link rel="stylesheet" href="modern-ui.css" />
   <script type="module" src="script.js"></script>
 </head>
 <body>
@@ -21,73 +22,63 @@
     <header class="app-header">
       <div class="mini-brand" aria-label="や印工務店">
         <span class="brand-mark" aria-hidden="true">y.</span>
-        <span>や印工務店</span>
+        <span>九九クエスト</span>
       </div>
-      <button
-        class="sound-toggle"
-        id="sound-toggle"
-        type="button"
-        aria-pressed="false"
-        aria-label="効果音をオンにする"
-      >
-        <span aria-hidden="true">♪</span>
-        <span id="sound-label">おと OFF</span>
-      </button>
+      <button class="icon-button" id="settings-open" type="button" aria-label="設定をひらく">⚙</button>
     </header>
 
     <main class="game" id="game">
-      <section class="title-block" aria-labelledby="app-title">
-        <p class="eyebrow">九九で ぼうけん</p>
-        <h1 id="app-title">九九クエスト</h1>
-        <p class="subtitle">3つのみちで 九九の力を あつめよう！</p>
+      <section class="home-screen" id="home-panel" aria-labelledby="app-title">
+        <div class="home-heading">
+          <div>
+            <p class="eyebrow">九九で ぼうけん</p>
+            <h1 id="app-title">九九クエスト</h1>
+          </div>
+          <button class="badge-book-button" id="badge-book-button" type="button" aria-label="バッジずかんを ひらく">
+            <span class="current-badge-icon" id="current-badge-icon" aria-hidden="true"></span>
+            <span class="badge-book-button-copy"><span>バッジ</span><strong id="badge-count">1 / 20</strong></span>
+          </button>
+        </div>
+        <div class="home-stats" aria-label="ぼうけんの記録">
+          <span class="level-pill"><span>Lv.</span><strong id="rank-level">1</strong><span id="rank-title" class="sr-only">はじめの いっぽ</span></span>
+          <span class="crystal-pill"><span aria-hidden="true">◇</span><strong id="crystal-total">0</strong><span>クリスタル</span></span>
+        </div>
+        <div class="rank-progress-row home-rank-progress">
+          <div class="rank-progress" role="progressbar" aria-label="つぎのバッジまでの進み具合" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0" id="rank-progress"><span class="rank-progress-fill" id="rank-progress-fill"></span></div>
+          <span class="rank-progress-label" id="rank-progress-label">つぎまで 6</span>
+        </div>
 
-        <section class="profile-strip" id="profile-panel" aria-label="九九の塔のせいちょう">
-          <div class="profile-heading">
-            <button class="badge-book-button" id="badge-book-button" type="button" aria-label="バッジずかんを ひらく">
-              <span class="current-badge-icon" id="current-badge-icon" aria-hidden="true"></span>
-              <span class="badge-book-button-copy">
-                <span>バッジずかん</span>
-                <strong id="badge-count">1 / 20</strong>
-              </span>
-            </button>
-            <span class="rank-name" id="rank-title">はじめの いっぽ</span>
-            <strong class="rank-level">Lv.<span id="rank-level">1</span></strong>
-            <span class="crystal-pill"><span aria-hidden="true">◇</span><span id="crystal-total">0</span> クリスタル</span>
+        <article class="home-hero" id="home-hero">
+          <img class="home-background" id="home-background" alt="" />
+          <div class="home-hero-shade" aria-hidden="true"></div>
+          <div class="home-stage-label"><span id="home-stage">STAGE 1</span><span class="home-dot" aria-hidden="true">•</span><span id="home-route-label">のぼりのみち</span></div>
+          <img class="home-enemy" id="home-enemy" alt="" />
+          <div class="home-hero-copy">
+            <p id="home-dan">2の段</p>
+            <h2 id="home-area">ふたごのそうげん</h2>
+            <p id="home-next">まずは 9もんに ちょうせん！</p>
           </div>
-          <div class="rank-progress-row">
-            <div
-              class="rank-progress"
-              role="progressbar"
-              aria-label="つぎのバッジまでの進み具合"
-              aria-valuemin="0"
-              aria-valuemax="10"
-              aria-valuenow="0"
-              id="rank-progress"
-            >
-              <span class="rank-progress-fill" id="rank-progress-fill"></span>
-            </div>
-            <span class="rank-progress-label" id="rank-progress-label">つぎまで 6</span>
-          </div>
-        </section>
+        </article>
+        <div class="home-cta-stack">
+          <button class="primary-cta" id="home-continue" type="button">ぼうけんを はじめる <span aria-hidden="true">›</span></button>
+          <button class="quiet-cta" id="home-map-open" type="button">地図をみる</button>
+        </div>
+        <div class="home-equipment"><img id="home-weapon" alt="" /><span>いまの ぶき</span><strong id="home-equipment-name">ひのきのそろばん</strong></div>
+        <a class="home-abyss-link" id="home-abyss-open" href="#abyss" hidden>九九の深淵へすすむ <span aria-hidden="true">›</span></a>
       </section>
 
-      <section class="map-panel" id="map-panel" aria-labelledby="map-title">
-        <h2 id="map-title" tabindex="-1">ぼうけんの 地図</h2>
-        <p id="story-intro"></p>
-        <p class="equipment-line">ぶき：<strong id="equipment"></strong></p>
-        <p id="legacy-best"></p>
-        <label class="untimed-setting"><input id="untimed-toggle" type="checkbox" /> 時間なしで あそぶ</label>
-        <p id="save-status" role="status"></p>
-        <nav id="stage-list" aria-label="9つのエリア"></nav>
-        <section aria-labelledby="area-title">
-          <h3 id="area-title"></h3>
+      <section class="map-panel" id="map-panel" hidden aria-labelledby="map-title">
+        <div class="screen-heading"><div><p class="eyebrow">ADVENTURE</p><h2 id="map-title" tabindex="-1">ぼうけんの地図</h2></div><span class="stage-count-pill" id="map-stage-count">STAGE 1 / 9</span></div>
+        <p id="story-intro" class="story-intro"></p>
+        <p id="legacy-best" class="legacy-best"></p>
+        <section class="selected-stage-card" aria-labelledby="area-title">
+          <div class="selected-stage-heading"><div><p class="eyebrow">いまのエリア</p><h3 id="area-title"></h3></div><span class="equipment-chip" id="equipment"></span></div>
           <p id="route-guide"></p>
           <div id="route-list" class="route-list"></div>
         </section>
-        <section id="dungeon-entry" hidden aria-labelledby="dungeon-title">
-          <h3 id="dungeon-title">九九の深淵</h3>
-          <p id="dungeon-guide"></p>
-          <button id="dungeon-start" type="button"></button>
+        <section class="stage-select-section" aria-label="エリアをえらぶ">
+          <div class="stage-select-heading"><h3>エリアの道</h3><p>★はクリアしたエリア</p></div>
+          <nav id="stage-list" class="stage-path" aria-label="9つのエリア"></nav>
         </section>
       </section>
       <section class="quest-card" id="quiz-panel" hidden aria-labelledby="question-label">
@@ -98,7 +89,7 @@
             <span class="status-caption">もんだい</span>
             <strong class="status-value" id="question-count">1 / 10</strong>
           </div>
-          <div class="best-score">
+          <div class="best-score" id="best-score">
             <span class="status-caption">のこり時間</span>
             <strong class="status-value" id="timer-label">時間なし</strong>
           </div>
@@ -116,25 +107,6 @@
           <span class="progress-fill" id="progress-fill"></span>
         </div>
 
-        <section class="tower-progress" id="tower-panel" hidden aria-labelledby="tower-title">
-          <div class="tower-heading">
-            <span id="tower-title">九九の深淵</span>
-            <span class="tower-reward-legend" aria-label="5階めは強敵、10階めはボス">強敵 ◆ ボス</span>
-          </div>
-          <ol class="tower-path" id="tower-path" aria-label="10階の塔の道のり">
-            <li class="tower-node" data-step="1"><span class="tower-node-marker" aria-hidden="true">1</span><span class="tower-node-label" aria-hidden="true">1</span></li>
-            <li class="tower-node" data-step="2"><span class="tower-node-marker" aria-hidden="true">2</span><span class="tower-node-label" aria-hidden="true">2</span></li>
-            <li class="tower-node" data-step="3"><span class="tower-node-marker" aria-hidden="true">3</span><span class="tower-node-label" aria-hidden="true">3</span></li>
-            <li class="tower-node" data-step="4"><span class="tower-node-marker" aria-hidden="true">4</span><span class="tower-node-label" aria-hidden="true">4</span></li>
-            <li class="tower-node is-milestone" data-step="5"><span class="tower-node-marker" aria-hidden="true">宝</span><span class="tower-node-label" aria-hidden="true">5</span></li>
-            <li class="tower-node" data-step="6"><span class="tower-node-marker" aria-hidden="true">6</span><span class="tower-node-label" aria-hidden="true">6</span></li>
-            <li class="tower-node" data-step="7"><span class="tower-node-marker" aria-hidden="true">7</span><span class="tower-node-label" aria-hidden="true">7</span></li>
-            <li class="tower-node" data-step="8"><span class="tower-node-marker" aria-hidden="true">8</span><span class="tower-node-label" aria-hidden="true">8</span></li>
-            <li class="tower-node" data-step="9"><span class="tower-node-marker" aria-hidden="true">9</span><span class="tower-node-label" aria-hidden="true">9</span></li>
-            <li class="tower-node is-milestone" data-step="10"><span class="tower-node-marker" aria-hidden="true">王</span><span class="tower-node-label" aria-hidden="true">10</span></li>
-          </ol>
-        </section>
-
         <div class="streak-row">
           <span class="streak-chip" id="streak-chip" aria-live="polite">まずは 1もん！</span>
           <span class="first-try-score" aria-label="一回で正解した数">
@@ -150,6 +122,7 @@
           <img id="enemy-art" class="enemy-art" alt="" width="220" height="200" />
           <div class="weapon-caption"><img id="weapon-art" alt="" width="60" height="50" /><span id="weapon-beads" hidden aria-hidden="true">●●●</span><span id="weapon-name"></span></div>
         </section>
+        <section class="answer-panel" aria-label="こたえを入力">
         <div class="problem-area">
           <p class="question-label" id="question-label">こたえは どれ？</p>
           <div class="equation" aria-live="polite" aria-atomic="true">
@@ -176,9 +149,10 @@
         <div class="answers" id="answers" role="group" aria-label="3つの答え">
           <!-- JavaScriptで回答ボタンを表示 -->
         </div>
-        <div role="log" aria-live="polite" aria-label="戦闘のきろく" aria-relevant="additions">
+        <div class="screen-reader-log" role="log" aria-live="polite" aria-label="戦闘のきろく" aria-relevant="additions">
           <ol id="battle-log" class="battle-log" tabindex="0" aria-label="最近の戦闘きろく"></ol>
         </div>
+        </section>
       </section>
 
       <section class="finish-card" id="finish-panel" hidden aria-labelledby="finish-title">
@@ -187,9 +161,15 @@
           <span class="finish-star" data-star="2">★</span>
           <span class="finish-star" data-star="3">★</span>
         </div>
-        <p class="finish-kicker">しれん クリア！</p>
+        <p class="finish-kicker" id="finish-kicker">しれん クリア！</p>
         <h2 id="finish-title">やったね！</h2>
         <p class="finish-message" id="finish-message">九九の力が アップした！</p>
+
+        <div class="finish-weapon" id="finish-weapon" hidden>
+          <img id="finish-weapon-art" alt="" width="96" height="72" />
+          <span><small>あたらしい ぶき</small><strong id="finish-weapon-name"></strong></span>
+          <span class="finish-weapon-sparkle" aria-hidden="true">✦</span>
+        </div>
 
         <div class="result-grid">
           <div class="result-item">
@@ -225,14 +205,85 @@
 
         <p class="best-message" id="best-message" aria-live="polite"></p>
         <button class="restart-button" id="restart-button" type="button">
-          地図へ すすむ
+          つぎへ <span aria-hidden="true">›</span>
         </button>
+        <button class="result-map-link" id="result-map-button" type="button">地図へもどる</button>
       </section>
 
-      <p class="gentle-note">まちがえても だいじょうぶ。えらびなおせるよ。</p>
+      <section class="collection-panel" id="collection-panel" hidden aria-labelledby="collection-title">
+        <div class="screen-heading"><div><p class="eyebrow">COLLECTION</p><h2 id="collection-title">ずかん</h2></div><span class="collection-total" id="collection-total">0ひき</span></div>
+        <div class="collection-tabs" role="group" aria-label="ずかんの種類">
+          <button id="collection-monsters-tab" type="button" aria-pressed="true">モンスター</button>
+          <button id="collection-badges-tab" type="button" aria-pressed="false">バッジ</button>
+        </div>
+        <section id="monster-collection" aria-labelledby="collection-monsters-tab">
+          <p class="collection-intro" id="monster-collection-guide">ぼうけんで あった なかまたち。</p>
+          <div class="monster-grid" id="monster-grid" aria-label="モンスターずかん"></div>
+        </section>
+        <section id="badge-collection" hidden aria-labelledby="collection-badges-tab">
+          <div class="badge-book-summary collection-badge-summary"><strong><span id="main-badge-count">1</span> / 20</strong><span id="main-badge-next">つぎまで あと 6 クリスタル</span></div>
+          <div class="badge-grid" id="main-badge-grid" aria-label="20この称号バッジ"></div>
+        </section>
+      </section>
+
+      <section class="abyss-panel" id="abyss-panel" hidden aria-labelledby="dungeon-title">
+        <div class="screen-heading"><div><p class="eyebrow">ENDLESS DUNGEON</p><h2 id="dungeon-title">九九の深淵</h2></div><span class="abyss-floor-pill" id="abyss-floor-pill">1 / 100F</span></div>
+        <p class="abyss-intro" id="dungeon-guide"></p>
+        <div class="abyss-hero" id="abyss-hero"><img id="abyss-art" alt="" /><p id="abyss-current-copy">1Fから ちょうせんしよう</p></div>
+        <button class="primary-cta" id="dungeon-start" type="button">1Fから すすむ <span aria-hidden="true">›</span></button>
+        <section class="tower-progress" id="tower-panel" hidden aria-labelledby="tower-title">
+          <div class="tower-heading"><span id="tower-title">1〜10F</span><span class="tower-reward-legend" aria-label="5階めは強敵、10階めはボス">5F 強敵　10F ボス</span></div>
+          <ol class="tower-path" id="tower-path" aria-label="10階の塔の道のり">
+            <li class="tower-node" data-step="1"><span class="tower-node-marker" aria-hidden="true">1</span><span class="tower-node-label" aria-hidden="true">1</span></li>
+            <li class="tower-node" data-step="2"><span class="tower-node-marker" aria-hidden="true">2</span><span class="tower-node-label" aria-hidden="true">2</span></li>
+            <li class="tower-node" data-step="3"><span class="tower-node-marker" aria-hidden="true">3</span><span class="tower-node-label" aria-hidden="true">3</span></li>
+            <li class="tower-node" data-step="4"><span class="tower-node-marker" aria-hidden="true">4</span><span class="tower-node-label" aria-hidden="true">4</span></li>
+            <li class="tower-node is-milestone" data-step="5"><span class="tower-node-marker" aria-hidden="true">強</span><span class="tower-node-label" aria-hidden="true">5</span></li>
+            <li class="tower-node" data-step="6"><span class="tower-node-marker" aria-hidden="true">6</span><span class="tower-node-label" aria-hidden="true">6</span></li>
+            <li class="tower-node" data-step="7"><span class="tower-node-marker" aria-hidden="true">7</span><span class="tower-node-label" aria-hidden="true">7</span></li>
+            <li class="tower-node" data-step="8"><span class="tower-node-marker" aria-hidden="true">8</span><span class="tower-node-label" aria-hidden="true">8</span></li>
+            <li class="tower-node" data-step="9"><span class="tower-node-marker" aria-hidden="true">9</span><span class="tower-node-label" aria-hidden="true">9</span></li>
+            <li class="tower-node is-milestone" data-step="10"><span class="tower-node-marker" aria-hidden="true">王</span><span class="tower-node-label" aria-hidden="true">10</span></li>
+          </ol>
+        </section>
+      </section>
+
+      <p class="gentle-note" id="gentle-note">まちがえても だいじょうぶ。えらびなおせるよ。</p>
     </main>
 
+    <nav class="bottom-nav" id="bottom-nav" aria-label="メインメニュー">
+      <button type="button" data-nav="home" aria-current="page"><span aria-hidden="true">✦</span><strong>冒険</strong></button>
+      <button type="button" data-nav="monsters"><span aria-hidden="true">✧</span><strong>ずかん</strong></button>
+      <button type="button" data-nav="badges"><span aria-hidden="true">★</span><strong>バッジ</strong></button>
+    </nav>
+
     <div class="confetti-layer" id="confetti-layer" aria-hidden="true"></div>
+
+    <dialog class="bottom-sheet-dialog" id="route-sheet" aria-labelledby="route-sheet-title">
+      <div class="sheet-grabber" aria-hidden="true"></div>
+      <button class="sheet-close" id="route-sheet-close" type="button" aria-label="とじる">×</button>
+      <p class="eyebrow" id="route-sheet-kicker">STAGE 1</p>
+      <h2 id="route-sheet-title">のぼりのみち</h2>
+      <p class="route-sheet-facts" id="route-sheet-facts">2 × 1 <span aria-hidden="true">→</span> 2 × 9</p>
+      <p class="route-sheet-description" id="route-sheet-description">9もんの バトル！</p>
+      <button class="primary-cta" id="route-sheet-start" type="button">いく！ <span aria-hidden="true">›</span></button>
+    </dialog>
+
+    <dialog class="bottom-sheet-dialog settings-dialog" id="settings-sheet" aria-labelledby="settings-title">
+      <div class="sheet-grabber" aria-hidden="true"></div>
+      <button class="sheet-close" id="settings-close" type="button" aria-label="とじる">×</button>
+      <p class="eyebrow">SETTINGS</p>
+      <h2 id="settings-title">あそびの設定</h2>
+      <div class="setting-row sound-setting">
+        <span><strong>こうかおん</strong><small>正解や こうげきのおと</small></span>
+        <button class="sound-toggle" id="sound-toggle" type="button" aria-pressed="false" aria-label="効果音をオンにする"><span aria-hidden="true">♪</span><span id="sound-label">おと OFF</span></button>
+      </div>
+      <label class="setting-row" for="untimed-toggle">
+        <span><strong>時間なしで あそぶ</strong><small>いつでも ゆっくり こたえられるよ</small></span>
+        <input id="untimed-toggle" type="checkbox" />
+      </label>
+      <p id="save-status" class="save-status" role="status"></p>
+    </dialog>
 
     <section class="badge-book-layer" id="badge-book" hidden aria-labelledby="badge-book-title">
       <button class="badge-book-backdrop" id="badge-book-backdrop" type="button" tabindex="-1" aria-label="バッジずかんを とじる"></button>

@@ -61,3 +61,18 @@ PR #89 の `878e04e` をベースに、同じ `feat/kuku-rpg-v2` へ追記。確
 証跡：[主要5体の比較](evidence/visual-pass-2/boss-comparison.png)、[戦闘・改修前](evidence/visual-pass-2/battle-before.png)、[戦闘・改修後](evidence/visual-pass-2/battle-after.png)、[モンスター一覧](evidence/visual-pass-2/roster.png)、[武器5種](evidence/visual-pass-2/weapons.png)。改修前の戦闘画像は `878e04e` のアーカイブを別サーバーで起動して撮影したものです。改修後の素材は [比較ページ](visual-pass-2.html) でも確認できます。
 
 CIにも追加の素材テストとビジュアル検証を登録しています。iPhone実機Safari/VoiceOverに関する上記の未実施範囲は引き続き残ります。
+
+## Modern Mobile UI Refresh（2026-10-04）
+
+`origin/main` の最新SHA `54189bccccfd36dd51a25d60fb74f231cb1730d4` を取得し、公開ページがHTTP 200であることと、390×844pxでの現行導線を確認してから `feat/kuku-modern-mobile-ui` を作成しました。公開版ではプロフィール情報、Stage一覧、ルート、設定がHOMEに並び、次の操作と戦闘UIの優先順位が弱い状態でした。刷新仕様は [MODERN_UI_SPEC.md](MODERN_UI_SPEC.md) に実装前に記録しています。
+
+- HOME、冒険MAP、戦闘、結果、図鑑、深淵の画面階層を再構成。HOMEから次ルート/ボス/深淵へ進め、MAPは縦道筋とルート詳細Sheetに変更しました。
+- アイボリー/ネイビーの画面、余白と面による整理、下部ナビ、設定Sheet、進行に応じたCTAを追加。戦闘ログはaria live regionに残して視覚UIから隠し、敵WebP・九九式・回答タイルへ集中させています。
+- Save v2、学習・戦闘・進行・mastery・Stageデータ・100F生成・アセット形式に変更なし。表示接続とテストだけの改修です。
+- Nodeテスト：26/26成功。
+- `browser.mjs`：Chromium/WebKit 160項目成功。進行、移行、タイマー、音OFF、focus、axeの回帰確認。
+- `modern-ui-browser.mjs`：Chromium/WebKit 120項目成功。初回HOME、縦MAP、Sheet、戦闘、結果、全画面Stage Clear、Stage6武器獲得、Stage4ボス、Stage5テンキー、Stage7タイマー、図鑑、バッジ、51F、設定、320/375/390/430/768/1280px横幅、axeを確認。
+- `visual-browser.mjs`：Chromium/WebKit 292項目成功。既存WebPの実ブラウザ読み込み、画像寸法、比較GalleryとSave保持を再確認。
+- axeのWCAG 2 A/AA・2.1 AA違反、JavaScript例外、失敗した素材リクエスト、指定幅での横はみ出しはゼロ。WebKitで見つかった設定文字のコントラストを濃くし、再実行で解消しました。
+
+画面証跡は [更新前HOME](evidence/modern-ui/before-home.png)、[更新後HOME](evidence/modern-ui/home-after.png)、[冒険MAP](evidence/modern-ui/adventure-map.png)、[Stage1戦闘](evidence/modern-ui/stage-1-battle.png)、[Stage4ボス](evidence/modern-ui/stage-4-boss.png)、[Stage5テンキー](evidence/modern-ui/stage-5-keypad.png)、[Stage7タイマー](evidence/modern-ui/stage-7-timer.png)、[結果](evidence/modern-ui/result.png)、[Stage Clear](evidence/modern-ui/stage-clear.png)、[武器獲得演出](evidence/modern-ui/stage-6-weapon-clear.png)、[モンスター図鑑](evidence/modern-ui/collection-monsters.png)、[バッジ](evidence/modern-ui/collection-badges.png)、[深淵51F](evidence/modern-ui/abyss-51f.png)です。実機iPhone Safari、VoiceOver、セーフエリア、縦横回転はこの環境では未確認です。
