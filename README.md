@@ -1,3 +1,17 @@
+<!-- YZRS:REPOSITORY-STATE:START -->
+## Repository State
+
+| | |
+| --- | --- |
+| What this repository is | A collection of interactive applications, games, browser instruments, PWA tools and digital works, with implementation and technical evidence. |
+| Status | active |
+| Authority | Source implementation, UI/assets, PWA configuration and technical documentation for the digital works maintained here; collection launcher and compatibility redirects. The six relocated practical tools linked by tools/index.html have their implementation authority in yzrswork/yzrswork_apps. |
+| Live | https://yzrswork.github.io/yzrswork_ai-skill-recipe/ |
+| Verification / Evidence | [KUKU RPG checks](https://github.com/yzrswork/yzrswork_ai-skill-recipe/actions/runs/37175645044) passed for PR #90 head `1cbbd661df85d12aa65b7b66293db56ebdf59f0d` (PR checkout; GitHub Actions, Ubuntu, Node.js 22, Playwright Chromium/WebKit): KUKU logic, browser/accessibility and visual checks. This evidence covers `kuku/` only; the whole collection, deployed services, physical hardware and actual iPhone Safari/VoiceOver/PWA behavior remain outside its scope. |
+
+State source: [.github/yzrs-repository.yml](.github/yzrs-repository.yml).
+<!-- YZRS:REPOSITORY-STATE:END -->
+
 # yzrswork — デジタル作品置き場
 
 や印工務店（yzrswork）が制作したデジタル作品の公開置き場です。
