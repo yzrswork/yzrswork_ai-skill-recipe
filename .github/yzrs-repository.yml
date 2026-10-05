@@ -1,0 +1,20 @@
+schema_version: "0.1"
+title: yzrswork_ai-skill-recipe
+kind: collection
+status: active
+authority: >-
+  Source implementation, UI/assets, PWA configuration and technical documentation
+  for the digital works maintained here; collection launcher and compatibility
+  redirects. The six relocated practical tools linked by tools/index.html have
+  their implementation authority in yzrswork/yzrswork_apps.
+verification: >-
+  KUKU RPG checks passed for PR #90 implementation revision
+  1cbbd661df85d12aa65b7b66293db56ebdf59f0d (PR head, tested through the
+  pull-request checkout) on GitHub Actions (ubuntu-latest, Node.js 22, Playwright
+  1.62.1 Chromium/WebKit and axe): Node tests, browser regression/accessibility,
+  modern mobile screens and visual asset checks passed. Public evidence:
+  https://github.com/yzrswork/yzrswork_ai-skill-recipe/actions/runs/37175645044
+  Scope: kuku/ only, served locally under the GitHub Pages subpath. This run does
+  not verify the whole collection, deployed production behavior, real external
+  services, physical hardware or actual iPhone Safari/VoiceOver/PWA behavior.
+live_url: https://yzrswork.github.io/yzrswork_ai-skill-recipe/
