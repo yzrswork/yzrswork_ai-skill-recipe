@@ -1,12 +1,12 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
   <meta name="theme-color" content="#efe8db">
-  <meta name="description" content="や印工務店 YZRS Vaultの公開向け構造図。Obsidian・GitHub・AIを使い、企画、制作、公開、観測、知識の再利用をつなぐ個人運営OS。">
-  <title>YZRS Vault — Structure &amp; Launch Loop | や印工務店</title>
+  <meta name="description" content="や印工務店のObsidian Vaultを公開向けに解説。6種類の仕事の分類、記録とAI手順の役割、制作・公開・運営を支える仕組みと人間の判断範囲を紹介します。">
+  <title>YZRS Vault — 制作・公開・運営を支える記録の仕組み | や印工務店</title>
   <style>
     :root {
       --paper:#efe8db; --card:#faf7f0; --ink:#231f1a;
@@ -42,19 +42,13 @@
     h2{font-size:clamp(21px,3.5vw,29px);line-height:1.25;letter-spacing:-.03em;margin:0}
     .enline{display:block;font:600 11px/1.4 var(--mono);color:var(--accent);letter-spacing:.06em;margin-top:3px}
     .introduction{color:var(--muted);font-size:13px;margin:0 0 18px}
-    .cycle{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;background:var(--ink);padding:3px;margin-top:26px}
-    .cycle div{background:#29251f;color:#f7f0e6;text-align:center;padding:12px 5px 10px;border-right:1px solid #595044;min-width:0}
-    .cycle div:last-child{border:0}
-    .cycle .n{display:block;font:700 10px var(--mono);color:#e3a281}
-    .cycle strong{display:block;font-size:clamp(10px,1.7vw,13px);line-height:1.35;margin-top:4px;white-space:nowrap}
-    .cycle small{display:block;font:10px var(--mono);color:#c4b8aa;margin-top:4px}
     .core{background:var(--ink);color:#f6eee4;padding:26px;border-radius:2px;position:relative}
     .core-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;border-bottom:1px solid #585046;padding-bottom:18px;margin-bottom:16px}
     .core-head h3{margin:0;font-size:22px}.core-head p{margin:5px 0 0;color:#c7baac;font-size:13px}
     .core-label{font:700 10px var(--mono);letter-spacing:.13em;color:#eab08f;white-space:nowrap}
     .core-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
     .core-card{background:#36312b;padding:16px;border:1px solid #5e554a;min-width:0}
-    .core-card .path{font-size:13px;color:#ffc29f;overflow-wrap:anywhere}
+    .core-card .path{font-size:13px;color:#ffc29f;background:transparent;padding:0;overflow-wrap:anywhere}
     .core-card strong{display:block;font-size:14px;margin:8px 0 3px}
     .core-card p{font-size:12px;line-height:1.6;color:#c7baac;margin:0}
     .core-foot{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px;color:#ddd2c4;font-size:11px}
@@ -107,6 +101,15 @@
     .closing .desc{font-size:13px;color:var(--muted);margin:0 0 24px}
     .bottom{display:flex;justify-content:space-between;align-items:end;flex-wrap:wrap;gap:10px;padding-top:13px;border-top:1px solid var(--border);font:11px/1.6 var(--mono);color:var(--muted)}
     .bottom a{text-underline-offset:3px}
+    .toc{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:24px;padding-top:16px;border-top:1px solid var(--border)}
+    .toc a{font-size:14px;display:inline-flex;align-items:center;min-height:44px;text-underline-offset:4px}
+    h2{scroll-margin-top:20px}
+    .introduction,.kind p,.flow-card p,.case-main p,.closing .desc{font-size:14px}
+    .core-card p,.storage p,.fineprint,.portfolio-note,.reality{font-size:13px}
+    .translation{font-family:var(--sans);font-size:13px;letter-spacing:0}
+    .case-main a{text-underline-offset:3px;overflow-wrap:anywhere}
+    .boundary{margin:18px 0 0;font-size:14px;color:var(--muted)}
+    .boundary strong{color:var(--ink)}
     @media(max-width:600px){
       .sheet{padding:30px 18px 48px}
       .sheet::before{left:10px;right:10px}
@@ -115,22 +118,20 @@
       .section{margin-top:47px}
       .core{padding:19px}.core-head{display:block}.core-label{display:block;margin-top:11px}
       .core-grid{grid-template-columns:1fr}.core-card{padding:12px 14px}
-      .portfolio{gap:9px}.kind{padding:14px 12px 14px 15px}.kind h3{font-size:17px}
-      .kind p{font-size:12px}.path{font-size:10px}
+      .portfolio{grid-template-columns:1fr;gap:9px}.kind{padding:14px 12px 14px 15px}.kind h3{font-size:17px}
+      .kind p{font-size:14px}.path{font-size:12px}
       .case{grid-template-columns:1fr}.case-aside,.case-main{padding:19px}
       .storage{grid-template-columns:1fr}.storage div{padding:12px 15px}
-      .cycle div{padding:10px 2px}.cycle small{font-size:8px}
       .flow-card{padding:17px 14px}.flow-row{grid-template-columns:42px 1fr;column-gap:8px}
       .flow::before{left:20px}
     }
-    @media(max-width:365px){.portfolio{grid-template-columns:1fr}.cycle small{display:none}}
     @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
     @media print{
       @page{size:A4 portrait;margin:14mm}
       body{background:white}
       .sheet{max-width:none;padding:0}
       .sheet::before{display:none}
-      .core,.case-aside,.cycle{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      .core,.case-aside{-webkit-print-color-adjust:exact;print-color-adjust:exact}
       .kind,.flow-card,.core-card,.case,.storage div{break-inside:avoid}
       .section{margin-top:32px}
       .hero{padding-top:35px}
@@ -142,67 +143,65 @@
   <main class="sheet">
     <div class="mast">
       <div class="brand"><span>や</span> や印工務店 <span lang="en" style="background:none;color:var(--muted);padding:0;font:11px var(--mono);margin-left:4px">YZRSWORK</span></div>
-      <div class="issue">PUBLIC STRUCTURE MAP<br>2026 / OCT</div>
+      <div class="issue">公開向け構造ガイド<br>確認日 2026-10-12</div>
     </div>
     <header class="hero">
       <div class="eyebrow">OBSIDIAN × GITHUB × AI</div>
       <h1>VAULT<br><span>OPERATING</span><br>SYSTEM.</h1>
-      <p class="lead">思いつきを形にして、<br>次に使える形で残す。</p>
-      <p class="sublead">や印工務店のVaultは、個人制作・小規模事業のための運営基盤。企画、開発、ローンチ、観測、知識の再利用を、Markdownを中心に接続します。<br><span lang="en">A personal operating system for building, launching, learning, and reusing work.</span></p>
+      <p class="lead">制作・公開・運営を支える、<br>記録と手順のワークスペース。</p>
+      <p class="sublead">Vaultは、Obsidianで読み書きするファイルの集まりです。や印工務店では、制作の記録、仕事の状態、公開の手順、再利用する知識をここにまとめています。資料を貯めるだけでなく、「何を作り終えるか」「何を運営し続けるか」「どの手順で進めるか」を結びつける設計です。ここでいう「OS」は、その運営基盤を表す比喩です。</p>
       <div class="manifest">
-        <span class="tag">MARKDOWN FIRST</span>
-        <span class="tag">6 WORK KINDS</span>
-        <span class="tag">AI-READABLE RULES</span>
-        <span class="tag">HUMAN-GATED CHANGES</span>
+        <span class="tag">テキストで記録</span>
+        <span class="tag">仕事を6分類</span>
+        <span class="tag">人とAIで手順を共有</span>
+        <span class="tag">重要な判断は人間へ</span>
       </div>
-      <div class="cycle" aria-label="企画から知識の再利用までの5段階">
-        <div><span class="n">01</span><strong>発想</strong><small>IDEA</small></div>
-        <div><span class="n">02</span><strong>制作</strong><small>BUILD</small></div>
-        <div><span class="n">03</span><strong>公開</strong><small>LAUNCH</small></div>
-        <div><span class="n">04</span><strong>観測</strong><small>MEASURE</small></div>
-        <div><span class="n">05</span><strong>再利用</strong><small>REUSE</small></div>
-      </div>
+      <nav class="toc" aria-label="このページの目次">
+        <a href="#core-title">01 基盤と役割</a><a href="#portfolio-title">02 仕事の6分類</a><a href="#loop-title">03 制作から運営へ</a><a href="#example-title">04 公開事例</a><a href="#lifecycle-title">05 保管と再開</a>
+      </nav>
     </header>
 
     <section class="section" aria-labelledby="core-title">
       <div class="section-head"><span class="secno">01 /</span><h2 id="core-title">共通の運営基盤<span class="enline">CONTROL PLANE / CANONICAL RULES</span></h2></div>
-      <p class="introduction">個別のAIやアプリごとに手順を作り直さず、Vault内の基準を参照する設計。下の名称は実際のVaultにあるパスです。</p>
+      <p class="introduction">記録や手順ごとに、基準となる元ファイルを決めています。一覧や図は、その参照先を案内するものです。下の名称は実際のフォルダ・ファイル名です。</p>
       <div class="core">
-        <div class="core-head"><div><h3>One workspace, shared context.</h3><p>記録の本体はObsidian。変更履歴と提案フローはGitHubで管理。</p></div><span class="core-label">SYSTEM LAYER</span></div>
+        <div class="core-head"><div><h3>記録を中心に、人とAIが作業する。</h3><p>記録の本体はMarkdownなどのファイル。Obsidianは閲覧・編集の場、GitHubは同期・変更履歴・変更提案の基盤です。</p></div><span class="core-label">SYSTEM LAYER</span></div>
         <div class="core-grid">
-          <div class="core-card"><span class="path">_system/</span><strong>Rules &amp; Skills</strong><p>作業手順、判断基準、AIの実行ルールを定義。</p></div>
-          <div class="core-card"><span class="path">index.md</span><strong>Knowledge Map</strong><p>AIが必要な情報の所在を見つける入口。</p></div>
-          <div class="core-card"><span class="path">project-overview.md</span><strong>Work Overview</strong><p>現在動いているWorkの一覧。元データからの俯瞰ビュー。</p></div>
+          <div class="core-card"><span class="path">_system/</span><strong>共通の手順と定義</strong><p>skillsに作業手順、referenceに構造・設計判断を置く。AIごとの入口からも、この共通基準を参照する。</p></div>
+          <div class="core-card"><span class="path">index.md</span><strong>情報の所在を探す地図</strong><p>AI向けのVault全体マップ。短い説明から必要な元ファイルへ進む入口であり、詳細な記録の本体ではない。</p></div>
+          <div class="core-card"><span class="path">project-overview.md</span><strong>現在の仕事の案内板</strong><p>各Workの元ノートを参照する俯瞰用の一覧。進捗・状態の基準は各ノートの属性情報にあり、一覧自体が正本ではない。</p></div>
         </div>
-        <div class="core-foot"><span>Obsidian = workspace</span><span>GitHub = version &amp; PR</span><span>AI = task execution</span><span>Human = key decisions</span></div>
+        <div class="core-foot"><span>Obsidian：閲覧・編集</span><span>GitHub：履歴・変更提案</span><span>AI：手順に沿う作業</span><span>人間：目的・承認・評価</span></div>
       </div>
+      <p class="boundary"><strong>AIが担うこと：</strong>必要な記録を参照し、規定の手順（skill）に沿って整理、下書き、更新案の作成などを行います。許可された可逆な内部変更は委任し、承認が必要な操作は各業務の規約に従います。たとえば記事の下書きと公開は別で、noteへの公開にはオーナーの明示が必要です。判断できない条件や不明な数値を、AIが推測で補わないルールを設けています。</p>
     </section>
 
     <section class="section" aria-labelledby="portfolio-title">
       <div class="section-head"><span class="secno">02 /</span><h2 id="portfolio-title">仕事を6つの種類で管理<span class="enline">WORK PORTFOLIO / ACTUAL VAULT FOLDERS</span></h2></div>
-      <p class="introduction">「いつ完成する仕事か」「継続運営する仕組みか」で保管先を分けています。すべてを同じタスク一覧に押し込まないのが特徴です。</p>
+      <p class="introduction">Workは、制作や運営などの管理対象を指します。終わり方と役割に応じて6種類に分け、それぞれのフォルダへ置きます。下はVault全体のツリーではなく、Work分類に使う6つの保管先です。</p>
       <div class="portfolio">
-        <article class="kind"><div class="kind-head"><h3>Grownbox</h3><span class="path">grownbox/</span></div><span class="translation">IDEA INCUBATION</span><p>まだ着手を決めていない企画・研究。仮説を育て、Projectへ昇格するか判断する。</p></article>
-        <article class="kind"><div class="kind-head"><h3>Projects</h3><span class="path">projects/</span></div><span class="translation">FINITE DELIVERY</span><p>完了条件のある制作・開発・展示。進捗と次のアクションを追跡する。</p></article>
-        <article class="kind blue"><div class="kind-head"><h3>Series</h3><span class="path">series/</span></div><span class="translation">REPEATABLE CREATION</span><p>複数の作品や活動を継続して生むシリーズ。親単位に完了率は付けない。</p></article>
-        <article class="kind blue"><div class="kind-head"><h3>Services</h3><span class="path">services/</span></div><span class="translation">ONGOING OPERATIONS</span><p>サイトやアプリなど、公開後も継続保守・改善する仕組みを扱う。</p></article>
-        <article class="kind green"><div class="kind-head"><h3>Collections</h3><span class="path">collections/</span></div><span class="translation">GROWING CATALOGS</span><p>工具・アイデア・作例など、増え続ける項目を整理するための棚。</p></article>
-        <article class="kind green"><div class="kind-head"><h3>Resources</h3><span class="path">resources/</span></div><span class="translation">REUSABLE KNOWLEDGE</span><p>実測、方法論、共通設計などを保存し、別の制作でも使えるようにする。</p></article>
+        <article class="kind"><div class="kind-head"><h3>Grownbox</h3><span class="path">grownbox/</span></div><span class="translation">育成中の企画・研究</span><p>まだProject化していない企画・研究。仮説を育て、有限の仕事として進めるか判断する。</p></article>
+        <article class="kind"><div class="kind-head"><h3>Projects</h3><span class="path">projects/</span></div><span class="translation">完了条件のある仕事</span><p>完了条件のある制作・開発・展示。進捗と次のアクションを追跡する。</p></article>
+        <article class="kind blue"><div class="kind-head"><h3>Series</h3><span class="path">series/</span></div><span class="translation">作品を生み続ける親シリーズ</span><p>複数の作品や活動を継続して生むシリーズ。親単位に完了率は付けない。</p></article>
+        <article class="kind blue"><div class="kind-head"><h3>Services</h3><span class="path">services/</span></div><span class="translation">継続して運営する仕組み</span><p>サイトやアプリなど、継続運営を前提とする仕組み。開発中・本番運用・保守などの段階で管理する。</p></article>
+        <article class="kind green"><div class="kind-head"><h3>Collections</h3><span class="path">collections/</span></div><span class="translation">項目を足していく棚</span><p>完了条件を持たず、必要な項目を追加していく棚。項目の収録状態で捉える。</p></article>
+        <article class="kind green"><div class="kind-head"><h3>Resources</h3><span class="path">resources/</span></div><span class="translation">再利用する方法論・知識</span><p>方法論・知識・共通設計を保存し、別の制作でも使えるようにする。作業の進捗は管理しない。</p></article>
       </div>
-      <p class="portfolio-note">Work種別（kind）と現在状態（status）を分離。数値の完了率は有限Projectだけに使用します。</p>
+      <p class="portfolio-note">分類（kind）、状態（status）、必要に応じた段階（stage）は別の情報です。0〜100の進捗値はProjectだけが持ち、継続Serviceには完了率を付けません。</p>
+      <p class="boundary"><strong>ローンチ担当者から見ると：</strong>「特定のリリースを受入条件まで仕上げる」はProject、「公開したサービスを保守・改善し続ける」はServiceに当たります。これは分類の説明例であり、公開時にフォルダが自動で切り替わる仕組みではありません。</p>
     </section>
 
     <section class="section" aria-labelledby="loop-title">
-      <div class="section-head"><span class="secno">03 /</span><h2 id="loop-title">ローンチまでの循環<span class="enline">BUILD → LAUNCH → LEARN LOOP / BUSINESS VIEW</span></h2></div>
-      <p class="introduction">これはフォルダ階層とは別の「仕事の流れ」を表す概念図。各ステップは必要なVaultの領域を横断します。</p>
+      <div class="section-head"><span class="secno">03 /</span><h2 id="loop-title">制作から公開・運営への流れ<span class="enline">BUILD → LAUNCH → LEARN LOOP / BUSINESS VIEW</span></h2></div>
+      <p class="introduction">これは業務の関係を説明する概念図です。フォルダの階層や、自動処理の順序ではありません。記事の下書き、Work更新、解析記録などには個別の手順がありますが、以下の5段階を一括で自動実行する仕組みを示してはいません。</p>
       <div class="flow">
         <div class="flow-row"><div class="flow-num"><span>1</span></div><article class="flow-card"><h3>発見・企画を育てる<small>DISCOVER / FRAME</small></h3><p>思いつきや現場の困りごとを記録し、仮説と実行条件を整理する。</p><div class="pills"><code>grownbox/</code><code>inbox/</code><code>resources/</code></div></article></div>
-        <div class="flow-row"><div class="flow-num"><span>2</span></div><article class="flow-card"><h3>作る・検証する<small>BUILD / VALIDATE</small></h3><p>ハードウェア、Webツール、展示などを有限Workとして実装し、実機・利用者の反応を確認する。</p><div class="pills"><code>projects/</code><code>GitHub PR</code><code>AI skills</code></div></article></div>
-        <div class="flow-row"><div class="flow-num"><span>3</span></div><article class="flow-card"><h3>公開・届ける<small>LAUNCH / DISTRIBUTE</small></h3><p>作品の公開、記事制作、Web配信、SNS告知につなげる。公開先の実装は別リポジトリにある場合もある。</p><div class="pills"><code>note-workspace/</code><code>services/</code><code>site / apps / SNS</code></div></article></div>
-        <div class="flow-row"><div class="flow-num"><span>4</span></div><article class="flow-card"><h3>反応と収支を確かめる<small>MEASURE / DECIDE</small></h3><p>閲覧・流入・成果の実測と、実際の収入・支出を区別して記録。継続・改善判断につなげる。</p><div class="pills"><code>analytics_view/</code><code>Finances/</code></div></article></div>
-        <div class="flow-row"><div class="flow-num"><span>5</span></div><article class="flow-card"><h3>知識・部品・経験を次へ<small>REUSE / COMPOUND</small></h3><p>失敗、部品、制作過程、公開実績を再利用可能な知識に変え、次の企画で活かす。</p><div class="pills"><code>resources/</code><code>collections/</code><code>series/</code></div></article></div>
+        <div class="flow-row"><div class="flow-num"><span>2</span></div><article class="flow-card"><h3>作る・検証する<small>BUILD / VALIDATE</small></h3><p>完了条件のある制作はProjectで管理し、設計・検証の記録を残す。コードの実装は各リポジトリや開発環境で進める。継続Serviceでは、開発・運営・改善の段階を記録する。</p><div class="pills"><code>projects/</code><code>GitHub PR</code><code>AI skills</code></div></article></div>
+        <div class="flow-row"><div class="flow-num"><span>3</span></div><article class="flow-card"><h3>公開・届ける<small>LAUNCH / DISTRIBUTE</small></h3><p>記事の下書きや公開用素材を整え、各媒体の手順と必要な承認を経て公開する。サイトや配信ツールの実装・稼働は別の環境が担い、Vaultは記録と手順を支える。</p><div class="pills"><code>note-workspace/</code><code>services/</code><code>site / apps / SNS</code></div></article></div>
+        <div class="flow-row"><div class="flow-num"><span>4</span></div><article class="flow-card"><h3>公開後の反応と収支を確かめる<small>MEASURE / DECIDE</small></h3><p>閲覧・流入などは取得期間と取得時点を伴う観測記録として扱い、実際の金銭の動きとは区別する。不明値をゼロで埋めず、人間が継続・改善を判断する材料にする。</p><div class="pills"><code>analytics_view/</code><code>Finances/</code></div></article></div>
+        <div class="flow-row"><div class="flow-num"><span>5</span></div><article class="flow-card"><h3>知識・部品・経験を次へ<small>REUSE / COMPOUND</small></h3><p>制作で得た方法や知識をResourcesへ整理する。項目を集めるならCollections、個別作品を継続して生む活動ならSeriesと、再利用の役割に応じて扱う。</p><div class="pills"><code>resources/</code><code>collections/</code><code>series/</code></div></article></div>
       </div>
-      <div class="return"><strong>↺ RETURN TO IDEATION</strong> ─ 学びが次の制作へ戻る / Feedback becomes the next starting point.</div>
+      <div class="return"><strong>↺ 学びを次の企画へ</strong> ─ 記録を読み直し、次に試すことを判断する。</div>
     </section>
 
     <section class="section" aria-labelledby="example-title">
@@ -210,29 +209,30 @@
       <div class="case">
         <div class="case-aside"><span class="micro">CASE / EXHIBITION</span><h3>JUNK<br>YARD</h3><p>制作物を展示・体験・情報発信へ展開する実例。</p></div>
         <div class="case-main">
-          <h3>ひとつの展示企画から、複数のアウトプットを生む。</h3>
-          <p>電子工作の作品制作を中心に、展示、ライブ、記事、Web体験、SNS発信、NFCグッズの物販へ広げています。制作・公開・反応の記録が次の取り組みへつながります。</p>
-          <div class="case-tags"><span>PHYSICAL WORKS</span><span>EXHIBITION</span><span>WEB &amp; CONTENT</span><span>NFC GOODS</span><span>FEEDBACK</span></div>
-          <div class="reality"><strong>現在の課題 / Business validation:</strong> 制作・知識の再利用は運用できています。一方、継続的な顧客獲得や売上の再現性はまだ検証中です。</div>
+          <h3>作品制作を、展示とWeb上の説明につなぐ。</h3>
+          <p>JUNK YARDでは、展示企画と作品の記録をもとに、紙のZINEとWeb作品ページへ説明を展開しています。両者は共通の作品データを参照します。電子工作作品の制作過程は、公開済みのnote記事からも確認できます。</p>
+          <div class="case-tags"><span>作品制作</span><span>展示</span><span>紙のZINE</span><span>Web作品ページ</span><span>制作記事</span></div>
+          <p><a href="https://yzrswork.com/junkyard/works/mo-1/">公開作品ページ：MO-1</a><br><a href="https://note.com/yzrswork/n/n198a569cca59">制作記事：TINY CAFE NEON</a></p>
+          <div class="reality"><strong>この事例で示せる範囲：</strong>制作情報を複数の公開物へ展開する構成です。顧客獲得・売上への効果や、来場者全体の評価を証明する事例ではありません。</div>
         </div>
       </div>
     </section>
 
     <section class="section" aria-labelledby="lifecycle-title">
-      <div class="section-head"><span class="secno">05 /</span><h2 id="lifecycle-title">終わった仕事も資産として残す<span class="enline">LIFECYCLE / COLD STORAGE</span></h2></div>
-      <p class="introduction"><code>cold-storage/</code> は現役のWork一覧から外したものを保管する領域。状態によって分け、過去の仕事が現在の判断を埋め尽くさないようにします。</p>
+      <div class="section-head"><span class="secno">05 /</span><h2 id="lifecycle-title">完了・休止・中止した仕事を保管する<span class="enline">LIFECYCLE / COLD STORAGE</span></h2></div>
+      <p class="introduction"><code>cold-storage/</code> は、現役の管理対象から外したWorkの保存場所です。7つ目の分類ではなく、元の分類を保ったまま状態別に保管します。AIも通常の開始時には読みません。</p>
       <div class="storage">
-        <div><strong>Archive</strong><code>cold-storage/archive/</code><p>完了・役割終了。実績と学びを残す。</p></div>
-        <div><strong>Freezer</strong><code>cold-storage/freezer/</code><p>一時停止。再開の意志があるもの。</p></div>
-        <div><strong>Graveyard</strong><code>cold-storage/graveyard/</code><p>中止・廃案。判断の履歴を保存。</p></div>
+        <div><strong>完了・役割終了</strong><code>cold-storage/archive/</code><p>完了・役割終了。実績と学びを残す。</p></div>
+        <div><strong>休止・再開待ち</strong><code>cold-storage/freezer/</code><p>一時停止。再開の意志があるもの。</p></div>
+        <div><strong>中止・廃案</strong><code>cold-storage/graveyard/</code><p>復活を前提にせず、判断の履歴を保存。</p></div>
       </div>
-      <p class="fineprint">一般的な過去記録には別の <code>archive/</code> もあります。ここでは業務ライフサイクルの違いを中心に示しています。</p>
+      <p class="fineprint">通常の <code>archive/</code> は、Work以外の古い記録・一般ノート・退役したガイドなどを保管する別領域です。Cold StorageのArchiveから現役へ戻す際は、現在の目的や条件を確認し直します。</p>
     </section>
 
     <footer class="closing">
       <div class="eyebrow">THE YZRS PRINCIPLE</div>
-      <p class="slogan">Ideas become builds.<br>Builds become releases.<br><span>Experience becomes an asset.</span></p>
-      <p class="desc">Vaultはアプリそのものではなく、複数の制作・公開・運営を支えるワークスペース。図は実在の構成に基づく外部説明用の要約であり、内部文書や個人記録を公開するものではありません。</p>
+      <p class="slogan">思いつきを形にして、<br>公開し、確かめる。<br><span>次に使える記録を残す。</span></p>
+      <p class="desc">この構成の強みは、記録の元ファイルと手順を共有しながら、制作・公開・運営を別の責務として扱えることです。集計表の再生成や記録の整合チェックは個別のスクリプトで支援しています。一方、検出した食い違いの修正、公開判断、実機や利用者による評価は必要です。自動化の範囲や検証状況は手順・実行環境ごとに異なります。<br>このページは2026年10月12日に確認した構成の公開向け要約です。内部文書・個人記録を転載するものではありません。</p>
       <div class="bottom">
         <div>や印工務店 / YZRSWORK<br>PUBLIC-FACING CONCEPTUAL OVERVIEW</div>
         <div><a href="../">← AI Skill Recipe</a> &nbsp; · &nbsp; <a href="https://yzrswork.com/">yzrswork.com ↗</a></div>
