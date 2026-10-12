@@ -43,16 +43,20 @@
     .enline{display:block;font:600 11px/1.4 var(--mono);color:var(--accent);letter-spacing:.06em;margin-top:3px}
     .introduction{color:var(--muted);font-size:13px;margin:0 0 18px}
     .core{background:var(--ink);color:#f6eee4;padding:26px;border-radius:2px;position:relative}
-    .core-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;border-bottom:1px solid #585046;padding-bottom:18px;margin-bottom:16px}
-    .core-head h3{margin:0;font-size:22px}.core-head p{margin:5px 0 0;color:#c7baac;font-size:13px}
-    .core-label{font:700 10px var(--mono);letter-spacing:.13em;color:#eab08f;white-space:nowrap}
-    .core-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-    .core-card{background:#36312b;padding:16px;border:1px solid #5e554a;min-width:0}
-    .core-card .path{font-size:13px;color:#ffc29f;background:transparent;padding:0;overflow-wrap:anywhere}
-    .core-card strong{display:block;font-size:14px;margin:8px 0 3px}
-    .core-card p{font-size:12px;line-height:1.6;color:#c7baac;margin:0}
-    .core-foot{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px;color:#ddd2c4;font-size:11px}
-    .core-foot span{border:1px solid #62574b;padding:4px 8px}
+    .core-head h3{margin:0;font-size:clamp(20px,3vw,24px);line-height:1.5}
+    .core-head p{margin:10px 0 20px;color:#ddd2c4;font-size:14px}
+    .core-list{margin:0}
+    .core-row{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:8px 20px;padding:13px 0;border-top:1px solid #62574b}
+    .core-row dt,.core-row dd{margin:0;min-width:0}
+    .core-row strong{display:block;font-size:15px}
+    .core-row code{display:block;font:13px/1.6 var(--mono);color:#ffc29f;background:none;overflow-wrap:anywhere}
+    .core-row dd{font-size:14px;color:#ddd2c4;line-height:1.65}
+    .decision-layers{margin:18px 0;font-size:14px}
+    .decision-layers div{display:grid;grid-template-columns:7em minmax(0,1fr);gap:10px;padding:7px 0}
+    .decision-layers dt{font-weight:700;color:var(--accent-deep)}
+    .decision-layers dd{margin:0;color:var(--muted)}
+    .record-note{font-size:14px;color:var(--muted);margin:16px 0 0}
+    .record-note strong{color:var(--ink)}
     .portfolio{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
     .kind{background:var(--card);padding:18px 19px;border:1px solid var(--border);position:relative;min-width:0}
     .kind::before{content:"";position:absolute;top:0;left:0;bottom:0;width:4px;background:var(--accent)}
@@ -105,7 +109,7 @@
     .toc a{font-size:14px;display:inline-flex;align-items:center;min-height:44px;text-underline-offset:4px}
     h2{scroll-margin-top:20px}
     .introduction,.kind p,.flow-card p,.case-main p,.closing .desc{font-size:14px}
-    .core-card p,.storage p,.fineprint,.portfolio-note,.reality{font-size:13px}
+    .storage p,.fineprint,.portfolio-note,.reality{font-size:13px}
     .translation{font-family:var(--sans);font-size:13px;letter-spacing:0}
     .case-main a{text-underline-offset:3px;overflow-wrap:anywhere}
     .boundary{margin:18px 0 0;font-size:14px;color:var(--muted)}
@@ -116,8 +120,10 @@
       .mast{align-items:flex-start}.issue{font-size:9px}
       .hero{padding:49px 0 31px}h1{font-size:clamp(53px,14vw,76px)}
       .section{margin-top:47px}
-      .core{padding:19px}.core-head{display:block}.core-label{display:block;margin-top:11px}
-      .core-grid{grid-template-columns:1fr}.core-card{padding:12px 14px}
+      .core{padding:19px}
+      .core-row{grid-template-columns:1fr;gap:4px;padding:12px 0}
+      .core-row dt{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 12px}
+      .decision-layers div{grid-template-columns:6em minmax(0,1fr);gap:8px}
       .portfolio{grid-template-columns:1fr;gap:9px}.kind{padding:14px 12px 14px 15px}.kind h3{font-size:17px}
       .kind p{font-size:14px}.path{font-size:12px}
       .case{grid-template-columns:1fr}.case-aside,.case-main{padding:19px}
@@ -132,7 +138,7 @@
       .sheet{max-width:none;padding:0}
       .sheet::before{display:none}
       .core,.case-aside{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-      .kind,.flow-card,.core-card,.case,.storage div{break-inside:avoid}
+      .kind,.flow-card,.core-row,.case,.storage div{break-inside:avoid}
       .section{margin-top:32px}
       .hero{padding-top:35px}
       .closing{margin-top:38px}
@@ -162,17 +168,25 @@
     </header>
 
     <section class="section" aria-labelledby="core-title">
-      <div class="section-head"><span class="secno">01 /</span><h2 id="core-title">共通の運営基盤<span class="enline">CONTROL PLANE / CANONICAL RULES</span></h2></div>
-      <p class="introduction">記録や手順ごとに、基準となる元ファイルを決めています。一覧や図は、その参照先を案内するものです。下の名称は実際のフォルダ・ファイル名です。</p>
+      <div class="section-head"><span class="secno">01 /</span><h2 id="core-title">共通の運営基盤<span class="enline">DECISION CONTEXT / SHARED FOUNDATIONS</span></h2></div>
       <div class="core">
-        <div class="core-head"><div><h3>記録を中心に、人とAIが作業する。</h3><p>記録の本体はMarkdownなどのファイル。Obsidianは閲覧・編集の場、GitHubは同期・変更履歴・変更提案の基盤です。</p></div><span class="core-label">SYSTEM LAYER</span></div>
-        <div class="core-grid">
-          <div class="core-card"><span class="path">_system/</span><strong>共通の手順と定義</strong><p>skillsに作業手順、referenceに構造・設計判断を置く。AIごとの入口からも、この共通基準を参照する。</p></div>
-          <div class="core-card"><span class="path">index.md</span><strong>情報の所在を探す地図</strong><p>AI向けのVault全体マップ。短い説明から必要な元ファイルへ進む入口であり、詳細な記録の本体ではない。</p></div>
-          <div class="core-card"><span class="path">project-overview.md</span><strong>現在の仕事の案内板</strong><p>各Workの元ノートを参照する俯瞰用の一覧。進捗・状態の基準は各ノートの属性情報にあり、一覧自体が正本ではない。</p></div>
+        <div class="core-head">
+          <h3>結果だけでなく、判断の理由を残す。</h3>
+          <p>何を選び、なぜ選び、どう検証したか。その背景を記録し、次の制作や改善で参照できるようにする基盤です。下の3要素が、共通の基準と元記録への入口を担います。</p>
         </div>
-        <div class="core-foot"><span>Obsidian：閲覧・編集</span><span>GitHub：履歴・変更提案</span><span>AI：手順に沿う作業</span><span>人間：目的・承認・評価</span></div>
+        <dl class="core-list">
+          <div class="core-row"><dt><strong>共通ルール・設計判断</strong><code>_system/</code></dt><dd>作業手順と判断基準を管理。設計判断の文書には、背景・決定・理由・影響を残す。</dd></div>
+          <div class="core-row"><dt><strong>知識への入口</strong><code>index.md</code></dt><dd>必要な元記録へたどり着くための、AI向けのVault全体マップ。人間も参照できる。</dd></div>
+          <div class="core-row"><dt><strong>現在の仕事の俯瞰</strong><code>project-overview.md</code></dt><dd>各Workの状態や次の取り組みを見渡し、元ノートへつなぐ一覧。状態の正本は各ノートの属性情報にある。</dd></div>
+        </dl>
       </div>
+      <dl class="decision-layers">
+        <div><dt>記録・根拠</dt><dd>何を試し、何が起きたか。実測値や検証結果を残す。</dd></div>
+        <div><dt>判断の経緯</dt><dd>何を選び、なぜ選んだか。比較した案、見送った理由、判断の前提をたどる。</dd></div>
+        <div><dt>再利用する知識</dt><dd>使えた方法や失敗から学び、条件の違いを確かめて次の判断に活かす。</dd></div>
+      </dl>
+      <p class="record-note"><strong>経緯を残す場所：</strong>恒久的な設計判断は専用の文書へ、Projectの実装・検証は各ログへ、作業単位の成果・判断はその作業の記録へ残します。入口となる3要素に履歴を集約する仕組みではありません。上の3つの観点は再利用の考え方です。根拠や未確認事項を残す手順はありますが、すべての判断・代替案の記録や構造化を保証するものではありません。</p>
+      <p class="record-note"><strong>ツールと元記録の役割：</strong>記録の本体はMarkdownなどのファイルで、Obsidianは閲覧・編集の場です。GitHubのPRは変更提案とレビュー、変更履歴は差分を追う手がかりになります。差分だけでは判断理由を読み取れないため、元ノートやログの説明と併せて参照します。一覧や図は元記録を案内する派生ビューです。</p>
       <p class="boundary"><strong>AIが担うこと：</strong>必要な記録を参照し、規定の手順（skill）に沿って整理、下書き、更新案の作成などを行います。許可された可逆な内部変更は委任し、承認が必要な操作は各業務の規約に従います。たとえば記事の下書きと公開は別で、noteへの公開にはオーナーの明示が必要です。判断できない条件や不明な数値を、AIが推測で補わないルールを設けています。</p>
     </section>
 
@@ -181,11 +195,11 @@
       <p class="introduction">Workは、制作や運営などの管理対象を指します。終わり方と役割に応じて6種類に分け、それぞれのフォルダへ置きます。下はVault全体のツリーではなく、Work分類に使う6つの保管先です。</p>
       <div class="portfolio">
         <article class="kind"><div class="kind-head"><h3>Grownbox</h3><span class="path">grownbox/</span></div><span class="translation">育成中の企画・研究</span><p>まだProject化していない企画・研究。仮説を育て、有限の仕事として進めるか判断する。</p></article>
-        <article class="kind"><div class="kind-head"><h3>Projects</h3><span class="path">projects/</span></div><span class="translation">完了条件のある仕事</span><p>完了条件のある制作・開発・展示。進捗と次のアクションを追跡する。</p></article>
+        <article class="kind"><div class="kind-head"><h3>Projects</h3><span class="path">projects/</span></div><span class="translation">完了条件のある仕事</span><p>完了条件のある制作・開発・展示。進捗と次の行動を管理し、判断・実装・検証の経緯はノートやログに残す。</p></article>
         <article class="kind blue"><div class="kind-head"><h3>Series</h3><span class="path">series/</span></div><span class="translation">作品を生み続ける親シリーズ</span><p>複数の作品や活動を継続して生むシリーズ。親単位に完了率は付けない。</p></article>
-        <article class="kind blue"><div class="kind-head"><h3>Services</h3><span class="path">services/</span></div><span class="translation">継続して運営する仕組み</span><p>サイトやアプリなど、継続運営を前提とする仕組み。開発中・本番運用・保守などの段階で管理する。</p></article>
+        <article class="kind blue"><div class="kind-head"><h3>Services</h3><span class="path">services/</span></div><span class="translation">継続して運営する仕組み</span><p>サイトやアプリなど、継続運営を前提とする仕組み。開発・本番運用・保守の段階と課題を記録し、改善判断につなげる。</p></article>
         <article class="kind green"><div class="kind-head"><h3>Collections</h3><span class="path">collections/</span></div><span class="translation">項目を足していく棚</span><p>完了条件を持たず、必要な項目を追加していく棚。項目の収録状態で捉える。</p></article>
-        <article class="kind green"><div class="kind-head"><h3>Resources</h3><span class="path">resources/</span></div><span class="translation">再利用する方法論・知識</span><p>方法論・知識・共通設計を保存し、別の制作でも使えるようにする。作業の進捗は管理しない。</p></article>
+        <article class="kind green"><div class="kind-head"><h3>Resources</h3><span class="path">resources/</span></div><span class="translation">再利用する方法論・知識</span><p>方法論・知識・共通設計を、出典や適用範囲とともに残し、次の制作で参照する。作業の進捗は管理しない。</p></article>
       </div>
       <p class="portfolio-note">分類（kind）、状態（status）、必要に応じた段階（stage）は別の情報です。0〜100の進捗値はProjectだけが持ち、継続Serviceには完了率を付けません。</p>
       <p class="boundary"><strong>ローンチ担当者から見ると：</strong>「特定のリリースを受入条件まで仕上げる」はProject、「公開したサービスを保守・改善し続ける」はServiceに当たります。これは分類の説明例であり、公開時にフォルダが自動で切り替わる仕組みではありません。</p>
@@ -199,9 +213,9 @@
         <div class="flow-row"><div class="flow-num"><span>2</span></div><article class="flow-card"><h3>作る・検証する<small>BUILD / VALIDATE</small></h3><p>完了条件のある制作はProjectで管理し、設計・検証の記録を残す。コードの実装は各リポジトリや開発環境で進める。継続Serviceでは、開発・運営・改善の段階を記録する。</p><div class="pills"><code>projects/</code><code>GitHub PR</code><code>AI skills</code></div></article></div>
         <div class="flow-row"><div class="flow-num"><span>3</span></div><article class="flow-card"><h3>公開・届ける<small>LAUNCH / DISTRIBUTE</small></h3><p>記事の下書きや公開用素材を整え、各媒体の手順と必要な承認を経て公開する。サイトや配信ツールの実装・稼働は別の環境が担い、Vaultは記録と手順を支える。</p><div class="pills"><code>note-workspace/</code><code>services/</code><code>site / apps / SNS</code></div></article></div>
         <div class="flow-row"><div class="flow-num"><span>4</span></div><article class="flow-card"><h3>公開後の反応と収支を確かめる<small>MEASURE / DECIDE</small></h3><p>閲覧・流入などは取得期間と取得時点を伴う観測記録として扱い、実際の金銭の動きとは区別する。不明値をゼロで埋めず、人間が継続・改善を判断する材料にする。</p><div class="pills"><code>analytics_view/</code><code>Finances/</code></div></article></div>
-        <div class="flow-row"><div class="flow-num"><span>5</span></div><article class="flow-card"><h3>知識・部品・経験を次へ<small>REUSE / COMPOUND</small></h3><p>制作で得た方法や知識をResourcesへ整理する。項目を集めるならCollections、個別作品を継続して生む活動ならSeriesと、再利用の役割に応じて扱う。</p><div class="pills"><code>resources/</code><code>collections/</code><code>series/</code></div></article></div>
+        <div class="flow-row"><div class="flow-num"><span>5</span></div><article class="flow-card"><h3>知識・部品・経験を次へ<small>REUSE / COMPOUND</small></h3><p>制作で得た方法や知識を、根拠や適用範囲とともにResourcesへ整理する。項目を集めるならCollections、作品を継続して生む活動ならSeriesと、役割に応じて扱う。</p><div class="pills"><code>resources/</code><code>collections/</code><code>series/</code></div></article></div>
       </div>
-      <div class="return"><strong>↺ 学びを次の企画へ</strong> ─ 記録を読み直し、次に試すことを判断する。</div>
+      <div class="return"><strong>↺ 学びを次の企画へ</strong> ─ 過去の理由と検証結果を読み直し、条件の変化を踏まえて次に試すことを判断する。</div>
     </section>
 
     <section class="section" aria-labelledby="example-title">
