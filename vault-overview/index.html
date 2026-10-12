@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#efe8db">
+  <meta name="description" content="や印工務店 YZRS Vaultの公開向け構造図。Obsidian・GitHub・AIを使い、企画、制作、公開、観測、知識の再利用をつなぐ個人運営OS。">
+  <title>YZRS Vault — Structure &amp; Launch Loop | や印工務店</title>
+  <style>
+    :root {
+      --paper:#efe8db; --card:#faf7f0; --ink:#231f1a;
+      --muted:#625b50; --border:#d0c4b2; --accent:#a34624;
+      --accent-deep:#813216; --accent-wash:#f3e3d6;
+      --green:#385b4a; --green-wash:#e7eee6;
+      --blue:#3b5363; --blue-wash:#e7eef0;
+      --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+      --sans:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",sans-serif;
+    }
+    *,*::before,*::after{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.68;-webkit-font-smoothing:antialiased}
+    a{color:inherit}
+    a:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+    .sheet{max-width:870px;margin:auto;padding:44px 38px 70px;position:relative}
+    .sheet::before{content:"";position:absolute;top:0;left:14px;right:14px;border-top:5px solid var(--ink)}
+    .mast{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid var(--ink);padding-bottom:14px}
+    .brand{font-weight:900;letter-spacing:.04em;font-size:17px}.brand span{display:inline-block;background:var(--ink);color:var(--paper);padding:2px 8px;margin-right:8px}
+    .issue,.eyebrow,.tag,.path,.micro,.stepno,.smallcaps,.timeline-code{font-family:var(--mono)}
+    .issue{font-size:11px;letter-spacing:.12em;text-align:right;color:var(--muted)}
+    .hero{padding:66px 0 38px;border-bottom:1px solid var(--border)}
+    .eyebrow{color:var(--accent);font-size:12px;letter-spacing:.18em;font-weight:700}
+    h1{font-size:clamp(53px,11vw,96px);line-height:.94;letter-spacing:-.065em;margin:22px 0 26px;font-weight:850}
+    h1 span{color:var(--accent)}
+    .lead{font-size:clamp(19px,3.1vw,25px);font-weight:760;line-height:1.5;letter-spacing:-.025em;max-width:740px;margin:0 0 20px}
+    .sublead{font-size:14px;color:var(--muted);max-width:700px;margin:0}
+    .manifest{display:flex;gap:8px;flex-wrap:wrap;margin-top:24px}
+    .tag{display:inline-block;font-size:11px;letter-spacing:.02em;border:1px solid var(--border);background:var(--card);padding:6px 10px;border-radius:2px}
+    .section{margin-top:61px}
+    .section-head{display:flex;align-items:baseline;gap:12px;border-bottom:1px solid var(--ink);padding-bottom:12px;margin-bottom:21px}
+    .secno{font:700 12px var(--mono);color:var(--accent)}
+    h2{font-size:clamp(21px,3.5vw,29px);line-height:1.25;letter-spacing:-.03em;margin:0}
+    .enline{display:block;font:600 11px/1.4 var(--mono);color:var(--accent);letter-spacing:.06em;margin-top:3px}
+    .introduction{color:var(--muted);font-size:13px;margin:0 0 18px}
+    .cycle{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;background:var(--ink);padding:3px;margin-top:26px}
+    .cycle div{background:#29251f;color:#f7f0e6;text-align:center;padding:12px 5px 10px;border-right:1px solid #595044;min-width:0}
+    .cycle div:last-child{border:0}
+    .cycle .n{display:block;font:700 10px var(--mono);color:#e3a281}
+    .cycle strong{display:block;font-size:clamp(10px,1.7vw,13px);line-height:1.35;margin-top:4px;white-space:nowrap}
+    .cycle small{display:block;font:10px var(--mono);color:#c4b8aa;margin-top:4px}
+    .core{background:var(--ink);color:#f6eee4;padding:26px;border-radius:2px;position:relative}
+    .core-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;border-bottom:1px solid #585046;padding-bottom:18px;margin-bottom:16px}
+    .core-head h3{margin:0;font-size:22px}.core-head p{margin:5px 0 0;color:#c7baac;font-size:13px}
+    .core-label{font:700 10px var(--mono);letter-spacing:.13em;color:#eab08f;white-space:nowrap}
+    .core-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+    .core-card{background:#36312b;padding:16px;border:1px solid #5e554a;min-width:0}
+    .core-card .path{font-size:13px;color:#ffc29f;overflow-wrap:anywhere}
+    .core-card strong{display:block;font-size:14px;margin:8px 0 3px}
+    .core-card p{font-size:12px;line-height:1.6;color:#c7baac;margin:0}
+    .core-foot{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px;color:#ddd2c4;font-size:11px}
+    .core-foot span{border:1px solid #62574b;padding:4px 8px}
+    .portfolio{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .kind{background:var(--card);padding:18px 19px;border:1px solid var(--border);position:relative;min-width:0}
+    .kind::before{content:"";position:absolute;top:0;left:0;bottom:0;width:4px;background:var(--accent)}
+    .kind.blue::before{background:var(--blue)}.kind.green::before{background:var(--green)}
+    .kind-head{display:flex;gap:8px;justify-content:space-between;align-items:start;flex-wrap:wrap}
+    .kind h3{font-size:20px;letter-spacing:-.03em;line-height:1.25;margin:0}
+    .path{font-size:11px;color:var(--accent-deep);background:var(--accent-wash);padding:2px 5px;max-width:100%;overflow-wrap:anywhere}
+    .kind.blue .path{background:var(--blue-wash);color:var(--blue)}
+    .kind.green .path{background:var(--green-wash);color:var(--green)}
+    .translation{font:700 10px var(--mono);letter-spacing:.04em;color:var(--muted);display:block;margin:8px 0 6px}
+    .kind p{font-size:13px;line-height:1.6;color:var(--muted);margin:0}
+    .portfolio-note{margin-top:12px;font-size:12px;color:var(--muted);border-left:3px solid var(--border);padding-left:11px}
+    .flow{position:relative;display:grid;gap:0}
+    .flow::before{content:"";position:absolute;left:23px;top:33px;bottom:48px;border-left:2px solid var(--accent);opacity:.42}
+    .flow-row{display:grid;grid-template-columns:48px 1fr;column-gap:14px;position:relative}
+    .flow-num{position:relative;display:flex;justify-content:center;padding-top:21px;z-index:1}
+    .flow-num span{width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;font:700 12px/30px var(--mono);text-align:center;box-shadow:0 0 0 7px var(--paper)}
+    .flow-card{background:var(--card);border:1px solid var(--border);padding:20px 20px 21px;margin-bottom:15px}
+    .flow-card h3{margin:0;font-size:18px;letter-spacing:-.025em}
+    .flow-card h3 small{font:600 11px var(--mono);color:var(--accent);display:block;margin-top:2px;letter-spacing:0}
+    .flow-card p{margin:8px 0 10px;color:var(--muted);font-size:13px}
+    .pills{display:flex;flex-wrap:wrap;gap:6px}
+    .pills code{font:11px var(--mono);border:1px solid #ded2c3;background:#f1e9dd;padding:4px 7px;overflow-wrap:anywhere}
+    .return{text-align:center;padding:13px;background:#e5d7c7;border:1px dashed #b5a18c;font-size:12px;letter-spacing:.015em}
+    .return strong{color:var(--accent-deep)}
+    .case{border:1px solid var(--border);background:var(--card);display:grid;grid-template-columns:1fr 2fr}
+    .case-aside{background:var(--green);color:#fff;padding:24px}
+    .case-aside .micro{font-size:11px;letter-spacing:.08em;color:#cfe0cf}
+    .case-aside h3{font-size:29px;line-height:1.13;letter-spacing:-.045em;margin:13px 0}
+    .case-aside p{font-size:12px;color:#e0ece0;margin:0}
+    .case-main{padding:24px}
+    .case-main h3{font-size:17px;line-height:1.4;margin:0 0 12px}
+    .case-main p{font-size:13px;color:var(--muted);margin:0}
+    .case-tags{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0}
+    .case-tags span{font:11px var(--mono);border:1px solid var(--border);padding:4px 8px;background:#f2ebe0}
+    .reality{margin-top:13px;padding:12px 14px;background:var(--blue-wash);border-left:3px solid var(--blue);font-size:12px;color:#364958}
+    .storage{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+    .storage div{background:var(--card);border:1px solid var(--border);padding:15px}
+    .storage strong{display:block;font-size:15px}
+    .storage code{display:block;color:var(--accent-deep);font:11px var(--mono);margin:6px 0}
+    .storage p{font-size:12px;color:var(--muted);margin:0}
+    .fineprint{font-size:12px;color:var(--muted);margin-top:12px}
+    .closing{margin-top:66px;border-top:3px solid var(--ink);padding-top:27px}
+    .closing .slogan{font-size:clamp(24px,5vw,39px);font-weight:850;line-height:1.22;letter-spacing:-.05em;margin:8px 0 14px}
+    .closing .slogan span{color:var(--accent)}
+    .closing .desc{font-size:13px;color:var(--muted);margin:0 0 24px}
+    .bottom{display:flex;justify-content:space-between;align-items:end;flex-wrap:wrap;gap:10px;padding-top:13px;border-top:1px solid var(--border);font:11px/1.6 var(--mono);color:var(--muted)}
+    .bottom a{text-underline-offset:3px}
+    @media(max-width:600px){
+      .sheet{padding:30px 18px 48px}
+      .sheet::before{left:10px;right:10px}
+      .mast{align-items:flex-start}.issue{font-size:9px}
+      .hero{padding:49px 0 31px}h1{font-size:clamp(53px,14vw,76px)}
+      .section{margin-top:47px}
+      .core{padding:19px}.core-head{display:block}.core-label{display:block;margin-top:11px}
+      .core-grid{grid-template-columns:1fr}.core-card{padding:12px 14px}
+      .portfolio{gap:9px}.kind{padding:14px 12px 14px 15px}.kind h3{font-size:17px}
+      .kind p{font-size:12px}.path{font-size:10px}
+      .case{grid-template-columns:1fr}.case-aside,.case-main{padding:19px}
+      .storage{grid-template-columns:1fr}.storage div{padding:12px 15px}
+      .cycle div{padding:10px 2px}.cycle small{font-size:8px}
+      .flow-card{padding:17px 14px}.flow-row{grid-template-columns:42px 1fr;column-gap:8px}
+      .flow::before{left:20px}
+    }
+    @media(max-width:365px){.portfolio{grid-template-columns:1fr}.cycle small{display:none}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+    @media print{
+      @page{size:A4 portrait;margin:14mm}
+      body{background:white}
+      .sheet{max-width:none;padding:0}
+      .sheet::before{display:none}
+      .core,.case-aside,.cycle{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      .kind,.flow-card,.core-card,.case,.storage div{break-inside:avoid}
+      .section{margin-top:32px}
+      .hero{padding-top:35px}
+      .closing{margin-top:38px}
+    }
+  </style>
+</head>
+<body>
+  <main class="sheet">
+    <div class="mast">
+      <div class="brand"><span>や</span> や印工務店 <span lang="en" style="background:none;color:var(--muted);padding:0;font:11px var(--mono);margin-left:4px">YZRSWORK</span></div>
+      <div class="issue">PUBLIC STRUCTURE MAP<br>2026 / OCT</div>
+    </div>
+    <header class="hero">
+      <div class="eyebrow">OBSIDIAN × GITHUB × AI</div>
+      <h1>VAULT<br><span>OPERATING</span><br>SYSTEM.</h1>
+      <p class="lead">思いつきを形にして、<br>次に使える形で残す。</p>
+      <p class="sublead">や印工務店のVaultは、個人制作・小規模事業のための運営基盤。企画、開発、ローンチ、観測、知識の再利用を、Markdownを中心に接続します。<br><span lang="en">A personal operating system for building, launching, learning, and reusing work.</span></p>
+      <div class="manifest">
+        <span class="tag">MARKDOWN FIRST</span>
+        <span class="tag">6 WORK KINDS</span>
+        <span class="tag">AI-READABLE RULES</span>
+        <span class="tag">HUMAN-GATED CHANGES</span>
+      </div>
+      <div class="cycle" aria-label="企画から知識の再利用までの5段階">
+        <div><span class="n">01</span><strong>発想</strong><small>IDEA</small></div>
+        <div><span class="n">02</span><strong>制作</strong><small>BUILD</small></div>
+        <div><span class="n">03</span><strong>公開</strong><small>LAUNCH</small></div>
+        <div><span class="n">04</span><strong>観測</strong><small>MEASURE</small></div>
+        <div><span class="n">05</span><strong>再利用</strong><small>REUSE</small></div>
+      </div>
+    </header>
+
+    <section class="section" aria-labelledby="core-title">
+      <div class="section-head"><span class="secno">01 /</span><h2 id="core-title">共通の運営基盤<span class="enline">CONTROL PLANE / CANONICAL RULES</span></h2></div>
+      <p class="introduction">個別のAIやアプリごとに手順を作り直さず、Vault内の基準を参照する設計。下の名称は実際のVaultにあるパスです。</p>
+      <div class="core">
+        <div class="core-head"><div><h3>One workspace, shared context.</h3><p>記録の本体はObsidian。変更履歴と提案フローはGitHubで管理。</p></div><span class="core-label">SYSTEM LAYER</span></div>
+        <div class="core-grid">
+          <div class="core-card"><span class="path">_system/</span><strong>Rules &amp; Skills</strong><p>作業手順、判断基準、AIの実行ルールを定義。</p></div>
+          <div class="core-card"><span class="path">index.md</span><strong>Knowledge Map</strong><p>AIが必要な情報の所在を見つける入口。</p></div>
+          <div class="core-card"><span class="path">project-overview.md</span><strong>Work Overview</strong><p>現在動いているWorkの一覧。元データからの俯瞰ビュー。</p></div>
+        </div>
+        <div class="core-foot"><span>Obsidian = workspace</span><span>GitHub = version &amp; PR</span><span>AI = task execution</span><span>Human = key decisions</span></div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="portfolio-title">
+      <div class="section-head"><span class="secno">02 /</span><h2 id="portfolio-title">仕事を6つの種類で管理<span class="enline">WORK PORTFOLIO / ACTUAL VAULT FOLDERS</span></h2></div>
+      <p class="introduction">「いつ完成する仕事か」「継続運営する仕組みか」で保管先を分けています。すべてを同じタスク一覧に押し込まないのが特徴です。</p>
+      <div class="portfolio">
+        <article class="kind"><div class="kind-head"><h3>Grownbox</h3><span class="path">grownbox/</span></div><span class="translation">IDEA INCUBATION</span><p>まだ着手を決めていない企画・研究。仮説を育て、Projectへ昇格するか判断する。</p></article>
+        <article class="kind"><div class="kind-head"><h3>Projects</h3><span class="path">projects/</span></div><span class="translation">FINITE DELIVERY</span><p>完了条件のある制作・開発・展示。進捗と次のアクションを追跡する。</p></article>
+        <article class="kind blue"><div class="kind-head"><h3>Series</h3><span class="path">series/</span></div><span class="translation">REPEATABLE CREATION</span><p>複数の作品や活動を継続して生むシリーズ。親単位に完了率は付けない。</p></article>
+        <article class="kind blue"><div class="kind-head"><h3>Services</h3><span class="path">services/</span></div><span class="translation">ONGOING OPERATIONS</span><p>サイトやアプリなど、公開後も継続保守・改善する仕組みを扱う。</p></article>
+        <article class="kind green"><div class="kind-head"><h3>Collections</h3><span class="path">collections/</span></div><span class="translation">GROWING CATALOGS</span><p>工具・アイデア・作例など、増え続ける項目を整理するための棚。</p></article>
+        <article class="kind green"><div class="kind-head"><h3>Resources</h3><span class="path">resources/</span></div><span class="translation">REUSABLE KNOWLEDGE</span><p>実測、方法論、共通設計などを保存し、別の制作でも使えるようにする。</p></article>
+      </div>
+      <p class="portfolio-note">Work種別（kind）と現在状態（status）を分離。数値の完了率は有限Projectだけに使用します。</p>
+    </section>
+
+    <section class="section" aria-labelledby="loop-title">
+      <div class="section-head"><span class="secno">03 /</span><h2 id="loop-title">ローンチまでの循環<span class="enline">BUILD → LAUNCH → LEARN LOOP / BUSINESS VIEW</span></h2></div>
+      <p class="introduction">これはフォルダ階層とは別の「仕事の流れ」を表す概念図。各ステップは必要なVaultの領域を横断します。</p>
+      <div class="flow">
+        <div class="flow-row"><div class="flow-num"><span>1</span></div><article class="flow-card"><h3>発見・企画を育てる<small>DISCOVER / FRAME</small></h3><p>思いつきや現場の困りごとを記録し、仮説と実行条件を整理する。</p><div class="pills"><code>grownbox/</code><code>inbox/</code><code>resources/</code></div></article></div>
+        <div class="flow-row"><div class="flow-num"><span>2</span></div><article class="flow-card"><h3>作る・検証する<small>BUILD / VALIDATE</small></h3><p>ハードウェア、Webツール、展示などを有限Workとして実装し、実機・利用者の反応を確認する。</p><div class="pills"><code>projects/</code><code>GitHub PR</code><code>AI skills</code></div></article></div>
+        <div class="flow-row"><div class="flow-num"><span>3</span></div><article class="flow-card"><h3>公開・届ける<small>LAUNCH / DISTRIBUTE</small></h3><p>作品の公開、記事制作、Web配信、SNS告知につなげる。公開先の実装は別リポジトリにある場合もある。</p><div class="pills"><code>note-workspace/</code><code>services/</code><code>site / apps / SNS</code></div></article></div>
+        <div class="flow-row"><div class="flow-num"><span>4</span></div><article class="flow-card"><h3>反応と収支を確かめる<small>MEASURE / DECIDE</small></h3><p>閲覧・流入・成果の実測と、実際の収入・支出を区別して記録。継続・改善判断につなげる。</p><div class="pills"><code>analytics_view/</code><code>Finances/</code></div></article></div>
+        <div class="flow-row"><div class="flow-num"><span>5</span></div><article class="flow-card"><h3>知識・部品・経験を次へ<small>REUSE / COMPOUND</small></h3><p>失敗、部品、制作過程、公開実績を再利用可能な知識に変え、次の企画で活かす。</p><div class="pills"><code>resources/</code><code>collections/</code><code>series/</code></div></article></div>
+      </div>
+      <div class="return"><strong>↺ RETURN TO IDEATION</strong> ─ 学びが次の制作へ戻る / Feedback becomes the next starting point.</div>
+    </section>
+
+    <section class="section" aria-labelledby="example-title">
+      <div class="section-head"><span class="secno">04 /</span><h2 id="example-title">運用例：JUNK YARD<span class="enline">REAL-WORLD EXAMPLE / PROJECT TO PUBLIC EXPERIENCE</span></h2></div>
+      <div class="case">
+        <div class="case-aside"><span class="micro">CASE / EXHIBITION</span><h3>JUNK<br>YARD</h3><p>制作物を展示・体験・情報発信へ展開する実例。</p></div>
+        <div class="case-main">
+          <h3>ひとつの展示企画から、複数のアウトプットを生む。</h3>
+          <p>電子工作の作品制作を中心に、展示、ライブ、記事、Web体験、SNS発信、NFCグッズの物販へ広げています。制作・公開・反応の記録が次の取り組みへつながります。</p>
+          <div class="case-tags"><span>PHYSICAL WORKS</span><span>EXHIBITION</span><span>WEB &amp; CONTENT</span><span>NFC GOODS</span><span>FEEDBACK</span></div>
+          <div class="reality"><strong>現在の課題 / Business validation:</strong> 制作・知識の再利用は運用できています。一方、継続的な顧客獲得や売上の再現性はまだ検証中です。</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="lifecycle-title">
+      <div class="section-head"><span class="secno">05 /</span><h2 id="lifecycle-title">終わった仕事も資産として残す<span class="enline">LIFECYCLE / COLD STORAGE</span></h2></div>
+      <p class="introduction"><code>cold-storage/</code> は現役のWork一覧から外したものを保管する領域。状態によって分け、過去の仕事が現在の判断を埋め尽くさないようにします。</p>
+      <div class="storage">
+        <div><strong>Archive</strong><code>cold-storage/archive/</code><p>完了・役割終了。実績と学びを残す。</p></div>
+        <div><strong>Freezer</strong><code>cold-storage/freezer/</code><p>一時停止。再開の意志があるもの。</p></div>
+        <div><strong>Graveyard</strong><code>cold-storage/graveyard/</code><p>中止・廃案。判断の履歴を保存。</p></div>
+      </div>
+      <p class="fineprint">一般的な過去記録には別の <code>archive/</code> もあります。ここでは業務ライフサイクルの違いを中心に示しています。</p>
+    </section>
+
+    <footer class="closing">
+      <div class="eyebrow">THE YZRS PRINCIPLE</div>
+      <p class="slogan">Ideas become builds.<br>Builds become releases.<br><span>Experience becomes an asset.</span></p>
+      <p class="desc">Vaultはアプリそのものではなく、複数の制作・公開・運営を支えるワークスペース。図は実在の構成に基づく外部説明用の要約であり、内部文書や個人記録を公開するものではありません。</p>
+      <div class="bottom">
+        <div>や印工務店 / YZRSWORK<br>PUBLIC-FACING CONCEPTUAL OVERVIEW</div>
+        <div><a href="../">← AI Skill Recipe</a> &nbsp; · &nbsp; <a href="https://yzrswork.com/">yzrswork.com ↗</a></div>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>
