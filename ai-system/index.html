@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f2ebdf">
+<meta name="color-scheme" content="light">
+<meta name="description" content="や印工務店のAI協働の仕組みを、3つのガイドで紹介。Vaultの記録、AIと人間の役割、Skill・Hook・Wrapperの業務設計。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ひとりで作る。AIと運営する。 | YZRS AI SYSTEM">
+<meta property="og:description" content="ひとりの制作活動を、判断の記録・共通手順・AIとの役割分担で支える。その仕組みを3つのガイドで紹介します。">
+<title>ひとりで作る。AIと運営する。 — YZRS AI SYSTEM | や印工務店</title>
+<style>
+:root{--paper:#f2ebdf;--card:#fcf7ef;--ink:#282723;--soft:#57534b;--muted:#746d62;--line:#cec1ae;--clay:#a6472c;--clay-dark:#85351e;--navy:#28383c;--navy-line:#607075;--bright:#f8f0e5;--green:#b9d0c7;--mono:ui-monospace,SFMono-Regular,Consolas,monospace;--sans:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 16px/1.82 var(--sans);overflow-wrap:anywhere;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.18;background-image:radial-gradient(#a89b88 .7px,transparent .8px);background-size:8px 8px}
+a{color:inherit}a:focus-visible{outline:3px solid var(--clay);outline-offset:4px}
+.skip{position:absolute;top:-90px;left:10px;background:#fff;padding:10px 15px;z-index:99}.skip:focus{top:12px}
+.wrap{width:min(100% - 48px,960px);margin-inline:auto}
+.mast{border-top:6px solid var(--ink);border-bottom:1px solid var(--line)}
+.mast-inner{min-height:77px;display:flex;justify-content:space-between;align-items:center;gap:18px}
+.brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;font-weight:900;letter-spacing:.02em;font-size:16px}
+.logo{display:inline-grid;place-items:center;width:39px;height:39px;background:var(--clay);color:#fff;font:800 26px/1 Georgia,serif;transform:rotate(-4deg)}
+.brand small{display:block;color:var(--muted);font:600 10px/1.6 var(--mono);letter-spacing:.13em}
+.mast nav{display:flex;gap:20px;flex-wrap:wrap;font-size:12px;font-weight:700}
+.mast nav a{text-underline-offset:5px}
+.hero{padding:95px 0 68px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(245px,.7fr);gap:40px;align-items:center}
+.eyebrow,.section-no,.micro,.card-no,.tag,.foot-label{font-family:var(--mono);letter-spacing:.11em}
+.eyebrow{color:var(--clay);font-size:12px;font-weight:800}
+.eyebrow::before{content:"";display:inline-block;width:28px;height:2px;background:var(--clay);vertical-align:middle;margin-right:12px}
+h1{font-size:clamp(41px,6.4vw,74px);letter-spacing:-.07em;line-height:1.34;margin:20px 0 25px;font-weight:900}
+h1 em{font-style:normal;color:var(--clay);white-space:nowrap}
+.hero-lead{max-width:600px;font-size:17px;font-weight:550;line-height:2.02;margin:0}
+.hero-sub{color:var(--soft);max-width:630px;font-size:14px;margin:20px 0 0}
+.edition{background:var(--navy);color:var(--bright);padding:27px 27px 30px;box-shadow:13px 13px 0 #ded0bd;position:relative}
+.edition::before{content:"";position:absolute;inset:0 auto 0 0;width:6px;background:var(--clay)}
+.edition .micro{color:#d8aaa0;font-size:11px;font-weight:800}
+.edition strong{font-family:Georgia,"Yu Mincho",serif;font-size:70px;line-height:1;display:block;margin:23px 0 23px;letter-spacing:-.07em}
+.edition strong span{font-size:21px;margin-left:6px;color:#c6d6cc;letter-spacing:0}
+.edition p{font-size:13px;color:#dce2da;margin:0;border-top:1px solid var(--navy-line);padding-top:14px;line-height:1.8}
+.edition .small{display:block;font-size:11px;color:#c9d6ce;margin-top:24px;letter-spacing:.08em}
+.explain{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:34px 0 35px;display:grid;grid-template-columns:minmax(180px,.55fr) minmax(0,1.45fr);gap:40px}
+.explain-label{font:800 11px/1.8 var(--mono);color:var(--clay);letter-spacing:.12em;padding-top:6px}
+.explain h2{font-size:clamp(22px,3vw,31px);line-height:1.55;letter-spacing:-.035em;margin:0 0 10px}
+.explain p{font-size:14px;color:var(--soft);margin:0}
+.main-guide{padding:79px 0 40px}
+.section-head{display:flex;align-items:start;justify-content:space-between;gap:22px;margin-bottom:24px}
+.section-no{font-size:11px;color:var(--clay);font-weight:800;margin-bottom:10px}
+h2{font-size:clamp(26px,4vw,39px);line-height:1.45;letter-spacing:-.05em;margin:0}
+.section-head p{max-width:290px;margin:3px 0 0;color:var(--soft);font-size:13px;line-height:1.8}
+.guide-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.guide{position:relative;display:flex;flex-direction:column;min-width:0;background:var(--card);border:1px solid var(--line);padding:25px 24px 22px;text-decoration:none;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+.guide:hover{border-color:var(--clay);transform:translateY(-3px);box-shadow:0 8px 0 #e7d8c8}
+.guide:focus-visible{outline-offset:2px}
+.guide::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--clay)}
+.guide:nth-child(2)::before{background:var(--navy)}.guide:nth-child(3)::before{background:#557466}
+.guide-top{display:flex;justify-content:space-between;align-items:start;gap:10px;margin-bottom:31px}
+.card-no{font-size:12px;color:var(--clay);font-weight:800}
+.guide:nth-child(2) .card-no{color:var(--navy)}.guide:nth-child(3) .card-no{color:#426c5c}
+.level{font:700 10px/1.4 var(--mono);color:var(--muted);letter-spacing:.04em;text-align:right}
+.guide h3{font-size:24px;line-height:1.38;letter-spacing:-.04em;margin:0 0 8px}
+.en{font:700 12px/1.4 var(--mono);color:var(--muted);display:block;margin-bottom:18px;letter-spacing:.03em}
+.guide p{font-size:13px;color:var(--soft);margin:0 0 16px;line-height:1.9;flex:1}
+.answer{font-size:12px;font-weight:700;line-height:1.75;border-top:1px solid var(--line);padding-top:14px}
+.go{margin-top:19px;font-size:12px;color:var(--clay);font-weight:800;letter-spacing:.02em}
+.route{margin:28px 0 0;color:var(--muted);font-size:12px}
+.perspective{padding:47px 0 0}
+.perspective .panel{background:var(--navy);color:var(--bright);padding:30px 34px;display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:28px;align-items:center}
+.perspective .micro{color:#d9b8a9;font-size:11px;font-weight:700}
+.perspective h2{font-size:clamp(23px,3vw,31px);margin:9px 0 0;line-height:1.55}
+.perspective p{color:#e1e7df;font-size:13px;margin:0;line-height:1.9}
+.perspective p strong{color:#f9d0bc}
+.scope{padding:69px 0 36px}
+.scope h2{font-size:25px;margin:0 0 12px}
+.scope p{color:var(--soft);max-width:800px;font-size:13px;margin:0 0 10px;line-height:1.95}
+footer{margin-top:30px;border-top:1px solid var(--line);padding:26px 0 42px}
+.foot-inner{display:flex;justify-content:space-between;align-items:start;gap:20px;flex-wrap:wrap}
+.foot-label{font-size:10px;color:var(--muted)}
+.foot-links{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;font-weight:700}
+.foot-links a{text-underline-offset:4px}
+@media(max-width:760px){.hero{grid-template-columns:1fr;gap:30px;padding:60px 0}.edition{max-width:420px}.explain{grid-template-columns:1fr;gap:8px}.guide-grid{grid-template-columns:1fr}.guide{min-height:auto}.guide-top{margin-bottom:17px}.guide h3{font-size:22px}.guide p{flex:auto}.perspective .panel{grid-template-columns:1fr;gap:14px}.section-head{display:block}.section-head p{max-width:none;margin-top:9px}}
+@media(max-width:460px){.wrap{width:min(100% - 36px,960px)}.mast-inner{min-height:67px;align-items:flex-start;padding:13px 0;flex-direction:column;gap:10px}.brand{font-size:14px}.mast nav{gap:15px;font-size:11px}.hero{padding:49px 0 57px}h1{font-size:clamp(33px,9.6vw,47px)}h1 em{white-space:normal}.hero-lead{font-size:15px}.edition{padding:23px}.edition strong{font-size:57px}.main-guide{padding-top:61px}.guide{padding:23px 21px}.perspective .panel{padding:26px 23px}.scope{padding-top:53px}.foot-inner{flex-direction:column}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.guide{transition:none}.guide:hover{transform:none}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">本文へ移動</a>
+<header class="mast"><div class="wrap mast-inner">
+  <a class="brand" href="../" aria-label="や印工務店 デジタル作品集へ"><span class="logo">y.</span><span>や印工務店<small>YZRS WORK / FIELD GUIDE</small></span></a>
+  <nav aria-label="外部への案内"><a href="../">デジタル作品集</a><a href="https://yzrswork.com/">や印工務店のサイト ↗</a></nav>
+</div></header>
+<main id="main">
+  <div class="wrap">
+    <section class="hero" aria-labelledby="hero-title">
+      <div>
+        <div class="eyebrow">YZRS / AI SYSTEM GUIDE</div>
+        <h1 id="hero-title">ひとりで作る。<br><em>AIと運営する。</em></h1>
+        <p class="hero-lead">電子工作、Webアプリ、文章制作、展示。<br>仕事や制作が増えても、判断の理由を見失わず、次の仕事に活かしていく。</p>
+        <p class="hero-sub">や印工務店が実践しているのは、何でもAIに任せることではありません。人間の判断、AIの作業、共通の手順、記録を組み合わせた運営の仕組みです。</p>
+      </div>
+      <aside class="edition" aria-label="3つの解説ページ">
+        <div class="micro">A GUIDE TO HOW WE WORK</div>
+        <strong>03<span>GUIDES</span></strong>
+        <p>記録の構造から、人間とAIの役割、実行を支える技術まで。独立した3つのページを、読みやすい順番に。</p>
+        <span class="small">RECORD → COLLABORATE → BUILD</span>
+      </aside>
+    </section>
+    <section class="explain" aria-labelledby="why-title">
+      <div class="explain-label">WHY THIS SYSTEM EXISTS</div>
+      <div>
+        <h2 id="why-title">作るたびに、ゼロから始めない。</h2>
+        <p>その場の会話だけで終わると、過去に選んだ理由も、確かめた結果も埋もれてしまう。だから、記録の正を決め、手順を共有し、誰がどこで判断するのかを分けました。これは、一人の制作活動から育った小さな業務基盤です。</p>
+      </div>
+    </section>
+    <section class="main-guide" id="guides" aria-labelledby="guides-title">
+      <div class="section-head">
+        <div><div class="section-no">THE READING PATH / 01—03</div><h2 id="guides-title">読む順番は、この3つ。</h2></div>
+        <p>最初は技術を知らなくても大丈夫。入口から順に、仕組みの内側へ進めます。</p>
+      </div>
+      <nav class="guide-grid" aria-label="3つのガイド">
+        <a class="guide" href="../vault-overview/">
+          <div class="guide-top"><span class="card-no">01 / RECORD</span><span class="level">最初に読む</span></div>
+          <h3>記録の仕組み</h3>
+          <span class="en">Vault Overview</span>
+          <p>仕事や情報をどう整理し、何を記録し、判断の理由をどこに残すのか。制作を次へつなぐ土台。</p>
+          <span class="answer">答える問い：<br>「何を、どこに、なぜ残す？」</span>
+          <span class="go">ページを読む ↗</span>
+        </a>
+        <a class="guide" href="../ai-operating-model/">
+          <div class="guide-top"><span class="card-no">02 / COLLABORATE</span><span class="level">全体像をつかむ</span></div>
+          <h3>AIと人間の役割</h3>
+          <span class="en">AI Operating Model</span>
+          <p>誰が仕事を決め、AIがどこまで進め、人間がどこで判断するのか。制作から検証までの協働モデル。</p>
+          <span class="answer">答える問い：<br>「AIに何を任せ、どこで止める？」</span>
+          <span class="go">ページを読む ↗</span>
+        </a>
+        <a class="guide" href="../ai-work-architecture/">
+          <div class="guide-top"><span class="card-no">03 / ARCHITECTURE</span><span class="level">仕組みを深掘り</span></div>
+          <h3>業務設計の内側</h3>
+          <span class="en">AI Work Architecture</span>
+          <p>Skill・Router・Wrapper・Hook・Guardがどう関係するか。業務マニュアルや品質管理の言葉から解説。</p>
+          <span class="answer">答える問い：<br>「その分担をどう実装している？」</span>
+          <span class="go">ページを読む ↗</span>
+        </a>
+      </nav>
+      <p class="route">01 → 02 → 03 が推奨順。気になるページから読んでも構いません。</p>
+    </section>
+    <section class="perspective" aria-labelledby="business-title">
+      <div class="panel">
+        <div><div class="micro">FOR BUSINESS / LAUNCH & OPERATIONS</div><h2 id="business-title">ローンチ業務の言葉でも、<br>説明できる。</h2></div>
+        <p>Skillは<strong>業務マニュアル</strong>、Routerは<strong>担当振り分け</strong>、Guardは<strong>品質チェック</strong>に近い考え方。技術用語を覚えるための資料ではなく、AIが参加する仕事の設計を理解するためのガイドです。</p>
+      </div>
+    </section>
+    <section class="scope" aria-labelledby="scope-title">
+      <div class="section-no">A NOTE ON SCOPE</div>
+      <h2 id="scope-title">できていることも、未完成なことも。</h2>
+      <p>これらは、実際の運用や公開PRをもとにした説明です。AIによる全自動運営、あらゆる実行環境での安全性、事業の収益性を保証する資料ではありません。検査・承認の範囲は業務や実行環境によって異なります。</p>
+      <p>公開しているのは仕組みの概要。個人の記録や非公開Vault本体は公開していません。</p>
+    </section>
+  </div>
+</main>
+<footer><div class="wrap foot-inner">
+  <div><strong>や印工務店 / YZRSWORK</strong><div class="foot-label">思いつきを形にして、次に使える形で残す。</div></div>
+  <div class="foot-links"><a href="../">AI Skill Recipe ↗</a><a href="https://yzrswork.com/">yzrswork.com ↗</a></div>
+</div></footer>
+</body>
+</html>
