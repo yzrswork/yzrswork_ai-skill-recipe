@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f2ece1">
+<meta name="description" content="AIと働くための業務設計を、ローンチ業務に通じる言葉から解説。や印工務店のSkill、Router、Wrapper、Hook、Guard、Agent Stateと人間の承認境界。">
+<title>AIと働くための業務設計 — Inside YZRS | や印工務店</title>
+<style>
+:root{--paper:#f2ece1;--card:#fffaf2;--ink:#26241f;--muted:#5b584e;--clay:#a54326;--line:#cfc3b2;--dark:#273337;--light:#e9dfd0;--green:#315b50;--blue:#3c5560}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--ink);background:var(--paper);font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;line-height:1.82;overflow-wrap:anywhere}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.22;background-image:radial-gradient(#b5a38e .65px,transparent .8px);background-size:8px 8px;z-index:-1}
+a{color:inherit}a:focus-visible{outline:3px solid var(--clay);outline-offset:4px}
+.wrap{width:min(100% - 48px,1020px);margin-inline:auto}.skip{position:absolute;top:-120px;left:12px;background:#fff;padding:10px 15px;z-index:30}.skip:focus{top:12px}
+.masthead{border-top:6px solid var(--ink);border-bottom:1px solid var(--line);background:rgba(242,236,225,.93)}
+.mast{min-height:76px;display:flex;justify-content:space-between;align-items:center;gap:15px}
+.brand{text-decoration:none;font-weight:900;letter-spacing:.03em}.brand b{display:inline-block;background:var(--ink);color:var(--paper);padding:3px 9px;margin-right:9px}
+.topnav{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:17px}.topnav a{font-size:12px;font-weight:700;text-underline-offset:5px}
+.micro,.eyebrow,.count,.path,.tag,.stepno{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.09em}
+.hero{padding:78px 0 75px;display:grid;grid-template-columns:1.2fr .8fr;gap:50px;align-items:center}
+.eyebrow{font-size:12px;color:var(--clay);font-weight:800}
+h1{font-size:clamp(37px,5.8vw,70px);line-height:1.26;letter-spacing:-.06em;margin:20px 0 27px;font-weight:900}
+h1 em{color:var(--clay);font-style:normal}
+.lead{font-size:18px;max-width:600px;margin:0 0 21px;line-height:1.95;font-weight:500}
+.intro-note{font-size:13px;color:var(--muted);border-left:3px solid var(--clay);padding-left:17px;margin:0}
+.hero-board{background:var(--dark);color:#f9f5ed;padding:29px 28px;border-left:9px solid var(--clay);box-shadow:15px 15px 0 #e0d5c6}
+.board-title{font-weight:800;font-size:12px;color:#d6ddda;letter-spacing:.12em;border-bottom:1px solid #627071;padding-bottom:14px;margin-bottom:7px}
+.board-row{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid #566466;align-items:baseline}
+.board-row:last-child{border:0}.board-row .stepno{color:#e0b9a6;font-size:12px}
+.board-row strong{display:block;font-size:16px}.board-row small{display:block;font-size:12px;color:#dae0da}
+.contents{display:flex;flex-wrap:wrap;gap:10px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:17px 0;margin-bottom:15px}
+.contents a{font-size:12px;font-weight:700;text-decoration:none;border:1px solid var(--line);background:var(--card);padding:6px 12px}
+.contents a:hover{border-color:var(--clay);color:var(--clay)}
+.section{padding:83px 0;border-bottom:1px solid var(--line)}
+.section-top{display:grid;grid-template-columns:120px 1fr;gap:22px;align-items:start;margin-bottom:34px}
+.count{color:var(--clay);font-size:12px;font-weight:800;padding-top:11px}
+h2{font-size:clamp(27px,3.8vw,43px);line-height:1.45;letter-spacing:-.05em;margin:0 0 12px}
+.subtitle{font-size:15px;color:var(--muted);margin:0;max-width:700px}
+.keyline{border-left:4px solid var(--clay);padding:12px 20px;background:rgba(255,250,242,.7);font-size:19px;font-weight:800;line-height:1.65;margin:24px 0}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);background:var(--card)}
+table{width:100%;border-collapse:collapse;text-align:left;font-size:14px}
+th,td{padding:15px 18px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;background:#e8dfd2;text-align:left}tr:last-child td{border-bottom:0}
+td:first-child{font-weight:800}
+.columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.card{border:1px solid var(--line);background:var(--card);padding:25px;min-width:0}
+.card .tag{color:var(--clay);font-size:11px;font-weight:800}
+.card h3{font-size:19px;margin:9px 0 8px;letter-spacing:-.03em;line-height:1.4}
+.card p{font-size:14px;color:var(--muted);margin:0}
+.card .example{display:block;margin-top:15px;padding-top:13px;border-top:1px solid var(--line);font-size:12px;color:var(--ink)}
+.card .path{font-size:11px;letter-spacing:0;display:inline-block;color:var(--blue);font-weight:700;max-width:100%}
+.workflow{background:var(--dark);color:#f5f1e8;padding:28px}
+.workflow h3{font-size:16px;margin:0 0 22px;letter-spacing:.01em}
+.workflow-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.workflow-step{background:#354347;border:1px solid #63716f;padding:19px 17px;min-width:0}
+.workflow-step .stepno{color:#e0b9a6;font-size:12px}
+.workflow-step strong{display:block;font-size:16px;margin:6px 0 7px;line-height:1.5}
+.workflow-step p{font-size:12px;color:#d9e0db;margin:0}
+.workflow-notice{margin:18px 0 0;color:#d9e0db;font-size:12px}
+.reality{margin-top:19px;padding:17px 20px;border-left:4px solid var(--green);background:#e5ebe5;color:#26473b;font-size:13px}
+.reality strong{display:block;margin-bottom:4px}
+.case{background:var(--card);border:1px solid var(--line);padding:28px}
+.case-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;border-bottom:1px solid var(--line);padding-bottom:16px}
+.case-heading .micro{color:var(--clay);font-size:11px;font-weight:800}
+.case-heading a{font-size:12px;font-weight:700;text-underline-offset:4px}
+.case h3{font-size:clamp(21px,3vw,30px);line-height:1.45;margin:23px 0}
+.case-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0}
+.case-block{padding:16px 22px 18px 0;border-top:1px solid var(--line)}
+.case-block:nth-child(2n){padding-left:20px}
+.case-block .micro{font-size:11px;color:var(--clay);font-weight:800}
+.case-block strong{display:block;margin:7px 0 4px;font-size:16px}
+.case-block p{font-size:13px;margin:0;color:var(--muted)}
+.limits{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.limit{border-top:4px solid var(--dark);background:var(--card);border-left:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:20px}
+.limit h3{font-size:17px;margin:0 0 11px}.limit p{font-size:13px;color:var(--muted);margin:0}
+.limit:nth-child(2){border-top-color:var(--green)}.limit:nth-child(3){border-top-color:var(--clay)}
+.quote{margin:24px 0 0;padding:26px 30px;background:#e8dfd2;font-size:19px;font-weight:800;letter-spacing:-.025em}
+.related{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:25px}
+.related a{display:block;text-decoration:none;background:var(--card);border:1px solid var(--line);padding:19px;min-width:0}
+.related a:hover{border-color:var(--clay)}.related small{display:block;color:var(--clay);font:700 11px/1.8 ui-monospace,monospace;letter-spacing:.07em}.related strong{display:block;font-size:17px;margin:8px 0}.related span{display:block;font-size:12px;color:var(--muted)}
+footer{background:var(--dark);color:#d8ded6;margin-top:75px;padding:35px 0}
+.end{display:flex;justify-content:space-between;gap:20px;align-items:center;flex-wrap:wrap;font-size:12px}
+.end a{text-underline-offset:4px}.end .micro{font-size:11px;color:#b8c8c0}
+@media(max-width:820px){.hero{grid-template-columns:1fr;gap:33px;padding:60px 0}.hero-board{max-width:620px}.workflow-grid,.limits{grid-template-columns:1fr 1fr}.section-top{grid-template-columns:90px 1fr}.related{grid-template-columns:1fr}}
+@media(max-width:560px){.wrap{width:min(100% - 36px,1020px)}.mast{align-items:flex-start;flex-direction:column;padding:18px 0;gap:12px}.topnav{justify-content:flex-start;gap:12px}.hero{padding:47px 0 57px}.hero-board{padding:23px 19px;box-shadow:8px 8px 0 #e0d5c6}h1{font-size:clamp(34px,9vw,46px)}.lead{font-size:16px}.contents{gap:8px}.section{padding:58px 0}.section-top{display:block}.count{display:block;padding:0;margin-bottom:13px}.columns,.workflow-grid,.limits,.case-grid{grid-template-columns:1fr}.workflow{padding:20px}.card{padding:22px 19px}.case{padding:21px 18px}.case-block:nth-child(2n){padding-left:0}.quote{padding:20px 21px;font-size:17px}th,td{padding:12px 13px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<a href="#main" class="skip">本文へ移動</a>
+<header class="masthead"><div class="wrap mast">
+  <a class="brand" href="../"><b>y.</b>や印工務店 <span class="micro">/ FIELD NOTES</span></a>
+  <nav class="topnav" aria-label="関連ページ"><a href="../vault-overview/">Vaultの構造</a><a href="../ai-operating-model/">AI運用モデル</a><a href="../">作品一覧</a></nav>
+</div></header>
+<main id="main">
+<div class="wrap">
+  <section class="hero" aria-labelledby="hero-title">
+    <div>
+      <div class="eyebrow">INSIDE YZRS / AI WORK ARCHITECTURE</div>
+      <h1 id="hero-title">AIと働くための、<br><em>業務設計。</em></h1>
+      <p class="lead">AIに仕事を渡す前に、何を任せ、何を確認し、何を残すかを決める。や印工務店が使っているSkill・Router・Wrapper・Hook・Guardの関係を、ローンチ業務の言葉から説明します。</p>
+      <p class="intro-note">これは既存の運用を外部向けに説明したものです。完成済みの全自動システムや、どのAIでも同じ安全性が働く仕組みを主張するものではありません。</p>
+    </div>
+    <aside class="hero-board" aria-label="業務の基本構造">
+      <div class="board-title">ONE JOB / SIX QUESTIONS</div>
+      <div class="board-row"><span class="stepno">01</span><div><strong>目的</strong><small>何のために、誰に届けるか</small></div></div>
+      <div class="board-row"><span class="stepno">02</span><div><strong>範囲</strong><small>どこまでやり、何を触らないか</small></div></div>
+      <div class="board-row"><span class="stepno">03</span><div><strong>手順</strong><small>どの基準に従って作業するか</small></div></div>
+      <div class="board-row"><span class="stepno">04</span><div><strong>検証</strong><small>何を確かめ、何が未確認か</small></div></div>
+      <div class="board-row"><span class="stepno">05</span><div><strong>判断</strong><small>どこで人間の許可が必要か</small></div></div>
+      <div class="board-row"><span class="stepno">06</span><div><strong>引継ぎ</strong><small>結果と理由をどう残すか</small></div></div>
+    </aside>
+  </section>
+  <nav class="contents" aria-label="目次"><a href="#business">業務設計として見る</a><a href="#mechanism">6つの機構</a><a href="#routing">仕事が動く経路</a><a href="#case">公開事例</a><a href="#trust">何を信頼できるか</a></nav>
+</div>
+
+<div class="wrap"><section class="section" id="business" aria-labelledby="business-title">
+  <div class="section-top"><div class="count">01 / BUSINESS</div><div><h2 id="business-title">AI導入というより、<br>仕事の渡し方を設計する。</h2><p class="subtitle">企画・制作・公開・改善を経験している人なら、特別な技術を知らなくても理解できる考え方です。</p></div></div>
+  <p class="keyline">人がやっていた「指示・進捗・品質・決裁・引継ぎ」を、AIが参加できる形にしている。</p>
+  <div class="table-wrap"><table>
+  <thead><tr><th scope="col">ローンチ業務なら</th><th scope="col">YZRSの仕組み</th><th scope="col">役割</th></tr></thead>
+  <tbody>
+    <tr><td>業務マニュアル / SOP</td><td>Skill</td><td>入力、手順、成果物、終了条件を共有する</td></tr>
+    <tr><td>担当の振り分け</td><td>Router</td><td>指示を対応するSkillにつなぐ</td></tr>
+    <tr><td>ツールごとの操作方法</td><td>Wrapper / Adapter</td><td>AI環境と共通手順の間をつなぐ</td></tr>
+    <tr><td>自動チェックの起点</td><td>Hook</td><td>対応環境のイベントで検査を呼び出す</td></tr>
+    <tr><td>検査ルール</td><td>Guard</td><td>条件に応じて警告・停止を判定する</td></tr>
+    <tr><td>進行状況・引継ぎ</td><td>Agent State</td><td>現在地を次のセッションに渡す</td></tr>
+    <tr><td>決裁・公開承認</td><td>Human / Owner Gate</td><td>規約で定めた重要判断を人間に戻す</td></tr>
+  </tbody></table></div>
+  <div class="reality"><strong>大事な区別</strong>「PRをマージすること」そのものが一律に承認イベントなのではありません。承認が必要な行為は、作業内容に応じた契約で定義します。</div>
+</section></div>
+
+<div class="wrap"><section class="section" id="mechanism" aria-labelledby="mechanism-title">
+  <div class="section-top"><div class="count">02 / COMPONENTS</div><div><h2 id="mechanism-title">仕事を支える、6つの機構。</h2><p class="subtitle">各機構の仕事を混ぜない。ルールを一か所に置き、実行環境ごとの差だけを接続層に残します。</p></div></div>
+  <div class="columns">
+    <article class="card"><div class="tag">01 / PROCEDURE</div><h3>Skill — 業務の正しい手順</h3><p>何を入力し、どう進め、どこで終わるか。AIが参照する作業契約。業務ルールは共通の原本に置き、モデル別にコピーしない。</p><span class="example">例：記事作成の <span class="path">note-writing/SKILL.md</span>。下書きと公開許可は別。</span></article>
+    <article class="card"><div class="tag">02 / DISPATCH</div><h3>Router — 依頼の案内係</h3><p>短い合言葉を、該当Skillへ対応付ける目次。Router自体には記事の書き方や判断ロジックを置かない。</p><span class="example">例：<span class="path">/note → note-writing</span>、<span class="path">/pj → private-project-update</span>。</span></article>
+    <article class="card"><div class="tag">03 / CONNECTION</div><h3>Wrapper / Adapter — 環境の翻訳</h3><p>ChatGPT、Codexなど実行環境の違いを吸収し、共通Skillの入口につなぐ。中身の業務手順を複製しない薄い接続層。</p><span class="example">例：Codex向け <span class="path">.agents/skills/</span>。全Skillの完全コピーではない。</span></article>
+    <article class="card"><div class="tag">04 / EVENT</div><h3>Hook — 検査の起動点</h3><p>セッション開始やファイル操作など、対応するイベントに連動して処理を呼び出す仕組み。設定があっても、実行時に発火するとは限らない。</p><span class="example">例：対応環境での書き込み前チェック。利用可否は実行環境ごとに異なる。</span></article>
+    <article class="card"><div class="tag">05 / DECISION</div><h3>Guard — ルールの判定</h3><p>禁止条件や注意事項を機械的に調べる判定ロジック。ある規則は停止、別の規則は警告とし、Hookやほかの実行経路から利用する。</p><span class="example">例：共通判定の原本 <span class="path">_system/guards/vault_guard_core.py</span>。</span></article>
+    <article class="card"><div class="tag">06 / CONTINUITY</div><h3>Agent State — いまの現在地</h3><p>目標、制約、次の一手など、継続作業に必要な状態を持つ。作業の経緯を残すセッション記録や人間向け日報とは役割を分ける。</p><span class="example">例：現在地の原本と、成果・検証ログは別に管理する。</span></article>
+  </div>
+</section></div>
+
+<div class="wrap"><section class="section" id="routing" aria-labelledby="routing-title">
+  <div class="section-top"><div class="count">03 / EXECUTION</div><div><h2 id="routing-title">ひとつの指示は、<br>どう仕事になるのか。</h2><p class="subtitle">例として「/noteで記事を作る」を考えます。これは考え方を示す図で、どの環境でも以下の工程が同じ順番で自動実行されるという意味ではありません。</p></div></div>
+  <div class="workflow">
+    <h3>INTENT → CONTRACT → EXECUTION → EVIDENCE</h3>
+    <div class="workflow-grid">
+      <div class="workflow-step"><span class="stepno">01 / HUMAN</span><strong>目的と境界を渡す</strong><p>記事の目的、読者、触らない範囲、公開の扱いを決める。</p></div>
+      <div class="workflow-step"><span class="stepno">02 / ROUTER</span><strong>指示先を決める</strong><p>「/note」を共通の執筆Skillへ案内する。</p></div>
+      <div class="workflow-step"><span class="stepno">03 / ADAPTER</span><strong>環境に合わせる</strong><p>ChatGPTのGitHub Remoteなど、実際に使える経路で原本を読む。</p></div>
+      <div class="workflow-step"><span class="stepno">04 / SKILL</span><strong>原本に従い制作</strong><p>必要な資料、編集基準、終了条件に沿って下書きを作る。</p></div>
+      <div class="workflow-step"><span class="stepno">05 / CHECK / GATE</span><strong>検証・必要な承認</strong><p>環境に応じた検査を行い、記事の公開など明示許可が必要な操作で止まる。</p></div>
+      <div class="workflow-step"><span class="stepno">06 / RECORD</span><strong>結果と理由を残す</strong><p>成果、検証、未確認事項を適切な記録に残し、次へ引き継ぐ。</p></div>
+    </div>
+    <p class="workflow-notice">※ Hookは全工程を通す中央ゲートではありません。発火できる環境・イベントでだけ作用します。すべての業務に厳密な6工程を強制するものでもありません。</p>
+  </div>
+  <div class="reality"><strong>複数のAIを使っても、手順の正はひとつ</strong>AIの名前で業務手順を分岐させず、Role（仕事）、Contract（条件）、Provider（AI提供元）、Access Channel（操作経路）、Execution Environment（実行場所）を分けて考えます。</div>
+</section></div>
+
+<div class="wrap"><section class="section" id="case" aria-labelledby="case-title">
+  <div class="section-top"><div class="count">04 / CASE STUDY</div><div><h2 id="case-title">実際の小さなローンチ作業で見る。</h2><p class="subtitle">抽象論だけで終わらせず、公開済みのAI Skill Recipeトップページ整理（PR #95）を、業務設計の観点から分解します。</p></div></div>
+  <article class="case">
+    <div class="case-heading"><span class="micro">REAL CHANGE / PR #95 / 2026.10</span><a href="https://github.com/yzrswork/yzrswork_ai-skill-recipe/pull/95" target="_blank" rel="noopener noreferrer">公開PRを読む ↗</a></div>
+    <h3>全面刷新を止めて、<br>古い入口だけを外した。</h3>
+    <div class="case-grid">
+      <div class="case-block"><span class="micro">01 / OWNER INTENT</span><strong>目的を狭くする</strong><p>電子工作通信と旧道具箱の案内を外し、作品集の役割を明確化。リニューアルはしない。</p></div>
+      <div class="case-block"><span class="micro">02 / CONTRACT</span><strong>変更対象を1ファイルに限定</strong><p>5カテゴリと既存デザインは維持。作品番号と時期表示だけ必要に応じて整理。</p></div>
+      <div class="case-block"><span class="micro">03 / IMPLEMENTATION</span><strong>AIが差分を作る</strong><p>トップ掲載は22件から21件へ。GitHubで変更を確認できるPRを作成。</p></div>
+      <div class="case-block"><span class="micro">04 / VERIFICATION</span><strong>分かったことを分ける</strong><p>HTML・連番など静的検証は実施。スマートフォン実機表示はマージ時点で未確認。</p></div>
+      <div class="case-block"><span class="micro">05 / OWNER DECISION</span><strong>残るリスクを見て判断</strong><p>未確認事項を把握したうえで、オーナーがこの作業のマージを指示。</p></div>
+      <div class="case-block"><span class="micro">06 / REUSE</span><strong>判断理由が次の基準に</strong><p>「既存を壊さず小さく直す」という方針を、後続の実装依頼にも再利用する。</p></div>
+    </div>
+  </article>
+  <p class="subtitle" style="margin-top:20px">この事例が示すのは、変更範囲と判断過程の管理です。ローンチの売上効果や、全端末での品質を証明するものではありません。</p>
+</section></div>
+
+<div class="wrap"><section class="section" id="trust" aria-labelledby="trust-title">
+  <div class="section-top"><div class="count">05 / TRUST</div><div><h2 id="trust-title">「書いてある」だけでは、<br>安全とは言えない。</h2><p class="subtitle">業務管理の説明で最も大切なのは、保証できることと、まだ保証できないことを混ぜないこと。</p></div></div>
+  <div class="limits">
+    <div class="limit"><h3>設計上のルール</h3><p>Skill、Owner Gate、判断基準を文書で定義する。これだけでAIが必ず守ると保証するものではない。</p></div>
+    <div class="limit"><h3>機械的な検証</h3><p>Guardやテスト、CIで条件を確認する。単体テストが通っても、現場のHookが実際に発火するとは限らない。</p></div>
+    <div class="limit"><h3>実行環境での受入</h3><p>そのAI、その操作経路、そのイベントで本当に動くかを確認する。未確認・未対応なら、そのまま明示する。</p></div>
+  </div>
+  <p class="keyline">共通のGuardがあっても、すべての実行環境で自動停止するわけではない。</p>
+  <p>YZRSでは、Codexの特定実行経路において書き込み前Hookが動かない事例を確認し、同等の自動保護は <strong>NO-GO</strong> と判定した経緯があります。Claude Code向けの旧Hook資産は保持していますが、現在の標準実行環境ではありません。GitHub Remoteの変更もローカルHookには守られないため、ブランチ・PR・差分確認など別の手段で扱います。</p>
+  <p>一方、すべての可逆な内部変更で人の許可待ちをするわけでもありません。<strong>止める条件は各業務のOwner Gate、分からない条件は未解決として扱う</strong>ことが原則です。検査と承認は別の役割です。</p>
+  <blockquote class="quote">大切なのは、AIを無条件に信用することでも、すべてを疑って止めることでもない。<br>どこまで任せたかを説明できること。</blockquote>
+</section></div>
+
+<div class="wrap"><section class="section" aria-labelledby="closing-title">
+  <div class="section-top"><div class="count">06 / NEXT</div><div><h2 id="closing-title">次に残すのは、<br>答えよりも判断の材料。</h2><p class="subtitle">実装成果だけでなく、「なぜそうしたか」「何を検証したか」「まだ分からないこと」を残す。これが別の制作や改善につながる。</p></div></div>
+  <div class="related">
+    <a href="../vault-overview/"><small>01 / INFORMATION</small><strong>Vault Overview ↗</strong><span>記録と判断の背景をどこに残すか</span></a>
+    <a href="../ai-operating-model/"><small>02 / COLLABORATION</small><strong>AI Operating Model ↗</strong><span>人間とAIはどう仕事を進めるか</span></a>
+    <a href="../"><small>INDEX / DIGITAL WORKS</small><strong>AI Skill Recipe ↗</strong><span>実際に触れるデジタル作品を見る</span></a>
+  </div>
+</section></div>
+</main>
+<footer><div class="wrap end"><div>© や印工務店 / YZRSWORK<br><span class="micro">AI WORK ARCHITECTURE — PUBLIC EXPLANATION / 2026.10</span></div><div><a href="https://yzrswork.com/">yzrswork.com ↗</a></div></div></footer>
+</body>
+</html>
