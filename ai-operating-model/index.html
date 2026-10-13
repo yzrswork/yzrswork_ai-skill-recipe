@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="や印工務店のAI協働モデル。判断の理由を記録し、手順を共有し、人間とAIで制作を進める方法。">
+<title>YZRS / AI OPERATING MODEL — や印工務店</title>
+<style>
+:root { --paper:#f5f0e7; --panel:#fffdf8; --ink:#262b2b; --soft:#5f6460; --muted:#77786f; --clay:#ab492f; --clay-pale:#f3e4d9; --line:#d9d3c7; --dark:#253238; --sea:#bfd6cd; --green:#486b60; }
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { margin:0; color:var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif; background:var(--paper); line-height:1.8; }
+body::before {content:""; position:fixed; inset:0; z-index:-1; opacity:.28; pointer-events:none; background-image:radial-gradient(#c2b6a1 .55px,transparent .7px); background-size:7px 7px;}
+a {color:inherit;} a:focus-visible {outline:3px solid var(--clay); outline-offset:3px; }
+.skip {position:absolute;top:-100px;left:10px;background:#fff;padding:8px;z-index:10;} .skip:focus{top:10px;}
+.wrap {max-width:1170px; margin:0 auto; padding:0 32px;}
+.topbar{border-bottom:1px solid var(--line);}
+.topin{height:76px;display:flex;align-items:center;justify-content:space-between;gap:24px;}
+.brand{display:flex;align-items:center;gap:14px;text-decoration:none;font-weight:900;letter-spacing:-.02em;}
+.brand-mark{display:grid;place-items:center;background:var(--clay);color:#fff;font:800 25px/1 Georgia,serif; width:43px;height:43px;transform:rotate(-4deg);}
+.brand-name{font-size:15px;line-height:1.2;}
+.brand-sub{display:block;font:600 10px/1.7 ui-monospace,monospace;letter-spacing:.13em;color:var(--muted);}
+.toplinks{display:flex;flex-wrap:wrap;gap:17px;font-size:12px;font-weight:700;}
+.toplinks a{text-decoration:none;border-bottom:1px solid var(--line);padding-bottom:2px;}
+.hero{padding:78px 0 93px; display:grid;grid-template-columns: minmax(0,1.1fr) minmax(280px,.75fr);gap:70px;align-items:center;}
+.eyebrow,.section-no,.tiny,.tag, .st-label {font-family:ui-monospace, SFMono-Regular, Menlo, Consolas,monospace; letter-spacing:.11em;text-transform:uppercase;}
+.eyebrow{color:var(--clay);font-weight:800;font-size:12px;display:flex;align-items:center;gap:12px;}
+.eyebrow::before {content:"";width:32px;height:2px;background:var(--clay);}
+.hero h1{font-size:clamp(37px,5.5vw,72px);letter-spacing:-.06em;line-height:1.3;margin:21px 0 22px;font-weight:900;}
+.hero h1 em{font-style:normal;color:var(--clay);text-decoration:underline;text-underline-offset:9px;text-decoration-thickness:2px;}
+.hero-desc{font-size:17px;line-height:2.05;max-width:580px;margin:0 0 25px;}
+.hero-note{font-size:12px;color:var(--soft);border-left:3px solid var(--clay);padding-left:14px;line-height:1.8;}
+.diagram{position:relative;background:var(--dark);color:#f8f3e9;padding:28px;border-radius:2px; box-shadow:19px 19px 0 #e5dbcb;}
+.diagram::after{content:"";position:absolute;left:0;top:0;width:9px;height:100%;background:var(--clay);}
+.diagram-head{display:flex;justify-content:space-between;align-items:center;color:#d9e2dc;font-size:11px;font-weight:700;letter-spacing:.08em;border-bottom:1px solid #51605c;padding-bottom:16px;margin-bottom:20px;}
+.diagram-status{color:var(--sea);}
+.diagram-item{padding:15px 0;border-bottom:1px solid #4b5754;display:flex;align-items:baseline;gap:16px;}
+.diagram-item:last-of-type{border-bottom:0;}
+.diagram-index{color:#d6a589;font:700 13px/1 ui-monospace,monospace;}
+.diagram-title{font-size:16px;font-weight:800;}
+.diagram-sub{display:block;font-size:11px;line-height:1.7;color:#c6cec8;font-weight:400;}
+.diagram-foot{text-align:right;color:var(--sea);font-size:10px;margin:21px 0 0;}
+.section{padding:84px 0;border-top:1px solid var(--line);}
+.section-head{display:grid;grid-template-columns:160px 1fr;align-items:start;gap:38px;margin-bottom:36px;}
+.section-no{font-size:12px;font-weight:800;color:var(--clay);padding-top:14px;}
+.section-title{font-size:clamp(27px,3vw,41px);letter-spacing:-.045em;line-height:1.45;margin:0 0 12px;font-weight:900;}
+.section-intro{max-width:750px;font-size:14px;color:var(--soft);margin:0;}
+.triptych{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;}
+.role{background:var(--panel);border:1px solid var(--line);padding:26px;min-height:280px;position:relative;}
+.role::after{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--dark);}
+.role:nth-child(2)::after{background:var(--clay)} .role:nth-child(3)::after{background:var(--green)}
+.role-count{font-size:11px;font-weight:800;letter-spacing:.2em;color:var(--muted);}
+.role h3{margin:18px 0 9px;font-size:23px;letter-spacing:-.04em;}
+.role .eng{display:block;font-size:10px;color:var(--clay);font-weight:800;letter-spacing:.11em;}
+.role p{margin:15px 0 0;font-size:13px;line-height:1.9;color:var(--soft);}
+.role strong{color:var(--ink);}
+.flow-area{background:var(--panel);border:1px solid var(--line);padding:29px 24px 20px;}
+.flowline{display:grid;grid-template-columns:repeat(5,minmax(0,1fr)); gap:15px;}
+.flow-step{position:relative; min-width:0;padding:0 0 12px;}
+.flow-step:not(:last-child)::after{content:"→";position:absolute;right:-17px;top:23px;color:var(--clay);font-size:24px;line-height:1;}
+.flow-no{display:inline-block;font:800 11px/1 ui-monospace,monospace;color:#fff;background:var(--clay);padding:7px 8px;margin-bottom:15px;}
+.flow-step h3{font-size:15px;line-height:1.5;margin:0 0 9px;letter-spacing:-.02em;}
+.flow-step p{font-size:12px;line-height:1.75;color:var(--soft);margin:0;}
+.reuse{margin:18px 0 0;padding:14px 18px;border:1px dashed #c4b5a5;color:var(--clay);font-size:13px;font-weight:700;text-align:center;}
+.conditions{margin-top:15px;color:var(--muted);font-size:11px;line-height:1.85;}
+.guard-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;}
+.guard{padding:28px 30px;border:1px solid var(--line);background:var(--panel);}
+.guard.human{background:var(--dark);color:#f8f3e9;border-color:var(--dark);}
+.guard-label{font-size:11px;letter-spacing:.12em;font-weight:800;color:var(--clay);}
+.guard.human .guard-label{color:var(--sea);}
+.guard h3{font-size:22px;letter-spacing:-.04em;margin:9px 0 19px;}
+.guard ul{margin:0;padding-left:19px;font-size:13px;line-height:2.05;}
+.guard li{padding-left:3px;}
+.guard .foot{font-size:11px;color:var(--soft);margin-top:18px;line-height:1.8;}
+.guard.human .foot{color:#c2cfc8;}
+.case-head{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:17px;flex-wrap:wrap;}
+.case-label{font-family:ui-monospace,monospace; font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--clay);}
+.case-link{font-size:12px;font-weight:700;color:var(--clay);text-decoration-thickness:1px;text-underline-offset:4px;}
+.case{border:1px solid var(--line);background:var(--panel);padding:34px;}
+.case-summary{font-size:clamp(21px,2.4vw,31px);font-weight:900;letter-spacing:-.045em;margin:0 0 25px;line-height:1.5;}
+.case-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;}
+.case-block{padding:18px 20px;border-left:1px solid var(--line);}
+.case-block:first-child{border-left:0;padding-left:0;}
+.st-label{display:block;font-size:10px;color:var(--clay);font-weight:800;margin-bottom:9px;}
+.case-block strong{font-size:14px;line-height:1.6;display:block;margin-bottom:7px;}
+.case-block p{font-size:12px;color:var(--soft);line-height:1.85;margin:0;}
+.case-outcome{margin-top:23px;border-top:1px solid var(--line);padding-top:17px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.case-outcome strong{font-size:14px;}
+.case-outcome span{font:700 11px/1.6 ui-monospace,monospace;color:var(--green);letter-spacing:.06em;}
+.memory-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+.memory{padding:22px 24px;border-left:3px solid var(--clay);background:rgba(255,255,255,.5);}
+.memory h3{margin:0 0 10px;font-size:17px;}
+.memory p{font-size:12px;color:var(--soft);margin:0;}
+.last{background:var(--dark);color:#f5eee5;padding:60px 0 68px;margin-top:18px;}
+.last .wrap{display:flex;justify-content:space-between;align-items:end;gap:30px;}
+.last h2{font-size:clamp(27px,4vw,49px);line-height:1.5;letter-spacing:-.045em;margin:0;}
+.last h2 strong{color:#dba78a;}
+.last p{max-width:430px;color:#d2d9d3;font-size:13px;line-height:2;margin:0;}
+footer{border-top:1px solid #4d5a56;background:var(--dark);color:#bbc8c1;padding:25px 0;font:600 11px/2 ui-monospace,monospace;letter-spacing:.08em;}
+.foot-in{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap;}
+@media(max-width:850px){.hero{grid-template-columns:1fr;gap:40px;padding:55px 0 70px;}.diagram{max-width:600px;width:100%;}.section-head{grid-template-columns:100px 1fr;gap:15px;}.role{padding:21px;}.flowline{grid-template-columns:1fr;gap:0;}.flow-step{padding:8px 0 19px 48px;border-bottom:1px solid var(--line);margin-bottom:11px;}.flow-step:last-child{border:0;margin:0;}.flow-no{position:absolute;top:10px;left:0;}.flow-step:not(:last-child)::after{content:"↓";left:14px;right:auto;top:auto;bottom:-20px;z-index:2;background:var(--panel);font-size:17px;}.case-grid{grid-template-columns:1fr 1fr;}.case-block:nth-child(3){border-left:0;}.case-block:nth-child(n+3){border-top:1px solid var(--line);}.case-block:nth-child(3){padding-left:0;}.last .wrap{display:block;}.last p{margin-top:22px;}}
+@media(max-width:600px){.wrap{padding:0 20px;}.topin{height:68px;}.brand-name{font-size:13px;}.toplinks{font-size:10px;gap:12px;}.toplinks a:first-child{display:none;}.hero h1{font-size:clamp(35px,9vw,53px);}.hero-desc{font-size:15px;}.hero{padding:48px 0 65px;}.section{padding:57px 0;}.section-head{display:block;}.section-no{display:block;padding:0;margin-bottom:13px;}.triptych,.guard-grid,.memory-grid{grid-template-columns:1fr;}.role{min-height:auto;padding:22px;}.role h3{margin-top:9px;}.role p{margin-top:10px;}.flow-area{padding:21px 18px;}.guard{padding:24px 23px;}.case{padding:22px 19px;}.case-grid{grid-template-columns:1fr;}.case-block,.case-block:first-child,.case-block:nth-child(3){padding:15px 0;border-left:0;border-top:1px solid var(--line);}.case-block:first-child{border-top:0;padding-top:0;}.case-block:nth-child(n+3){border-top:1px solid var(--line);}.case-outcome{display:block;}.case-outcome span{display:block;margin-top:8px;}.memory{padding:17px 20px;}.last{padding:48px 0;}.last h2{font-size:30px;}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto;}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">本文へ移動</a>
+<div class="topbar"><div class="wrap topin">
+  <a class="brand" href="https://yzrswork.com/" aria-label="や印工務店 ホームへ"><span class="brand-mark">y.</span><span class="brand-name">や印工務店<span class="brand-sub">YZRS WORK / FIELD NOTES</span></span></a>
+  <nav class="toplinks" aria-label="ページ内の案内"><a href="#model">運用モデル</a><a href="#flow">仕事の流れ</a><a href="#case">実例</a><a href="../">作品一覧へ</a></nav>
+</div></div>
+<main id="main">
+<div class="wrap"><section class="hero" aria-labelledby="hero-title">
+  <div>
+    <div class="eyebrow">AI OPERATING MODEL / 2026</div>
+    <h1 id="hero-title">AIは手を動かす。<br><em>人間は理由を持つ。</em></h1>
+    <p class="hero-desc">や印工務店では、アイデアを思いつきで終わらせない。AIと人間が共通の記録と手順を参照し、制作・検証・公開・改善を続けています。</p>
+    <p class="hero-note">大切なのは「どのAIを使ったか」ではなく、何を任せ、どこで判断し、何を次の仕事に残したか。</p>
+  </div>
+  <aside class="diagram" aria-label="AI協働の重要要素">
+    <div class="diagram-head"><span>YZRS / WORK SYSTEM</span><span class="diagram-status">● ACTIVE MODEL</span></div>
+    <div class="diagram-item"><span class="diagram-index">01</span><span class="diagram-title">CONTEXT<span class="diagram-sub">何を知っているか / 何が未確認か</span></span></div>
+    <div class="diagram-item"><span class="diagram-index">02</span><span class="diagram-title">CONTRACT<span class="diagram-sub">何をするか / どこまで任せるか</span></span></div>
+    <div class="diagram-item"><span class="diagram-index">03</span><span class="diagram-title">EVIDENCE<span class="diagram-sub">何を変えたか / どう確かめたか</span></span></div>
+    <div class="diagram-item"><span class="diagram-index">04</span><span class="diagram-title">DECISION<span class="diagram-sub">なぜ続けるか / 何を見送るか</span></span></div>
+    <div class="diagram-foot">THE NEXT BUILD STARTS HERE ↗</div>
+  </aside>
+</section></div>
+<div class="wrap"><section class="section" id="model" aria-labelledby="model-title">
+  <div class="section-head"><div class="section-no">01 / THE MODEL</div><div><h2 class="section-title" id="model-title">頭脳をひとつにしない。<br>判断の基準を共有する。</h2><p class="section-intro">人、AI、ツールを一体化しない。仕事の責任と手順を分けることで、使うAIや実行環境が変わっても、仕事の考え方が残ります。</p></div></div>
+  <div class="triptych">
+    <article class="role"><span class="role-count">01 / OWNER</span><h3>人間<span class="eng">DIRECTION &amp; OWNERSHIP</span></h3><p><strong>目的と境界を決める。</strong> 何を作るか、やらないか、許可が必要な操作は何か。AIの提案を採用するかも、人間の責任で判断します。</p></article>
+    <article class="role"><span class="role-count">02 / SKILL &amp; CONTRACT</span><h3>共通の手順<span class="eng">RULES BEFORE TOOLS</span></h3><p><strong>作業の進め方を定義する。</strong> 入力、完成条件、禁止事項、確認方法をSkillや規約に置き、AIごとの思い込みや手順の省略を防ぎます。</p></article>
+    <article class="role"><span class="role-count">03 / AGENT</span><h3>AIと実行環境<span class="eng">EXECUTION &amp; VERIFICATION</span></h3><p><strong>許された範囲で実行する。</strong> 調査、制作、編集、検証、差分の提示を担当。権限や環境が足りなければ、推測で突破せず停止します。</p></article>
+  </div>
+</section></div>
+<div class="wrap"><section class="section" id="flow" aria-labelledby="flow-title">
+  <div class="section-head"><div class="section-no">02 / WORK FLOW</div><div><h2 class="section-title" id="flow-title">仕事を進める。<br>そして、理由を残す。</h2><p class="section-intro">これは代表的な仕事の流れを示した概念図。作業によって手順や承認点は異なり、すべてを自動で順番に実行するわけではありません。</p></div></div>
+  <div class="flow-area">
+    <div class="flowline">
+      <div class="flow-step"><span class="flow-no">01</span><h3>目的を定める</h3><p>成果・範囲・触らないものを明確にする。</p></div>
+      <div class="flow-step"><span class="flow-no">02</span><h3>正しい手順へ</h3><p>Vaultの情報と該当Skill・規約を確認。</p></div>
+      <div class="flow-step"><span class="flow-no">03</span><h3>作る・検証する</h3><p>許された範囲で実装し、結果と限界を示す。</p></div>
+      <div class="flow-step"><span class="flow-no">04</span><h3>必要なら承認</h3><p>契約で定められたHuman Gateを通す。</p></div>
+      <div class="flow-step"><span class="flow-no">05</span><h3>次へ引き継ぐ</h3><p>結果と判断の経緯を適切な記録へ残す。</p></div>
+    </div>
+    <div class="reuse">↶　残した理由と検証結果を、次の仕事に再利用する</div>
+    <p class="conditions">※ GitHubのbranch → PR → mergeは変更を運ぶ仕組み。PRやmerge自体が、人間の承認を意味するわけではありません。承認条件は対象業務の規約で決まります。</p>
+  </div>
+</section></div>
+<div class="wrap"><section class="section" aria-labelledby="gate-title">
+  <div class="section-head"><div class="section-no">03 / BOUNDARIES</div><div><h2 class="section-title" id="gate-title">任せることと、<br>止まることを決めておく。</h2><p class="section-intro">AIを使いこなすとは、何でも実行させることではない。可逆な作業を進めやすくしつつ、重要な境界で無断変更を防ぎます。</p></div></div>
+  <div class="guard-grid">
+    <article class="guard"><div class="guard-label">DELEGATED / 契約で許される範囲</div><h3>AIが進められる仕事</h3><ul><li>情報の調査と整理、比較案の作成</li><li>制作案・文章・コードの下書き</li><li>可逆なVault内部更新（適用される規約の範囲内）</li><li>テスト・差分確認・未確認事項の報告</li></ul><p class="foot">できることは接続権限・作業環境・個別Skillによって変わります。</p></article>
+    <article class="guard human"><div class="guard-label">HUMAN GATE / 条件付きで停止</div><h3>人間が判断する境界</h3><ul><li>公開・配信など、明示許可が必要な操作</li><li>作業範囲を超える変更や設計方針の変更</li><li>規約上、Owner確認を要求する書き込み</li><li>根拠が不足し、推測が必要になる判断</li></ul><p class="foot">すべての操作に一律の承認を要求するのではなく、業務別の契約を優先します。</p></article>
+  </div>
+</section></div>
+<div class="wrap"><section class="section" id="case" aria-labelledby="case-title">
+  <div class="section-head"><div class="section-no">04 / REAL EXAMPLE</div><div><h2 class="section-title" id="case-title">最近の仕事を、<br>分解してみる。</h2><p class="section-intro">抽象的な理想論ではなく、実際の更新を例に。2026年10月、AI Skill Recipeのトップページを整理したときの進め方。</p></div></div>
+  <div class="case">
+    <div class="case-head"><span class="case-label">CASE / AI SKILL RECIPE — INDEX CLEANUP</span><a class="case-link" href="https://github.com/yzrswork/yzrswork_ai-skill-recipe/pull/95" target="_blank" rel="noopener noreferrer">実際のPR #95を見る ↗</a></div>
+    <p class="case-summary">作品集を作り直さず、<br>古い入口だけを整理する。</p>
+    <div class="case-grid">
+      <div class="case-block"><span class="st-label">HUMAN / 意図</span><strong>リニューアルしない</strong><p>旧道具箱と電子工作通信の重複を解消。デザインと5カテゴリは維持。</p></div>
+      <div class="case-block"><span class="st-label">CONTRACT / 範囲</span><strong>HTMLは1ファイルだけ</strong><p>作品番号の整理、古い時期表示の更新。余計な機能追加は禁止。</p></div>
+      <div class="case-block"><span class="st-label">AI / 実行</span><strong>小さなPRを作る</strong><p>Luna Maxが変更し、21作品・番号・差分の静的整合を確認。</p></div>
+      <div class="case-block"><span class="st-label">GATE / 判断</span><strong>人間がGOを出す</strong><p>未実施のブラウザ確認を把握したうえで、マージを明示指示。</p></div>
+    </div>
+    <div class="case-outcome"><strong>結果：22作品 → 21作品。既存の5カテゴリを維持。</strong><span>BOUNDED CHANGE / MERGED</span></div>
+  </div>
+</section></div>
+<div class="wrap"><section class="section" aria-labelledby="memory-title">
+  <div class="section-head"><div class="section-no">05 / MEMORY</div><div><h2 class="section-title" id="memory-title">残すのは会話の量ではない。<br>次に使える判断の材料。</h2><p class="section-intro">すべてを1か所に集約しない。何のための記録なのかで保存先と詳しさを分け、必要なものをたどれるようにします。</p></div></div>
+  <div class="memory-grid">
+    <article class="memory"><h3>現在地</h3><p>いまの目標、次の作業、未解決の条件。現在の状態を示すための記録。</p></article>
+    <article class="memory"><h3>実装と検証</h3><p>何を変え、何を確かめ、何が残ったか。Projectや作業単位の証拠。</p></article>
+    <article class="memory"><h3>設計と学び</h3><p>なぜその方針を選び、何を見送ったか。将来の判断に再利用する知識。</p></article>
+  </div>
+</section></div>
+<section class="last"><div class="wrap"><h2>AIを増やすより、<br><strong>判断を積み重ねる。</strong></h2><p>思いつきを形にして、次に使える形で残す。や印工務店のAI運用は、特別なモデルの名前よりも、この反復でできています。</p></div></section>
+</main>
+<footer><div class="wrap foot-in"><span>© YZRS WORK / や印工務店</span><span>AI OPERATING MODEL · 2026.10</span></div></footer>
+</body>
+</html>
