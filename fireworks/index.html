@@ -82,8 +82,8 @@
 
   .btn {
     pointer-events: auto;
-    width: 2.25rem;
-    height: 2.25rem;
+    width: 44px;
+    height: 44px;
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.06);
@@ -104,6 +104,12 @@
     border-color: rgba(255, 255, 255, 0.25);
   }
 
+  .btn:focus-visible { outline: 2px solid #ffdc96; outline-offset: 4px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .title, .hint, .btn { transition: none; }
+  }
+
   .btn.active {
     color: rgba(255, 220, 150, 0.95);
     border-color: rgba(255, 220, 150, 0.35);
@@ -113,14 +119,13 @@
 <link rel="apple-touch-icon" href="../icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <script>if('serviceWorker'in navigator){addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}</script>
-<script async src="../analytics.js"></script>
 </head>
 <body>
-<canvas id="c"></canvas>
+<canvas id="c" role="img" aria-label="夜空の花火。タップで打ち上げ、3本指で大きな花火。"></canvas>
 
 <div class="controls">
-  <button class="btn active" id="soundBtn" type="button" aria-label="サウンド">♪</button>
-  <button class="btn active" id="autoBtn" type="button" aria-label="自動打ち上げ">✦</button>
+  <button class="btn active" id="soundBtn" type="button" aria-label="サウンド" aria-pressed="true">♪</button>
+  <button class="btn active" id="autoBtn" type="button" aria-label="自動打ち上げ" aria-pressed="true">✦</button>
 </div>
 
 <h1 class="title" id="title">花火</h1>
@@ -130,621 +135,400 @@
 
 <script>
 (() => {
+  'use strict';
   const canvas = document.getElementById('c');
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d', { alpha: false });
   const titleEl = document.getElementById('title');
   const hintEl = document.getElementById('hint');
   const soundBtn = document.getElementById('soundBtn');
   const autoBtn = document.getElementById('autoBtn');
-
-  let dpr = Math.min(window.devicePixelRatio || 1, 2);
-  let W = 0, H = 0;
-  let soundOn = true;
-  let autoOn = true;
-  let interacted = false;
-  let autoTimer = 0;
-  let stars = [];
+  const motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
+  let reducedMotion = motionQuery.matches;
+  let W = 0, H = 0, dpr = 1, sky;
+  let soundOn = true, autoOn = !reducedMotion, interacted = false;
+  let simulationTime = 0, autoTimer = 1.2, autoPhrase = 2, phraseIndex = 0;
   let megaCooldownUntil = 0;
-  let screenFlash = 0;
-
+  let lastTime = 0, accumulator = 0, raf = 0, paused = document.hidden;
+  const STEP = 1 / 60;
+  const TAU = Math.PI * 2;
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const PALETTES = [
-    { core: [255, 90, 90], glow: [255, 160, 120] },
-    { core: [255, 200, 80], glow: [255, 240, 180] },
-    { core: [255, 120, 200], glow: [255, 180, 230] },
-    { core: [100, 220, 255], glow: [180, 240, 255] },
-    { core: [120, 255, 160], glow: [200, 255, 220] },
-    { core: [180, 140, 255], glow: [220, 200, 255] },
-    { core: [255, 255, 255], glow: [255, 250, 230] },
-    { core: [255, 140, 60], glow: [255, 200, 120] },
+    [255, 65, 68], [255, 190, 72], [255, 106, 169],
+    [85, 180, 255], [80, 235, 150], [190, 138, 255], [245, 245, 228]
   ];
-
-  const rockets = [];
-  const particles = [];
-  const sparks = [];
+  const GOLD = 7;
+  const COLORS = [...PALETTES, [255, 177, 68], [255, 105, 34]];
+  const rockets = [], particles = [], sparks = [], flashes = [], pool = [];
+  let particleLimit = 640;
+  const SPARK_LIMIT = 240, ROCKET_LIMIT = 12;
+  // Generated once: no per-particle gradients, filters or external image assets.
+  const sprites = COLORS.map(color => {
+    const image = document.createElement('canvas');
+    image.width = image.height = 48;
+    const c = image.getContext('2d');
+    const g = c.createRadialGradient(24, 24, 0, 24, 24, 24);
+    g.addColorStop(0, '#fff9e9');
+    g.addColorStop(0.055, `rgb(${color})`);
+    g.addColorStop(0.19, `rgba(${color},0.52)`);
+    g.addColorStop(0.45, `rgba(${color},0.12)`);
+    g.addColorStop(1, `rgba(${color},0)`);
+    c.fillStyle = g;
+    c.fillRect(0, 0, 48, 48);
+    return image;
+  });
 
   function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
-    W = window.innerWidth;
-    H = window.innerHeight;
-    canvas.width = Math.floor(W * dpr);
-    canvas.height = Math.floor(H * dpr);
-    canvas.style.width = W + 'px';
-    canvas.style.height = H + 'px';
+    W = innerWidth; H = innerHeight;
+    const mobile = matchMedia('(pointer: coarse)').matches || W < 700;
+    particleLimit = mobile ? 640 : 900;
+    while (particles.length > particleLimit) recycle(0);
+    // Bound both DPR and backing-store area, including landscape/tablet screens.
+    dpr = Math.min(devicePixelRatio || 1, mobile ? 1.5 : 2, Math.sqrt(2000000 / (W * H)));
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    initStars();
+    sky = document.createElement('canvas');
+    sky.width = canvas.width; sky.height = canvas.height;
+    const c = sky.getContext('2d');
+    c.scale(dpr, dpr);
+    const g = c.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#050810'); g.addColorStop(0.55, '#090e1a'); g.addColorStop(1, '#141e32');
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    for (let i = 0; i < Math.min(110, W * H / 8500); i++) {
+      c.fillStyle = `rgba(228,236,255,${rand(0.1, 0.32)})`;
+      c.beginPath(); c.arc(rand(0, W), rand(0, H * 0.8), rand(0.35, 1), 0, TAU); c.fill();
+    }
+    ctx.drawImage(sky, 0, 0, W, H);
   }
-
-  function initStars() {
-    const count = Math.floor((W * H) / 8000);
-    stars = Array.from({ length: count }, () => ({
-      x: Math.random() * W,
-      y: Math.random() * H * 0.75,
-      r: Math.random() * 1.2 + 0.3,
-      tw: Math.random() * Math.PI * 2,
-      speed: 0.008 + Math.random() * 0.015,
-    }));
-  }
-
-  window.addEventListener('resize', resize);
+  addEventListener('resize', resize);
   resize();
 
-  // ── Audio ──
-  let audioCtx = null;
-
-  function ensureAudio() {
-    if (!soundOn) return null;
-    if (!audioCtx) {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (AC) audioCtx = new AC();
+  // All voices go through one mute bus and a conservative compressor/output gain.
+  // Only unlockAudio (called by a user action) may create/resume the context.
+  let audioCtx = null, master = null, noise = null, crackle = null, audioUnavailable = false;
+  const voices = new Set();
+  function unlockAudio() {
+    if (!soundOn || paused || audioUnavailable) return;
+    try {
+      if (!audioCtx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) { audioUnavailable = true; return; }
+        audioCtx = new AC();
+        master = audioCtx.createGain(); master.gain.value = 0;
+        const compressor = audioCtx.createDynamicsCompressor();
+        compressor.threshold.value = -18; compressor.knee.value = 18;
+        compressor.ratio.value = 8; compressor.attack.value = 0.004; compressor.release.value = 0.22;
+        const output = audioCtx.createGain(); output.gain.value = 0.65;
+        master.connect(compressor).connect(output).connect(audioCtx.destination);
+        noise = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
+        crackle = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
+        const n = noise.getChannelData(0), c = crackle.getChannelData(0);
+        let envelope = 0;
+        for (let i = 0; i < n.length; i++) {
+          n[i] = Math.random() * 2 - 1;
+          if (Math.random() < 0.0009) envelope = rand(0.3, 1);
+          envelope *= 0.985;
+          c[i] = n[i] * envelope;
+        }
+      }
+      const resume = audioCtx.state === 'suspended' || audioCtx.state === 'interrupted'
+        ? audioCtx.resume() : Promise.resolve();
+      Promise.resolve(resume).then(() => {
+        if (soundOn && !paused && audioCtx.state === 'running') {
+          master.gain.cancelScheduledValues(audioCtx.currentTime);
+          master.gain.setTargetAtTime(0.32, audioCtx.currentTime, 0.025);
+        }
+      }).catch(() => {});
+    } catch (_) { audioUnavailable = true; }
+  }
+  function silenceAudio(suspend = false) {
+    if (!audioCtx || !master) return;
+    const t = audioCtx.currentTime;
+    master.gain.cancelScheduledValues(t);
+    master.gain.setValueAtTime(master.gain.value, t);
+    master.gain.linearRampToValueAtTime(0, t + 0.03);
+    // Cancel scheduled echoes too; toggling back on cannot resurrect an old boom.
+    for (const source of voices) {
+      try { source.stop(suspend ? t : t + 0.035); } catch (_) {}
     }
-    if (audioCtx?.state === 'suspended') audioCtx.resume();
-    return audioCtx;
+    if (suspend && audioCtx.state !== 'closed') audioCtx.suspend().catch(() => {});
+  }
+  function audioReady() {
+    return !audioUnavailable && soundOn && !paused && master && noise && crackle && audioCtx?.state === 'running' && voices.size < 28;
+  }
+  function voice(source, filter, t, duration, volume, attack = 0.008) {
+    const ac = audioCtx;
+    if (voices.size >= 28) return;
+    const gain = ac.createGain();
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(volume / Math.sqrt(1 + voices.size * 0.18), t + attack);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+    source.connect(filter).connect(gain).connect(master);
+    voices.add(source);
+    source.onended = () => { voices.delete(source); source.disconnect(); filter.disconnect(); gain.disconnect(); };
+    source.start(t); source.stop(t + duration + 0.02);
+  }
+  function noiseVoice(t, duration, volume, frequency, type = 'lowpass', buffer = noise, attack = 0.008) {
+    const source = audioCtx.createBufferSource(); source.buffer = buffer;
+    const filter = audioCtx.createBiquadFilter(); filter.type = type; filter.frequency.setValueAtTime(frequency, t);
+    filter.Q.value = 0.65;
+    voice(source, filter, t, duration, volume, attack);
+    return filter;
+  }
+  function playLaunch(mega) {
+    if (!audioReady()) return;
+    const t = audioCtx.currentTime;
+    const filter = noiseVoice(t, mega ? 0.9 : 0.66, 0.16, 550, 'bandpass', noise, 0.045);
+    filter.frequency.exponentialRampToValueAtTime(mega ? 1850 : 1450, t + 0.48);
+    noiseVoice(t, 0.15, mega ? 0.24 : 0.16, 160);
+  }
+  function playBoom(type, mega) {
+    if (!audioReady()) return;
+    const ac = audioCtx, t = ac.currentTime + (mega ? 0.085 : 0.045);
+    const level = mega ? 0.65 : type === 'willow' ? 0.34 : 0.46;
+    noiseVoice(t, 0.23, level, 2400); // sharp, with a short ramp instead of a discontinuity
+    noiseVoice(t + 0.018, mega ? 1.3 : 0.88, level * 0.9, mega ? 170 : 260);
+    noiseVoice(t + 0.16, 1.4, level * 0.19, 440); // diffuse, quieter delayed rumble
+    const bass = ac.createOscillator(); bass.type = 'sine';
+    bass.frequency.setValueAtTime(mega ? 72 : 95, t);
+    bass.frequency.exponentialRampToValueAtTime(32, t + 0.48);
+    const lowpass = ac.createBiquadFilter(); lowpass.frequency.value = 180;
+    voice(bass, lowpass, t, mega ? 0.85 : 0.6, level * 0.55, 0.014);
+    if (type === 'willow' || mega) noiseVoice(t + 0.42, 1.7, 0.17, 2600, 'highpass', crackle, 0.03);
   }
 
-  function playLaunch() {
-    const ac = ensureAudio();
-    if (!ac) return;
-    const t = ac.currentTime;
-    const o = ac.createOscillator();
-    const g = ac.createGain();
-    o.type = 'sine';
-    o.frequency.setValueAtTime(350, t);
-    o.frequency.exponentialRampToValueAtTime(1600, t + 0.38);
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.12, t + 0.04);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.42);
-    o.connect(g).connect(ac.destination);
-    o.start(t);
-    o.stop(t + 0.45);
+  function glow(x, y, size, color, alpha) {
+    ctx.globalAlpha = clamp(alpha, 0, 1);
+    ctx.drawImage(sprites[color], x - size, y - size, size * 2, size * 2);
   }
-
-  function playMegaLaunch() {
-    const ac = ensureAudio();
-    if (!ac) return;
-    const t = ac.currentTime;
-    const o = ac.createOscillator();
-    const g = ac.createGain();
-    o.type = 'sine';
-    o.frequency.setValueAtTime(280, t);
-    o.frequency.exponentialRampToValueAtTime(2200, t + 0.65);
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.2, t + 0.06);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
-    o.connect(g).connect(ac.destination);
-    o.start(t);
-    o.stop(t + 0.75);
+  function ember(x, y, vx, vy, life, size = 1) {
+    if (sparks.length >= SPARK_LIMIT) return;
+    sparks.push({ x, y, vx, vy, age: 0, life, size });
   }
-
-  function playBoom(intensity = 1) {
-    const ac = ensureAudio();
-    if (!ac) return;
-    const t = ac.currentTime;
-    const dur = 0.55;
-    const buffer = ac.createBuffer(1, Math.floor(ac.sampleRate * dur), ac.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < data.length; i++) {
-      data[i] = (Math.random() * 2 - 1) * (1 - i / data.length) ** 1.5;
-    }
-    const src = ac.createBufferSource();
-    src.buffer = buffer;
-    const filter = ac.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = 700 + intensity * 300;
-    const g = ac.createGain();
-    g.gain.setValueAtTime(0.35 * intensity, t);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    src.connect(filter).connect(g).connect(ac.destination);
-    src.start(t);
-
-    const o = ac.createOscillator();
-    const og = ac.createGain();
-    o.type = 'sine';
-    o.frequency.setValueAtTime(100, t);
-    o.frequency.exponentialRampToValueAtTime(35, t + 0.25);
-    og.gain.setValueAtTime(0.3 * intensity, t);
-    og.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
-    o.connect(og).connect(ac.destination);
-    o.start(t);
-    o.stop(t + 0.4);
+  function recycle(index) {
+    const p = particles[index];
+    particles[index] = particles[particles.length - 1]; particles.pop(); pool.push(p);
   }
-
-  function playCrackle() {
-    const ac = ensureAudio();
-    if (!ac) return;
-    const t = ac.currentTime;
-    for (let i = 0; i < 6; i++) {
-      const o = ac.createOscillator();
-      const g = ac.createGain();
-      o.type = 'square';
-      o.frequency.value = 800 + Math.random() * 2000;
-      const start = t + i * 0.04 + Math.random() * 0.03;
-      g.gain.setValueAtTime(0.0001, start);
-      g.gain.exponentialRampToValueAtTime(0.04, start + 0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001, start + 0.06);
-      o.connect(g).connect(ac.destination);
-      o.start(start);
-      o.stop(start + 0.07);
-    }
+  function addStar(x, y, vx, vy, life, color, willow, size) {
+    if (particles.length >= particleLimit) return;
+    const p = pool.pop() || { trail: new Float32Array(24) };
+    Object.assign(p, { x, y, vx, vy, life, color, willow, size, age: 0,
+      drag: willow ? rand(0.55, 0.7) : rand(0.82, 1.05), gravity: willow ? 35 : 29,
+      phase: rand(0, TAU), brightness: rand(0.72, 1), emission: rand(0.025, 0.065), head: 0, points: 1 });
+    p.trail[0] = x; p.trail[1] = y;
+    particles.push(p);
   }
-
-  // ── Helpers ──
-  function pickPalette() {
-    return PALETTES[(Math.random() * PALETTES.length) | 0];
-  }
-
-  function lerp(a, b, t) {
-    return a + (b - a) * t;
-  }
-
-  function rand(min, max) {
-    return min + Math.random() * (max - min);
-  }
-
-  function drawGlow(x, y, radius, r, g, b, alpha) {
-    const grad = ctx.createRadialGradient(x, y, 0, x, y, radius);
-    grad.addColorStop(0, `rgba(${r},${g},${b},${alpha})`);
-    grad.addColorStop(0.4, `rgba(${r},${g},${b},${alpha * 0.35})`);
-    grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // ── Firework types ──
-  function spawnFirework(tx, ty, palette = pickPalette()) {
-    const sx = tx + rand(-30, 30);
-    rockets.push({
-      x: sx,
-      y: H + 8,
-      sx, sy: H + 8,
-      tx, ty,
-      t: 0,
-      duration: rand(38, 52),
-      palette,
-      trail: [],
-      mega: false,
-    });
-    playLaunch();
-  }
-
-  function spawnMegaFirework(tx, ty) {
-    rockets.push({
-      x: W / 2 + rand(-40, 40),
-      y: H + 8,
-      sx: W / 2 + rand(-40, 40),
-      sy: H + 8,
-      tx, ty,
-      t: 0,
-      duration: rand(62, 78),
-      palette: pickPalette(),
-      trail: [],
-      mega: true,
-    });
-    playMegaLaunch();
-  }
-
-  function megaBurst(x, y, palette, mult = 1.6) {
-    const count = Math.floor((130 + Math.random() * 70) * mult);
-    const [cr, cg, cb] = palette.core;
-    const [gr, gg, gb] = palette.glow;
+  function burst(x, y, type, color, mega = false) {
+    const willow = type === 'willow';
+    const count = reducedMotion ? 64 : mega ? 216 : type === 'ring' ? 88 : willow ? 104 : 126;
+    // Make room for a fresh response even when a child taps continuously.
+    while (particles.length > particleLimit - count - (mega ? 40 : 0)) recycle(0);
+    const radius = Math.min(W * (mega ? 0.47 : 0.36), H * (mega ? 0.31 : 0.24), mega ? 310 : 215);
+    const speed = radius * (willow ? 1.48 : 1.75) * (reducedMotion ? 0.7 : 1);
+    const tilt = rand(0.5, 0.88), rotation = rand(0, TAU);
     for (let i = 0; i < count; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = rand(3.5, 11) * mult;
-      particles.push({
-        x, y, px: x, py: y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        life: 1,
-        decay: rand(0.005, 0.011),
-        r: cr, g: cg, b: cb,
-        gr, gg, gb,
-        size: rand(2, 5) * mult,
-        drag: 0.982,
-        gravity: 0.03,
-        sparkle: Math.random() < 0.35,
-        trail: Math.random() < 0.25,
-      });
+      let dx, dy, z;
+      if (type === 'ring') {
+        const a = i / count * TAU + rand(-0.012, 0.012);
+        const rx = Math.cos(a), ry = Math.sin(a) * tilt;
+        dx = rx * Math.cos(rotation) - ry * Math.sin(rotation);
+        dy = rx * Math.sin(rotation) + ry * Math.cos(rotation);
+        z = Math.sin(a);
+      } else {
+        // Even spherical shell projected onto the screen; slight variation keeps it organic.
+        z = 1 - 2 * (i + 0.5) / count;
+        const a = i * 2.3999632297 + rand(-0.035, 0.035);
+        const r = Math.sqrt(1 - z * z);
+        dx = Math.cos(a) * r; dy = Math.sin(a) * r;
+      }
+      const variation = rand(0.93, 1.07);
+      const life = willow ? rand(3.4, 4.7) : rand(1.9, 2.65);
+      addStar(x, y, dx * speed * variation, dy * speed * variation - (willow ? 16 : 0),
+        life, willow ? GOLD : color, willow, rand(0.8, 1.25) * (0.85 + (z + 1) * 0.13));
     }
-  }
-
-  function explodeMega(x, y) {
-    playBoom(1.9);
-    setTimeout(() => playBoom(1.3), 180);
-    setTimeout(() => playCrackle(), 80);
-    setTimeout(() => playCrackle(), 260);
-    setTimeout(() => playCrackle(), 420);
-    screenFlash = 0.35;
-
-    const shuffled = [...PALETTES].sort(() => Math.random() - 0.5);
-    for (let i = 0; i < 4; i++) {
-      const angle = (i / 4) * Math.PI * 2 + rand(-0.2, 0.2);
-      const dist = rand(15, 35);
-      megaBurst(x + Math.cos(angle) * dist, y + Math.sin(angle) * dist, shuffled[i]);
-    }
-    megaBurst(x, y, { core: [255, 255, 255], glow: [255, 248, 220] }, 2.2);
-
-    for (let i = 0; i < 3; i++) {
-      explodeRing(x + rand(-25, 25), y + rand(-25, 25), shuffled[i % shuffled.length]);
-    }
-
-    for (let i = 0; i < 40; i++) {
-      sparks.push({
-        x: x + rand(-20, 20),
-        y: y + rand(-20, 20),
-        vx: rand(-2, 2),
-        vy: rand(-2, 2),
-        life: rand(0.8, 1.6),
-        decay: rand(0.008, 0.014),
-        r: 255, g: rand(180, 240), b: rand(80, 160),
-      });
-    }
-
-    setTimeout(() => spawnFirework(x - rand(60, 100), y + rand(20, 60)), 350);
-    setTimeout(() => spawnFirework(x + rand(60, 100), y + rand(20, 60)), 550);
-    setTimeout(() => spawnFirework(x + rand(-50, 50), y - rand(10, 40)), 750);
-  }
-
-  function triggerMegaFirework(points) {
-    if (performance.now() < megaCooldownUntil) return;
-    megaCooldownUntil = performance.now() + 2800;
-    onInteract();
-
-    let cx = 0, cy = 0;
-    for (const p of points) { cx += p.x; cy += p.y; }
-    cx /= points.length;
-    cy /= points.length;
-    cy = Math.min(cy, H * 0.45);
-
-    spawnMegaFirework(cx, cy);
-  }
-
-  function explodeChrysanthemum(x, y, palette) {
-    const count = 90 + ((Math.random() * 50) | 0);
-    const [cr, cg, cb] = palette.core;
-    const [gr, gg, gb] = palette.glow;
-    for (let i = 0; i < count; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = rand(2, 7);
-      particles.push({
-        x, y,
-        px: x, py: y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        life: 1,
-        decay: rand(0.008, 0.016),
-        r: cr, g: cg, b: cb,
-        gr, gg, gb,
-        size: rand(1.2, 2.8),
-        drag: 0.985,
-        gravity: 0.035,
-        sparkle: Math.random() < 0.15,
-      });
-    }
-    playBoom(1);
-  }
-
-  function explodeRing(x, y, palette) {
-    const rings = 2 + ((Math.random() * 2) | 0);
-    const [cr, cg, cb] = palette.core;
-    const [gr, gg, gb] = palette.glow;
-    for (let ring = 0; ring < rings; ring++) {
-      const count = 36 + ring * 12;
-      const speed = 3 + ring * 1.8;
-      for (let i = 0; i < count; i++) {
-        const angle = (i / count) * Math.PI * 2 + rand(-0.05, 0.05);
-        particles.push({
-          x, y, px: x, py: y,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
-          life: 1,
-          decay: rand(0.01, 0.018),
-          r: cr, g: cg, b: cb,
-          gr, gg, gb,
-          size: rand(1.5, 2.5),
-          drag: 0.988,
-          gravity: 0.03,
-          sparkle: true,
-        });
+    if (mega) {
+      // One coherent gold shell with a smaller warm-white pistil, instead of rainbow blasts.
+      for (let i = 0; i < 40; i++) {
+        const a = i * 2.3999632297, z = 1 - 2 * (i + 0.5) / 40;
+        const r = Math.sqrt(1 - z * z) * speed * 0.38;
+        addStar(x, y, Math.cos(a) * r, Math.sin(a) * r, rand(1.4, 2), 6, false, 1);
       }
     }
-    playBoom(0.85);
-    setTimeout(() => playCrackle(), 120);
+    if (flashes.length >= 6) flashes.shift();
+    flashes.push({ x, y, age: 0, size: radius * 0.7, color: willow ? GOLD : color });
+    playBoom(type, mega);
   }
-
-  function explodeWillow(x, y, palette) {
-    const count = 60 + ((Math.random() * 30) | 0);
-    const [cr, cg, cb] = palette.core;
-    const [gr, gg, gb] = palette.glow;
-    for (let i = 0; i < count; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = rand(3, 8);
-      particles.push({
-        x, y, px: x, py: y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed - 1.5,
-        life: 1,
-        decay: rand(0.004, 0.008),
-        r: cr, g: cg, b: cb,
-        gr, gg, gb,
-        size: rand(1, 2),
-        drag: 0.992,
-        gravity: 0.055,
-        sparkle: Math.random() < 0.4,
-        trail: true,
-      });
-    }
-    playBoom(0.7);
+  function spawnFirework(tx, ty, color = Math.floor(rand(0, PALETTES.length)), mega = false, type = null) {
+    if (paused) return;
+    // Preserve older shells so a stream of taps cannot keep every shell from reaching its apex.
+    if (rockets.length >= ROCKET_LIMIT) rockets.pop();
+    const x = clamp(tx, 8, W - 8), y = clamp(ty, 55, H * 0.8);
+    const sx = clamp(x + rand(-W * 0.14, W * 0.14), 8, W - 8);
+    rockets.push({ x: sx, y: H + 8, sx, sy: H + 8, tx: x, ty: y,
+      age: 0, duration: mega ? 1.25 : rand(0.85, 1.12), emission: 0, mega,
+      color, type: type || (mega ? 'willow' : ['chrysanthemum', 'chrysanthemum', 'ring', 'willow'][Math.floor(rand(0, 4))]) });
+    playLaunch(mega);
   }
-
-  function explode(x, y, palette) {
-    const type = Math.random();
-    if (type < 0.5) explodeChrysanthemum(x, y, palette);
-    else if (type < 0.75) explodeRing(x, y, palette);
-    else explodeWillow(x, y, palette);
-
-    // lingering embers
-    for (let i = 0; i < 12; i++) {
-      sparks.push({
-        x: x + rand(-8, 8),
-        y: y + rand(-8, 8),
-        vx: rand(-0.8, 0.8),
-        vy: rand(-0.8, 0.8),
-        life: rand(0.4, 1),
-        decay: rand(0.015, 0.025),
-        r: palette.glow[0],
-        g: palette.glow[1],
-        b: palette.glow[2],
-      });
-    }
+  function spawnMegaFirework(x, y) { spawnFirework(x, Math.min(y, H * 0.4), GOLD, true, 'willow'); }
+  function triggerMegaFirework(points) {
+    if (simulationTime < megaCooldownUntil) return;
+    megaCooldownUntil = simulationTime + 2.8;
+    onInteract();
+    spawnMegaFirework(points.reduce((s, p) => s + p.x, 0) / points.length,
+      points.reduce((s, p) => s + p.y, 0) / points.length);
   }
 
   function autoLaunch() {
-    const margin = W * 0.12;
-    const tx = rand(margin, W - margin);
-    const ty = rand(H * 0.12, H * 0.55);
-    spawnFirework(tx, ty);
+    // Three short phrases: a solitary bloom / a loose pair / a restrained three-shot fan.
+    // All scheduling uses simulation time: no residual setTimeouts after OFF/hide.
+    if (phraseIndex === 0) autoPhrase = (autoPhrase + 1) % 3;
+    const count = autoPhrase + 1;
+    const x = count === 1 ? rand(0.3, 0.7) : 0.24 + phraseIndex / (count - 1) * 0.52;
+    spawnFirework(W * x, H * rand(0.22, 0.4));
+    phraseIndex++;
+    if (phraseIndex >= count) { phraseIndex = 0; autoTimer = reducedMotion ? rand(5, 7) : rand(3.8, 5.6); }
+    else autoTimer = rand(0.5, 0.82);
   }
-
-  // ── Draw sky ──
-  function drawSky() {
-    ctx.globalCompositeOperation = 'source-over';
-    const grad = ctx.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0, '#050810');
-    grad.addColorStop(0.5, '#0a0e1a');
-    grad.addColorStop(1, '#141e32');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, W, H);
-  }
-
-  function drawStars() {
-    ctx.globalCompositeOperation = 'source-over';
-    for (const s of stars) {
-      s.tw += s.speed;
-      const a = 0.2 + Math.sin(s.tw) * 0.12;
-      ctx.fillStyle = `rgba(255,255,255,${a})`;
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
-
-  function fadeFrame() {
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.fillStyle = 'rgba(5, 8, 16, 0.22)';
-    ctx.fillRect(0, 0, W, H);
-  }
-
-  // ── Update & render ──
-  let lastTime = performance.now();
-
-  function update(now) {
-    const dt = Math.min((now - lastTime) / 16.67, 2);
-    lastTime = now;
-
-    fadeFrame();
-    drawStars();
-    ctx.globalCompositeOperation = 'lighter';
-
-    // rockets
+  function step(dt) {
+    simulationTime += dt;
     for (let i = rockets.length - 1; i >= 0; i--) {
-      const r = rockets[i];
-      r.t += dt;
-      const p = Math.min(r.t / r.duration, 1);
-      const ease = 1 - (1 - p) ** 3;
-      r.x = lerp(r.sx, r.tx, ease);
-      r.y = lerp(r.sy, r.ty, ease);
-
-      r.trail.push({ x: r.x, y: r.y });
-      if (r.trail.length > 14) r.trail.shift();
-
-      const [cr, cg, cb] = r.palette.core;
-      for (let j = 0; j < r.trail.length; j++) {
-        const t = j / r.trail.length;
-        const pt = r.trail[j];
-        const trailSize = r.mega ? 6 + t * 6 : 4 + t * 3;
-        drawGlow(pt.x, pt.y + (r.trail.length - j) * 2, trailSize, 255, 220, 150, t * 0.55);
+      const r = rockets[i]; r.age += dt;
+      const p = Math.min(r.age / r.duration, 1);
+      // Decelerate toward the apex, then burst before a visible hover.
+      const ease = 1 - (1 - p) ** 2;
+      const oldX = r.x, oldY = r.y;
+      r.x = lerp(r.sx, r.tx, ease); r.y = lerp(r.sy, r.ty, ease);
+      r.emission -= dt;
+      if (r.emission <= 0) {
+        ember(r.x, r.y, (oldX - r.x) * 4 + rand(-7, 7), rand(15, 35), rand(0.2, 0.46), r.mega ? 1.25 : 0.8);
+        r.emission = reducedMotion ? 0.05 : 0.018;
       }
-      const headSize = r.mega ? 12 : 6;
-      drawGlow(r.x, r.y, headSize, cr, cg, cb, r.mega ? 1 : 0.9);
-      ctx.fillStyle = '#fff';
-      ctx.beginPath();
-      ctx.arc(r.x, r.y, r.mega ? 2.5 : 1.5, 0, Math.PI * 2);
-      ctx.fill();
-
-      if (p >= 1) {
-        if (r.mega) explodeMega(r.x, r.y);
-        else explode(r.x, r.y, r.palette);
-        rockets.splice(i, 1);
-      }
+      if (p >= 1) { burst(r.x, r.y, r.type, r.color, r.mega); rockets.splice(i, 1); }
     }
-
-    // particles
     for (let i = particles.length - 1; i >= 0; i--) {
-      const p = particles[i];
-      p.px = p.x;
-      p.py = p.y;
-      p.x += p.vx * dt;
-      p.y += p.vy * dt;
-      p.vy += p.gravity * dt;
-      p.vx *= p.drag;
-      p.vy *= p.drag;
-      p.life -= p.decay * dt;
-
-      if (p.life <= 0) {
-        particles.splice(i, 1);
-        continue;
+      const p = particles[i]; p.age += dt;
+      if (p.age >= p.life || p.y > H + 80) { recycle(i); continue; }
+      const drag = Math.exp(-p.drag * dt);
+      p.vx *= drag; p.vy = p.vy * drag + p.gravity * dt;
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      p.head = (p.head + 1) % 12;
+      p.trail[p.head * 2] = p.x; p.trail[p.head * 2 + 1] = p.y; p.points = Math.min(p.points + 1, 12);
+      p.emission -= dt;
+      if (p.emission <= 0 && !reducedMotion && p.age < p.life * 0.78) {
+        ember(p.x, p.y, p.vx * 0.16 + rand(-5, 5), p.vy * 0.16 + rand(3, 14), rand(0.25, p.willow ? 0.75 : 0.45), 0.5);
+        p.emission = p.willow ? rand(0.05, 0.1) : rand(0.12, 0.22);
       }
-
-      const a = Math.max(0, p.life);
-      const flicker = p.sparkle ? 0.6 + Math.random() * 0.4 : 1;
-      const alpha = a * flicker;
-
-      if (p.trail) {
-        ctx.strokeStyle = `rgba(${p.gr},${p.gg},${p.gb},${alpha * 0.4})`;
-        ctx.lineWidth = p.size * 0.6;
-        ctx.beginPath();
-        ctx.moveTo(p.px, p.py);
-        ctx.lineTo(p.x, p.y);
-        ctx.stroke();
-      }
-
-      drawGlow(p.x, p.y, p.size * (2 + a * 2), p.r, p.g, p.b, alpha * 0.7);
-      ctx.fillStyle = `rgba(255,255,255,${alpha * 0.6})`;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size * 0.35, 0, Math.PI * 2);
-      ctx.fill();
     }
-
-    // sparks
     for (let i = sparks.length - 1; i >= 0; i--) {
-      const s = sparks[i];
-      s.x += s.vx * dt;
-      s.y += s.vy * dt;
-      s.vy += 0.02 * dt;
-      s.life -= s.decay * dt;
-      if (s.life <= 0) {
-        sparks.splice(i, 1);
-        continue;
-      }
-      const a = s.life;
-      drawGlow(s.x, s.y, 3, s.r, s.g, s.b, a * 0.5);
+      const s = sparks[i]; s.age += dt;
+      if (s.age >= s.life) { sparks[i] = sparks[sparks.length - 1]; sparks.pop(); continue; }
+      s.vx *= Math.exp(-1.6 * dt); s.vy += 26 * dt; s.x += s.vx * dt; s.y += s.vy * dt;
     }
-
-    // auto launch
-    if (autoOn) {
-      autoTimer -= dt;
-      if (autoTimer <= 0) {
-        autoLaunch();
-        autoTimer = rand(40, 100);
-      }
+    for (let i = flashes.length - 1; i >= 0; i--) {
+      flashes[i].age += dt; if (flashes[i].age > 0.45) flashes.splice(i, 1);
     }
-
-    if (screenFlash > 0) {
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.fillStyle = `rgba(255, 240, 200, ${screenFlash})`;
-      ctx.fillRect(0, 0, W, H);
-      screenFlash *= 0.88;
-      if (screenFlash < 0.005) screenFlash = 0;
-    }
-
-    requestAnimationFrame(update);
+    if (autoOn) { autoTimer -= dt; if (autoTimer <= 0) autoLaunch(); }
   }
-
-  // initial sky paint
-  drawSky();
-  requestAnimationFrame(update);
-
-  // ── Input ──
+  function render(dt) {
+    ctx.globalCompositeOperation = 'source-over';
+    // A time-based afterimage over the cached dark sky, independent of refresh rate.
+    ctx.globalAlpha = reducedMotion ? 1 : 1 - Math.exp(-10 * dt);
+    ctx.drawImage(sky, 0, 0, W, H);
+    ctx.globalCompositeOperation = 'lighter';
+    if (!reducedMotion) for (const f of flashes) {
+      glow(f.x, f.y, f.size, f.color, 0.22 * Math.exp(-f.age * 13));
+      glow(f.x, f.y, 19, 6, 0.75 * Math.exp(-f.age * 24));
+    }
+    for (const r of rockets) glow(r.x, r.y, r.mega ? 11 : 7.5, GOLD, 0.9);
+    for (const p of particles) {
+      const progress = p.age / p.life;
+      const fade = Math.pow(1 - progress, 0.65);
+      const flicker = progress > 0.65 && !reducedMotion ? 0.66 + 0.34 * Math.sin(p.age * 42 + p.phase) ** 2 : 1;
+      const alpha = fade * flicker * p.brightness;
+      const color = p.willow ? (progress > 0.68 ? 8 : GOLD) : progress > 0.82 ? GOLD : p.color;
+      const rgb = COLORS[color];
+      ctx.globalAlpha = alpha * (p.willow ? 0.65 : 0.5);
+      ctx.strokeStyle = `rgb(${rgb})`; ctx.lineWidth = p.size * (p.willow ? 1 : 0.8);
+      ctx.beginPath();
+      for (let j = 0; j < p.points; j++) {
+        const index = (p.head - j + 12) % 12;
+        const x = p.trail[index * 2], y = p.trail[index * 2 + 1];
+        if (j === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      glow(p.x, p.y, p.size * (p.willow ? 5 : 6), color, alpha * 0.85);
+      if (progress < 0.68) {
+        ctx.globalAlpha = alpha * (1 - progress); ctx.fillStyle = '#fff9e9';
+        ctx.fillRect(p.x - 0.45, p.y - 0.45, 0.9, 0.9);
+      }
+    }
+    for (const s of sparks) glow(s.x, s.y, 2.6 * s.size, s.age / s.life > 0.55 ? 8 : GOLD, (1 - s.age / s.life) * 0.65);
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+  }
+  function update(now) {
+    if (paused) return;
+    const elapsed = lastTime ? clamp((now - lastTime) / 1000, 0, 0.1) : STEP;
+    lastTime = now; accumulator += elapsed;
+    let steps = 0;
+    while (accumulator + 1e-9 >= STEP && steps < 6) { step(STEP); accumulator = Math.max(0, accumulator - STEP); steps++; }
+    render(elapsed);
+    raf = requestAnimationFrame(update);
+  }
   function onInteract() {
-    if (!interacted) {
-      interacted = true;
-      titleEl.classList.add('hidden');
-      hintEl.classList.add('hidden');
-    }
-    ensureAudio();
+    if (!interacted) { interacted = true; titleEl.classList.add('hidden'); hintEl.classList.add('hidden'); }
+    unlockAudio();
+    autoTimer = 3.8; phraseIndex = 0; // Give manual launches room, without delaying the tap.
   }
-
-  function handlePoint(x, y) {
-    onInteract();
-    spawnFirework(x, y);
-  }
-
-  function canvasPoint(clientX, clientY) {
-    const rect = canvas.getBoundingClientRect();
-    return { x: clientX - rect.left, y: clientY - rect.top };
-  }
-
-  canvas.addEventListener('touchstart', (e) => {
+  function handlePoint(x, y) { onInteract(); spawnFirework(x, y); }
+  function canvasPoint(x, y) { const r = canvas.getBoundingClientRect(); return { x: x - r.left, y: y - r.top }; }
+  canvas.addEventListener('touchstart', e => {
     e.preventDefault();
     if (e.touches.length === 3) {
-      const points = [];
-      for (let i = 0; i < 3; i++) {
-        points.push(canvasPoint(e.touches[i].clientX, e.touches[i].clientY));
-      }
-      triggerMegaFirework(points);
-      return;
+      triggerMegaFirework(Array.from(e.touches, t => canvasPoint(t.clientX, t.clientY))); return;
     }
-    for (const t of e.changedTouches) {
-      handlePoint(t.clientX - canvas.getBoundingClientRect().left, t.clientY - canvas.getBoundingClientRect().top);
-    }
+    for (const t of e.changedTouches) { const p = canvasPoint(t.clientX, t.clientY); handlePoint(p.x, p.y); }
   }, { passive: false });
-
-  canvas.addEventListener('mousedown', (e) => {
-    if (e.button !== 0) return;
-    const pt = canvasPoint(e.clientX, e.clientY);
-    handlePoint(pt.x, pt.y);
+  canvas.addEventListener('mousedown', e => {
+    if (e.button !== 0 || e.sourceCapabilities?.firesTouchEvents) return;
+    const p = canvasPoint(e.clientX, e.clientY); handlePoint(p.x, p.y);
   });
-
-  document.addEventListener('gesturestart', (e) => e.preventDefault());
-  document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
-
-  // ── Controls ──
-  soundBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    soundOn = !soundOn;
-    soundBtn.classList.toggle('active', soundOn);
-    soundBtn.textContent = soundOn ? '♪' : '·';
-    soundBtn.style.opacity = soundOn ? '1' : '0.4';
-    if (soundOn) ensureAudio();
+  document.addEventListener('gesturestart', e => e.preventDefault(), { passive: false });
+  canvas.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+  function syncControls() {
+    soundBtn.classList.toggle('active', soundOn); soundBtn.textContent = soundOn ? '♪' : '·';
+    soundBtn.setAttribute('aria-pressed', String(soundOn));
+    autoBtn.classList.toggle('active', autoOn); autoBtn.setAttribute('aria-pressed', String(autoOn));
+  }
+  soundBtn.addEventListener('click', () => {
+    soundOn = !soundOn; if (soundOn) unlockAudio(); else silenceAudio(); syncControls();
   });
-
-  autoBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    autoOn = !autoOn;
-    autoBtn.classList.toggle('active', autoOn);
-    autoBtn.style.opacity = autoOn ? '1' : '0.4';
-    if (autoOn) autoTimer = rand(20, 60);
+  autoBtn.addEventListener('click', () => {
+    autoOn = !autoOn; autoTimer = 0.4; phraseIndex = 0; syncControls();
+    // Deliberately do not unlock sound when enabling automatic viewing.
   });
-
-  // kick off with a few fireworks
-  setTimeout(() => {
-    autoLaunch();
-    setTimeout(autoLaunch, 600);
-    setTimeout(autoLaunch, 1400);
-  }, 400);
+  function pause() {
+    if (paused) return;
+    paused = true; cancelAnimationFrame(raf); lastTime = 0; accumulator = 0;
+    silenceAudio(true);
+  }
+  function resume() {
+    if (!paused || document.hidden) return;
+    paused = false; lastTime = 0; accumulator = 0; autoTimer = Math.max(autoTimer, 1.5);
+    // Audio stays suspended until the next tap, including after a phone interruption.
+    raf = requestAnimationFrame(update);
+  }
+  document.addEventListener('visibilitychange', () => document.hidden ? pause() : resume());
+  addEventListener('pagehide', pause); addEventListener('pageshow', resume);
+  motionQuery.addEventListener('change', e => {
+    reducedMotion = e.matches;
+    if (reducedMotion) { autoOn = false; syncControls(); }
+  });
+  syncControls();
+  if (!paused) raf = requestAnimationFrame(update);
 })();
 </script>
-<a href="../" aria-label="アプリ一覧へ戻る" style="position:fixed;top:env(safe-area-inset-top,0px);left:env(safe-area-inset-left,0px);z-index:999999;margin:8px;padding:6px 11px;font:600 12px/1 -apple-system,BlinkMacSystemFont,'Hiragino Sans',system-ui,sans-serif;color:#fff;background:rgba(28,26,22,.62);border-radius:9px;text-decoration:none;-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);box-shadow:0 1px 4px rgba(0,0,0,.25)">&larr; アプリ一覧</a>
+<a href="../" aria-label="アプリ一覧へ戻る" style="position:fixed;top:env(safe-area-inset-top,0px);left:env(safe-area-inset-left,0px);z-index:999999;margin:8px;min-height:44px;display:flex;align-items:center;padding:6px 11px;font:600 12px/1 -apple-system,BlinkMacSystemFont,'Hiragino Sans',system-ui,sans-serif;color:#fff;background:rgba(28,26,22,.62);border-radius:9px;text-decoration:none;-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);box-shadow:0 1px 4px rgba(0,0,0,.25)">&larr; アプリ一覧</a>
 </body>
 </html>

@@ -1,4 +1,4 @@
-const CACHE = 'yapps-fireworks-v2';
+const CACHE = 'yapps-fireworks-v3';
 const ASSETS = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', (e) => {
