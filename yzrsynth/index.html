@@ -28,8 +28,6 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 html,body{width:100%;height:100%;overflow:hidden;background:var(--chassis);font-family:-apple-system,"SF Pro",system-ui,sans-serif;user-select:none;-webkit-user-select:none;overscroll-behavior:none;}
 body{display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
-#landscape-warn{display:none;position:fixed;inset:0;background:var(--panel);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:16px;color:var(--text);font-size:22px;text-align:center;}
-@media (orientation:landscape) and (max-height:500px){#landscape-warn{display:flex;}}
 #app{flex:1;display:flex;min-height:0;}
 #main{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden;background:var(--panel);}
 /* Black top strip with the orange logo block, like the 909 fascia */
@@ -72,29 +70,63 @@ body{display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(saf
 #looper-bar{position:absolute;left:0;top:0;height:100%;width:0;background:var(--accent);opacity:0.35;}
 #looper-track.recording #looper-bar{background:var(--led);opacity:0.3;}
 #looper-status{position:relative;z-index:1;padding:0 12px;font-family:var(--mono);font-size:10px;color:#55524a;font-weight:700;letter-spacing:0.1em;white-space:nowrap;}
-/* ── Step sequencer: 909-style light keys with red LEDs ── */
-#seq-row{display:flex;flex-direction:column;gap:6px;padding:8px 12px;border-bottom:1px solid var(--line);flex-shrink:0;}
-#seq-top{display:flex;align-items:center;gap:6px;}
-#seq-play{min-width:44px;height:38px;}
-#seq-play.playing{border-color:var(--accent);background:var(--accent-dim);color:var(--text);}
-#drum-tabs{display:flex;gap:4px;flex:1;}
-.drum-tab{flex:1;height:38px;background:var(--panel-2);border:1px solid var(--line);border-radius:7px;color:var(--muted);font-family:var(--mono);font-size:9px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;box-shadow:0 1px 0 rgba(0,0,0,0.15);}
-.drum-tab .tled{width:4px;height:4px;border-radius:50%;background:rgba(0,0,0,0.15);}
-.drum-tab.has-notes .tled{background:rgba(224,48,30,0.55);}
-.drum-tab.active{border-color:var(--accent);background:var(--accent-dim);color:var(--text);}
-.drum-tab.active .tled{background:var(--led);box-shadow:0 0 5px var(--led);}
-.seq-knob-wrap{display:flex;flex-direction:column;align-items:center;gap:1px;flex-shrink:0;width:40px;}
-.seq-knob-wrap .knob{width:36px;height:36px;}
-.seq-knob-wrap .knob-label{font-size:7px;}
-#seq-toggle{width:28px;height:38px;background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;flex-shrink:0;}
-#seq-steps{display:flex;gap:3px;height:34px;}
-.step{flex:1;border-radius:5px;border:1px solid #8d897f;background:#efece5;cursor:pointer;padding:0;position:relative;box-shadow:0 1px 0 rgba(0,0,0,0.2);}
-.step::before{content:'';position:absolute;top:4px;left:50%;transform:translateX(-50%);width:6px;height:6px;border-radius:50%;background:rgba(0,0,0,0.18);}
-.step.g1{background:#ddd9d0;}
-.step.on{background:#f7e3d2;border-color:#c46a2a;}
-.step.on::before{background:var(--led);box-shadow:0 0 7px var(--led);}
-.step.playhead{box-shadow:inset 0 0 0 2px var(--accent),0 1px 0 rgba(0,0,0,0.2);}
-#seq-row.collapsed #seq-steps{display:none;}
+/* ── BEAT editor: eight steps, all five tracks ── */
+[hidden]{display:none!important;}
+body{height:100dvh;}
+#main{min-width:0;max-width:1000px;width:100%;margin:0 auto;}
+#header{height:48px;padding:0 12px;}
+#header .back-btn{position:static;display:flex;align-items:center;min-height:44px;font-size:12px;color:#eee;letter-spacing:0;}
+#view-switch{display:flex;gap:6px;padding:6px 8px;background:var(--chassis);flex-shrink:0;}
+#view-switch button{flex:1;min-height:44px;font-size:14px;}
+.editor-btn{border:1px solid #928b7e;border-radius:7px;background:var(--panel-2);color:var(--text);font:600 13px var(--mono);cursor:pointer;padding:6px 8px;min-height:44px;}
+.editor-btn[aria-pressed="true"]{background:var(--accent-dim);border-color:#a94c08;box-shadow:inset 0 -3px var(--accent);}
+#view-switch button[aria-pressed="true"]{background:var(--accent);color:#161614;}
+button:focus-visible,a:focus-visible,canvas:focus-visible{outline:3px solid #175d95;outline-offset:2px;}
+button:disabled{opacity:.45;cursor:default;}
+#beat-panel,#performance-panel{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;}
+#beat-panel{padding:8px;}
+.beat-toolbar{display:flex;gap:6px;align-items:stretch;margin-bottom:10px;}
+.beat-page{flex:1;position:relative;}
+.beat-page small{display:block;font:11px system-ui;margin-top:3px;}
+.beat-page.is-playing::after{content:'▶';position:absolute;right:4px;top:3px;color:#a64c08;font-size:11px;}
+.drum-undo{min-width:68px;}
+#beat-matrix{display:grid;grid-template-columns:44px repeat(8,minmax(0,1fr));gap:4px;align-items:stretch;}
+.step-number{text-align:center;font:600 12px var(--mono);height:24px;display:flex;align-items:center;justify-content:center;}
+.step-number.playhead{background:var(--chassis);color:#fff;border-bottom:3px solid var(--accent);}
+.track-btn{min-width:0;padding:0;font-size:12px;min-height:48px;}
+.step{border-radius:5px;border:1px solid #8d897f;background:#efece5;cursor:pointer;padding:0;position:relative;min-width:0;min-height:48px;display:flex;align-items:center;justify-content:center;}
+.step.beat-start,.step-number.beat-start{border-left:3px solid #6d685f;}
+.step .step-led{width:9px;height:9px;border:1px solid #777166;border-radius:50%;background:transparent;pointer-events:none;}
+.step.on{background:#f7e3d2;border-color:#b45b19;}
+.step.on .step-led{background:var(--led);border-color:#ae2416;box-shadow:0 0 4px rgba(224,48,30,.4);}
+.step.playhead{box-shadow:inset 0 0 0 3px var(--accent);}
+#track-detail{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;}
+#track-summary{font-size:13px;line-height:1.5;}
+.beat-help{font-size:12px;color:#555047;line-height:1.5;margin:10px 0;}
+#seq-transport{flex-shrink:0;border-top:1px solid #918a7d;background:var(--panel-3);padding:6px 8px;}
+#transport-controls{display:flex;gap:8px;align-items:center;}
+#seq-play{flex:1;min-height:48px;font-size:14px;}
+#seq-play.playing{background:var(--accent-dim);border-color:#a94c08;}
+.seq-knob-wrap{width:68px;display:flex;align-items:center;flex-direction:column;flex-shrink:0;gap:2px;}
+.seq-knob-wrap .knob{width:44px;height:44px;}
+.seq-knob-wrap .knob-label{font-size:11px;letter-spacing:0;color:#37332e;}
+.seq-knob-wrap output{font-weight:700;}
+#seq-position{font:12px var(--mono);min-height:18px;margin-top:4px;text-align:center;color:#37332e;}
+#performance-panel{display:flex;flex-direction:column;}
+#header-tools{padding:8px;justify-content:space-between;}
+#header-tools button{flex:1;font-size:11px;height:44px;}
+#performance-panel #keyboard-wrap{min-height:220px;flex:1 0 220px;}
+#performance-panel #looper-status{font-size:10px;letter-spacing:0;padding:0 6px;}
+#precision-dialog{margin:auto;width:calc(100% - 24px);max-width:560px;max-height:calc(100dvh - 24px);overflow:auto;border:2px solid #575145;border-radius:12px;padding:12px;background:var(--panel);color:var(--text);}
+#precision-dialog::backdrop{background:rgba(0,0,0,.65);}
+.precision-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;}
+#precision-title{font-size:16px;}
+#precision-description{font-size:13px;margin-bottom:12px;}
+#precision-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px;}
+#precision-steps .step{min-height:76px;flex-direction:column;gap:6px;font:600 14px var(--mono);}
+#precision-steps .step-state{font-size:12px;}
+@media (max-height:520px){#header{height:40px;}#view-switch{padding-top:2px;padding-bottom:2px;}#seq-transport{padding-top:3px;padding-bottom:3px;}}
+@media (prefers-reduced-motion:reduce){#looper-rec.recording{animation:none;}}
 #keyboard-wrap{flex:1;position:relative;min-height:0;touch-action:none;background:var(--chassis);padding:8px 8px calc(8px + env(safe-area-inset-bottom)/2);}
 #keyboard{width:100%;height:100%;position:relative;display:flex;gap:3px;}
 #keyboard.pad-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:6px;}
@@ -114,14 +146,8 @@ body{display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(saf
 <link rel="apple-touch-icon" href="../icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <script>if('serviceWorker'in navigator){addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}</script>
-<script async src="../analytics.js"></script>
 </head>
 <body>
-<a class="back-btn" href="index.html">index →</a>
-<div id="landscape-warn">
-  <div style="font-size:44px">📱</div>
-  <div>縦にしてね</div>
-</div>
 <div id="app">
   <div id="main">
     <div id="header">
@@ -129,13 +155,32 @@ body{display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(saf
         <span class="sub">Rhythm Composer</span>
         <h1>YZRsynth_v3.1<span class="dot"></span></h1>
       </div>
+      <a class="back-btn" href="../">アプリ一覧 →</a>
+    </div>
+    <nav id="view-switch" aria-label="画面切替">
+      <button class="editor-btn" id="view-beat" aria-pressed="true" aria-controls="beat-panel">BEAT</button>
+      <button class="editor-btn" id="view-performance" aria-pressed="false" aria-controls="performance-panel">演奏・設定</button>
+    </nav>
+    <section id="beat-panel" aria-label="ドラムパターン編集">
+      <div class="beat-toolbar">
+        <button class="editor-btn beat-page" data-page="0" aria-pressed="true">1–8<small>前半 / A</small></button>
+        <button class="editor-btn beat-page" data-page="1" aria-pressed="false">9–16<small>後半 / B</small></button>
+        <button class="editor-btn drum-undo" data-drum-undo disabled>Undo</button>
+      </div>
+      <div id="beat-matrix" role="group" aria-label="5トラック・前半1〜8"></div>
+      <div id="track-detail">
+        <div id="track-summary" aria-live="polite"></div>
+        <button class="editor-btn" id="precision-open">拡大編集</button>
+      </div>
+      <p class="beat-help">行名で楽器を選択。赤いLEDはON、オレンジの枠は再生位置です。</p>
+    </section>
+    <section id="performance-panel" aria-label="シンセ演奏と設定" hidden>
       <div id="header-tools">
         <button class="tool-btn scale-btn active" data-scale="free">FREE</button>
         <button class="tool-btn scale-btn" data-scale="penta">PENTA</button>
         <button class="tool-btn scale-btn" data-scale="major">MAJ</button>
         <button class="tool-btn" id="btn-glide">GLIDE</button>
       </div>
-    </div>
     <div id="timbre-row">
       <button class="timbre-btn active" id="tb-chip" data-timbre="0"><span class="led"></span><span>CHIP</span></button>
       <button class="timbre-btn" id="tb-bell" data-timbre="1"><span class="led"></span><span>BELL</span></button>
@@ -174,19 +219,26 @@ body{display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(saf
       <div class="loop-knob-wrap"><canvas class="knob" id="knob-loopSpd" width="46" height="46" data-knob="loopSpd"></canvas><div class="knob-label">SPEED</div></div>
       <button id="looper-clear" class="loop-btn clear" disabled>CLR</button>
     </div>
-    <div id="seq-row">
-      <div id="seq-top">
-        <button id="seq-play" class="loop-btn">▶</button>
-        <div id="drum-tabs"></div>
-        <div class="seq-knob-wrap"><canvas class="knob" id="knob-bpm" width="36" height="36" data-knob="bpm"></canvas><div class="knob-label">BPM</div></div>
-        <div class="seq-knob-wrap"><canvas class="knob" id="knob-swing" width="36" height="36" data-knob="swing"></canvas><div class="knob-label">SWG</div></div>
-        <button id="seq-toggle">▾</button>
-      </div>
-      <div id="seq-steps"></div>
-    </div>
     <div id="keyboard-wrap"><div id="keyboard"></div></div>
+    </section>
+    <section id="seq-transport" aria-label="ドラム再生とテンポ">
+      <div id="transport-controls">
+        <button id="seq-play" data-drum-play class="editor-btn" aria-pressed="false">▶ ドラム再生</button>
+        <div class="seq-knob-wrap"><canvas class="knob" id="knob-bpm" width="54" height="54" data-knob="bpm" role="slider" tabindex="0" aria-label="BPM（上下ドラッグ・矢印キー）" aria-valuemin="60" aria-valuemax="180" aria-valuenow="120"></canvas><div class="knob-label">BPM <output id="bpm-value">120</output></div></div>
+        <div class="seq-knob-wrap"><canvas class="knob" id="knob-swing" width="54" height="54" data-knob="swing" role="slider" tabindex="0" aria-label="Swing（上下ドラッグ・矢印キー）" aria-valuemin="0" aria-valuemax="60" aria-valuenow="0"></canvas><div class="knob-label">SWG <output id="swing-value">0%</output></div></div>
+      </div>
+      <div id="seq-position">ドラム停止中 · ループは別再生</div>
+    </section>
   </div>
 </div>
+<dialog id="precision-dialog" aria-labelledby="precision-title" aria-describedby="precision-description">
+  <div class="precision-header"><h2 id="precision-title">拡大編集</h2><button class="editor-btn" id="precision-close">閉じる</button></div>
+  <p id="precision-description"></p>
+  <div id="precision-steps"></div>
+  <p id="precision-position" class="beat-help"></p>
+  <button class="editor-btn drum-undo" data-drum-undo disabled>Undo</button>
+  <button class="editor-btn" data-drum-play aria-pressed="false">▶ ドラム再生</button>
+</dialog>
 <div id="knob-bubble"></div>
 
 <script>
@@ -409,6 +461,12 @@ function drawKnob(canvas, val) {
   ctx.strokeStyle='#f07818'; ctx.lineWidth=2.5; ctx.lineCap='round'; ctx.stroke();
   ctx.fillStyle='#55524a'; ctx.font=`700 ${w<=40?7:8}px ui-monospace,monospace`; ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillText(knobLabel(canvas.dataset.knob, val), cx, cy+1);
+  const name = canvas.dataset.knob;
+  if (name === 'bpm' || name === 'swing') {
+    document.getElementById(name + '-value').textContent = knobLabel(name, val);
+    canvas.setAttribute('aria-valuenow', String(name === 'bpm' ? 60 + val * 1.2 : val * 0.6));
+    canvas.setAttribute('aria-valuetext', knobLabel(name, val));
+  }
 }
 
 const bubbleEl = document.getElementById('knob-bubble');
@@ -448,6 +506,13 @@ document.querySelectorAll('.knob').forEach(canvas => {
   });
   canvas.addEventListener('pointerup', ()=>{ if(drag){drag=false; hideBubble(); scheduleHash();} });
   canvas.addEventListener('pointercancel', ()=>{ drag=false; hideBubble(); });
+  if (k === 'bpm' || k === 'swing') canvas.addEventListener('keydown', e => {
+    if (!['ArrowUp','ArrowRight','ArrowDown','ArrowLeft','Home'].includes(e.key)) return;
+    e.preventDefault();
+    knobVals[k] = e.key === 'Home' ? KNOB_DEFAULTS[k]
+      : Math.max(0, Math.min(100, knobVals[k] + (['ArrowUp','ArrowRight'].includes(e.key) ? 1 : -1)));
+    drawKnob(canvas, knobVals[k]); applyEffect(k, knobVals[k]); scheduleHash();
+  });
 });
 
 function redrawAllKnobs() {
@@ -576,8 +641,7 @@ function startSeq() {
   nextStepTime = audioCtx.currentTime + 0.06;
   scheduleSeq();
   seqTimer = setInterval(scheduleSeq, 25);
-  seqPlayBtn.classList.add('playing');
-  seqPlayBtn.textContent = '■';
+  syncDrumTransport();
 }
 
 function stopSeq() {
@@ -585,59 +649,166 @@ function stopSeq() {
   if (seqTimer) { clearInterval(seqTimer); seqTimer = null; }
   stepQueue.length = 0;
   setPlayhead(-1);
-  seqPlayBtn.classList.remove('playing');
-  seqPlayBtn.textContent = '▶';
+  syncDrumTransport();
 }
 
-// Sequencer UI
+// Sequencer UI only: both editors mutate the existing drumPattern array.
 const seqPlayBtn = document.getElementById('seq-play');
-const drumTabsEl = document.getElementById('drum-tabs');
-const seqStepsEl = document.getElementById('seq-steps');
-const stepEls = [], tabEls = [];
+const beatPanel = document.getElementById('beat-panel');
+const performancePanel = document.getElementById('performance-panel');
+const matrixEl = document.getElementById('beat-matrix');
+const precisionDialog = document.getElementById('precision-dialog');
+const precisionSteps = document.getElementById('precision-steps');
+const drumNames = ['Kick', 'Snare', 'Closed Hat', 'Open Hat', 'Clap'];
+const drumHistory = []; // independent from the looper's undoBuffer
+const DRUM_HISTORY_LIMIT = 32;
+let beatPage = 0, beatScrollBeforePrecision = 0;
+let matrixButtons = [], precisionButtons = [], trackButtons = [], numberEls = [];
 
-DRUM_TRACKS.forEach((name, i) => {
-  const b = document.createElement('button');
-  b.className = 'drum-tab' + (i === 0 ? ' active' : '');
-  b.innerHTML = `<span class="tled"></span><span>${name}</span>`;
-  b.addEventListener('click', () => {
-    currentDrumTrack = i;
-    tabEls.forEach((t, j) => t.classList.toggle('active', j === i));
-    refreshSteps();
-  });
-  drumTabsEl.appendChild(b); tabEls.push(b);
-});
+function toggleDrumStep(track, step) {
+  drumHistory.push({track, step, before:drumPattern[track][step]});
+  if (drumHistory.length > DRUM_HISTORY_LIMIT) drumHistory.shift();
+  drumPattern[track][step] = !drumPattern[track][step];
+  currentDrumTrack = track;
+  refreshSteps();
+  scheduleHash();
+}
 
-for (let i = 0; i < 16; i++) {
-  const b = document.createElement('button');
-  b.className = 'step' + (Math.floor(i/4) % 2 ? ' g1' : '');
-  b.addEventListener('click', () => {
-    drumPattern[currentDrumTrack][i] = !drumPattern[currentDrumTrack][i];
-    refreshSteps(); scheduleHash();
+function undoDrumEdit() {
+  const edit = drumHistory.pop();
+  if (!edit) return;
+  drumPattern[edit.track][edit.step] = edit.before;
+  currentDrumTrack = edit.track;
+  refreshSteps();
+  scheduleHash();
+}
+
+function makeStepButton(track, step, precision = false) {
+  const button = document.createElement('button');
+  button.className = 'step' + (step % 4 === 0 ? ' beat-start' : '');
+  button.dataset.track = track;
+  button.dataset.step = step;
+  button.setAttribute('aria-label', `${DRUM_TRACKS[track]} ${drumNames[track]} ステップ ${step + 1}`);
+  button.innerHTML = precision
+    ? `<span>${step + 1}</span><span class="step-led" aria-hidden="true"></span><span class="step-state" aria-hidden="true"></span>`
+    : '<span class="step-led" aria-hidden="true"></span>';
+  button.addEventListener('click', () => toggleDrumStep(track, step));
+  return button;
+}
+
+function buildMatrix() {
+  matrixEl.replaceChildren();
+  matrixButtons = []; trackButtons = []; numberEls = [];
+  matrixEl.setAttribute('aria-label', `5トラック・${beatPage ? '後半9〜16' : '前半1〜8'}`);
+  const corner = document.createElement('span');
+  corner.className = 'step-number'; corner.textContent = 'DRUM';
+  matrixEl.append(corner);
+  for (let i = 0; i < 8; i++) {
+    const step = beatPage * 8 + i;
+    const label = document.createElement('span');
+    label.className = 'step-number' + (i % 4 === 0 ? ' beat-start' : '');
+    label.dataset.step = step; label.textContent = step + 1;
+    matrixEl.append(label); numberEls.push(label);
+  }
+  DRUM_TRACKS.forEach((name, track) => {
+    const select = document.createElement('button');
+    select.className = 'editor-btn track-btn'; select.textContent = name;
+    select.setAttribute('aria-label', `${name} ${drumNames[track]} を選択`);
+    select.addEventListener('click', () => { currentDrumTrack = track; refreshSteps(); });
+    matrixEl.append(select); trackButtons.push(select);
+    for (let i = 0; i < 8; i++) {
+      const button = makeStepButton(track, beatPage * 8 + i);
+      matrixEl.append(button); matrixButtons.push(button);
+    }
   });
-  seqStepsEl.appendChild(b); stepEls.push(b);
+  refreshSteps();
 }
 
 function refreshSteps() {
-  const tr = drumPattern[currentDrumTrack];
-  stepEls.forEach((el, i) => el.classList.toggle('on', tr[i]));
-  drumPattern.forEach((t, i) => tabEls[i].classList.toggle('has-notes', t.some(Boolean)));
+  [...matrixButtons, ...precisionButtons].forEach(el => {
+    const on = drumPattern[Number(el.dataset.track)][Number(el.dataset.step)];
+    el.classList.toggle('on', on);
+    el.setAttribute('aria-pressed', String(on));
+    const state = el.querySelector('.step-state');
+    if (state) state.textContent = on ? 'ON' : 'OFF';
+  });
+  trackButtons.forEach((el, track) => el.setAttribute('aria-pressed', String(track === currentDrumTrack)));
+  document.getElementById('track-summary').textContent =
+    `${DRUM_TRACKS[currentDrumTrack]} · ${drumNames[currentDrumTrack]} · ${drumPattern[currentDrumTrack].filter(Boolean).length}/16`;
+  document.querySelectorAll('[data-drum-undo]').forEach(el => {
+    el.disabled = drumHistory.length === 0;
+    const last = drumHistory[drumHistory.length - 1];
+    el.setAttribute('aria-label', last
+      ? `ドラム編集を元に戻す：${DRUM_TRACKS[last.track]} ステップ ${last.step + 1}`
+      : 'ドラム編集を元に戻す（履歴なし）');
+  });
+  renderPlayhead();
 }
-refreshSteps();
 
-function setPlayhead(step) {
-  if (playheadStep >= 0) stepEls[playheadStep].classList.remove('playhead');
-  playheadStep = step;
-  if (step >= 0) stepEls[step].classList.add('playhead');
+function renderPlayhead() {
+  [...matrixButtons, ...precisionButtons, ...numberEls].forEach(el => {
+    const current = Number(el.dataset.step) === playheadStep;
+    el.classList.toggle('playhead', current);
+    if (current) el.setAttribute('aria-current', 'step');
+    else el.removeAttribute('aria-current');
+  });
+  document.querySelectorAll('[data-page]').forEach(el => {
+    const page = Number(el.dataset.page);
+    el.setAttribute('aria-pressed', String(page === beatPage));
+    el.classList.toggle('is-playing', playheadStep >= 0 && Math.floor(playheadStep / 8) === page);
+  });
+  // Not aria-live: announcing every sixteenth note would overwhelm VoiceOver.
+  const positionText = playheadStep < 0
+    ? 'ドラム停止中 · ループは別再生'
+    : `再生 ${playheadStep < 8 ? 'A' : 'B'} · ${playheadStep + 1}/16` +
+      (Math.floor(playheadStep / 8) !== beatPage ? '（別ページ）' : '');
+  document.getElementById('seq-position').textContent = positionText;
+  document.getElementById('precision-position').textContent = positionText;
 }
 
-seqPlayBtn.addEventListener('click', () => seqPlaying ? stopSeq() : startSeq());
-
-const seqRowEl = document.getElementById('seq-row');
-const seqToggleBtn = document.getElementById('seq-toggle');
-seqToggleBtn.addEventListener('click', () => {
-  const c = seqRowEl.classList.toggle('collapsed');
-  seqToggleBtn.textContent = c ? '▸' : '▾';
+function setPlayhead(step) { playheadStep = step; renderPlayhead(); }
+function syncDrumTransport() {
+  document.querySelectorAll('[data-drum-play]').forEach(el => {
+    el.classList.toggle('playing', seqPlaying);
+    el.textContent = seqPlaying ? '■ ドラム停止' : '▶ ドラム再生';
+    el.setAttribute('aria-pressed', String(seqPlaying));
+  });
+}
+document.querySelectorAll('[data-drum-play]').forEach(el => el.addEventListener('click', () => seqPlaying ? stopSeq() : startSeq()));
+document.querySelectorAll('[data-page]').forEach(el => el.addEventListener('click', () => {
+  beatPage = Number(el.dataset.page); buildMatrix();
+}));
+document.querySelectorAll('[data-drum-undo]').forEach(el => el.addEventListener('click', undoDrumEdit));
+document.getElementById('precision-open').addEventListener('click', () => {
+  beatScrollBeforePrecision = beatPanel.scrollTop;
+  precisionSteps.replaceChildren(); precisionButtons = [];
+  document.getElementById('precision-title').textContent = `${DRUM_TRACKS[currentDrumTrack]} · ${drumNames[currentDrumTrack]}`;
+  document.getElementById('precision-description').textContent = `${beatPage ? '9〜16' : '1〜8'}ステップ · 上段から番号順に編集`;
+  for (let i = 0; i < 8; i++) {
+    const button = makeStepButton(currentDrumTrack, beatPage * 8 + i, true);
+    precisionSteps.append(button); precisionButtons.push(button);
+  }
+  refreshSteps(); precisionDialog.showModal();
 });
+document.getElementById('precision-close').addEventListener('click', () => precisionDialog.close());
+precisionDialog.addEventListener('close', () => {
+  precisionButtons = []; precisionSteps.replaceChildren();
+  document.getElementById('precision-open').focus({preventScroll:true});
+  beatPanel.scrollTop = beatScrollBeforePrecision;
+});
+
+function showView(view) {
+  const isBeat = view === 'beat';
+  if (isBeat && !performancePanel.hidden) releaseAllNotes();
+  beatPanel.hidden = !isBeat; performancePanel.hidden = isBeat;
+  document.getElementById('view-beat').setAttribute('aria-pressed', String(isBeat));
+  document.getElementById('view-performance').setAttribute('aria-pressed', String(!isBeat));
+  hideBubble();
+  if (!isBeat) buildKeyboard(); // first layout was hidden; measure the visible keys
+}
+document.getElementById('view-beat').addEventListener('click', () => showView('beat'));
+document.getElementById('view-performance').addEventListener('click', () => showView('performance'));
+buildMatrix();
 
 // ── Looper (hold-to-overdub, separate output bus) ───────────────
 // Loop length is set when a fresh loop is recorded: 2 bars at the current
@@ -1241,6 +1412,5 @@ function scheduleHash() {
   } catch (e) { /* malformed hash → keep defaults */ }
 })();
 </script>
-<a href="../" aria-label="アプリ一覧へ戻る" style="position:fixed;top:env(safe-area-inset-top,0px);left:env(safe-area-inset-left,0px);z-index:999999;margin:8px;padding:6px 11px;font:600 12px/1 -apple-system,BlinkMacSystemFont,'Hiragino Sans',system-ui,sans-serif;color:#fff;background:rgba(28,26,22,.62);border-radius:9px;text-decoration:none;-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);box-shadow:0 1px 4px rgba(0,0,0,.25)">&larr; アプリ一覧</a>
 </body>
 </html>
