@@ -1,4 +1,4 @@
-const CACHE = 'yapps-yzrsynth-v2';
+const CACHE = 'yapps-yzrsynth-v3-beat';
 const ASSETS = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', (e) => {
