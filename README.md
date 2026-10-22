@@ -22,7 +22,7 @@ State source: [.github/yzrs-repository.yml](.github/yzrs-repository.yml).
 
 | ファイル | タイトル | 概要 |
 |---|---|---|
-| `asobi.html` | おにさんダンス！ / Oni Dance Party | 赤鬼が音楽に合わせて踊る幼児向けの踊りパーティー。指でドラッグして動かし、タッチでジャンプ回転。単一HTML（PWA非対応）。 |
+| `asobi.html` | おにさんダンス！ / Oni Dance Party | 丸い赤・青・緑の鬼と遊ぶモバイル向け音楽広場。タッチ・ドラッグ、「ぴょん！」「くるり！」、選んだ鬼の帽子・お花・王冠を切り替える「へんしん！」。キャッチゲーム・既存ベストスコア保存を維持。音声は操作後に開始し、一括ミュート対応。単一HTML・外部依存なし（PWA非対応）。 |
 | `yzrsynth/` | YZRsynth_v3.1 | 16ステップドラムシーケンサー・5音色シンセ・ルーパー搭載のiPhone向けリズムマシン（TR-909風UI）。ルートの `yzrsynth.html` `tr808.html` はリダイレクトのみ |
 | `grid/` | Grid Instrument | タッチで音が鳴るグリッド楽器。ルートの `grid.html` はリダイレクトのみ |
 | `fireworks/` | 花火 | タッチで打ち上げ花火を楽しむ。ルートの `fireworks.html` はリダイレクトのみ |
