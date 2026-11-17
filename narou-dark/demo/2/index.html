@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>夜の工房 - 第二話　次の頁</title>
+<style>
+body{margin:0;background:#fff;color:#333;font-family:-apple-system,"Hiragino Sans",sans-serif;font-size:15px;line-height:1.8}
+.demo-note{background:#fff7d6;border-bottom:1px solid #e8d98a;padding:10px 16px;font-size:13px}
+.p-novel{max-width:640px;margin:0 auto;padding:16px}
+.c-announce a{color:#3b6ab5;font-size:13px}
+.c-pager{display:flex;justify-content:space-between;margin:16px 0;font-size:14px}
+.c-pager__item{color:#3b6ab5} .c-pager__item--disabled{color:#bbb}
+.p-novel__number{color:#888;font-size:13px}
+.p-novel__title{font-size:20px;margin:6px 0 24px}
+.p-novel__text p{margin:0}
+.p-novel__text--preface,.p-novel__text--afterword{border:1px dashed #ccc;padding:8px 12px;margin:20px 0;color:#666}
+#run{position:fixed;right:16px;bottom:calc(env(safe-area-inset-bottom) + 16px);border:0;border-radius:999px;background:#1c1a16;color:#f0ebe3;font-size:15px;font-weight:700;padding:14px 20px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+</style>
+</head>
+<body>
+<div class="demo-note">これは「なろう夜読み」のデモ用ページです（なろうの話ページの構造をまねた見本）。右下のボタンが、ブックマークレットをタップしたときの動きです。 <a href="../../">導入ガイドへ戻る</a></div>
+<div class="p-novel">
+<div class="c-announce-box"><div class="c-announce"><a href="../">夜の工房</a></div></div>
+<div class="c-pager"><a href="../1/" class="c-pager__item c-pager__item--before">前へ</a><a href="../" class="c-pager__item">目次</a><span class="c-pager__item c-pager__item--next c-pager__item--disabled">次へ</span></div>
+<div class="p-novel__number js-siori">2/2</div>
+<h1 class="p-novel__title p-novel__title--rensai">第二話　次の頁</h1>
+
+<div class="js-novel-text p-novel__text">
+<p id="L1">　朝になると、工房の窓から斜めに光が差し込んできた。</p>
+<p id="L2">　机の上には、夜のうちに書き上げた小さなプログラムが残っている。<ruby>頁<rp>(</rp><rt>ページ</rt><rp>)</rp></ruby>をめくるたびに、前の続きから読める仕掛けだ。</p>
+<p id="L3"><br></p>
+<p id="L4">「これ、どこまで読んだか覚えてるんですね」</p>
+<p id="L5">「覚えてるのは君のスマホのほうだけどね。どこにも送らない」</p>
+<p id="L6"><br></p>
+<p id="L7">　湊は頷いて、次の頁へ進むボタンを押した。</p>
+<p id="L8">　朝になると、工房の窓から斜めに光が差し込んできた。</p>
+<p id="L9">　机の上には、夜のうちに書き上げた小さなプログラムが残っている。<ruby>頁<rp>(</rp><rt>ページ</rt><rp>)</rp></ruby>をめくるたびに、前の続きから読める仕掛けだ。</p>
+<p id="L10"><br></p>
+<p id="L11">「これ、どこまで読んだか覚えてるんですね」</p>
+<p id="L12">「覚えてるのは君のスマホのほうだけどね。どこにも送らない」</p>
+<p id="L13"><br></p>
+<p id="L14">　湊は頷いて、次の頁へ進むボタンを押した。</p>
+<p id="L15">　朝になると、工房の窓から斜めに光が差し込んできた。</p>
+<p id="L16">　机の上には、夜のうちに書き上げた小さなプログラムが残っている。<ruby>頁<rp>(</rp><rt>ページ</rt><rp>)</rp></ruby>をめくるたびに、前の続きから読める仕掛けだ。</p>
+<p id="L17"><br></p>
+<p id="L18">「これ、どこまで読んだか覚えてるんですね」</p>
+<p id="L19">「覚えてるのは君のスマホのほうだけどね。どこにも送らない」</p>
+<p id="L20"><br></p>
+<p id="L21">　湊は頷いて、次の頁へ進むボタンを押した。</p>
+</div>
+
+<div class="c-pager"><a href="../1/" class="c-pager__item c-pager__item--before">前へ</a><a href="../" class="c-pager__item">目次</a><span class="c-pager__item c-pager__item--next c-pager__item--disabled">次へ</span></div>
+</div>
+<button id="run" type="button">🌙 夜読みで読む</button>
+<script>
+document.getElementById('run').addEventListener('click', function () {
+  if (window.__ndr) { window.__ndr.toggle(); return; }
+  var s = document.createElement('script'); s.src = '../../reader.js'; document.body.appendChild(s);
+});
+</script>
+</body>
+</html>
