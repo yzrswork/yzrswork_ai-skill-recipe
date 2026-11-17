@@ -5,7 +5,7 @@
  */
 (function () {
   'use strict';
-  var VERSION = '1.0.1';
+  var VERSION = '1.1.0';
   var NS = 'ndr';
   var W = window, D = document;
 
@@ -113,9 +113,48 @@
     }
     if (work === subtitle) work = '';
     var pager = findPager(doc, url);
-    return { url: url, work: work, subtitle: subtitle, number: number,
+    return { kind: 'ep', url: url, work: work, subtitle: subtitle, number: number,
              preface: preface, body: body, after: after,
              prev: pager.prev, next: pager.next, toc: pager.toc };
+  }
+
+  /* 目次ページ: 話へのリンク（目次のパス + 数字/）と章タイトルを文書順に拾う */
+  function parseToc(doc, url) {
+    var u = new URL(url), base = u.pathname;
+    if (!/\/$/.test(base) || /\/\d+\/$/.test(base)) return null;
+    var re = new RegExp('^' + base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(\\d+)/?$');
+    var sel = '.p-eplist__chapter-title, .chapter_title, .p-eplist__subtitle, .index_box .subtitle a, dl.novel_sublist2 a';
+    var nodes = doc.querySelectorAll(sel);
+    if (!nodes.length) nodes = doc.querySelectorAll('.p-eplist__chapter-title, .chapter_title, a[href]');
+    var items = [], seen = {}, eps = 0;
+    for (var i = 0; i < nodes.length; i++) {
+      var n = nodes[i];
+      if (n.tagName !== 'A') { var ct = text(n); if (ct) items.push({ type: 'chapter', text: ct }); continue; }
+      var h = abs(n.getAttribute('href') || '', url); if (!h) continue;
+      var hu = new URL(h), m = hu.origin === u.origin && hu.pathname.match(re);
+      if (!m || seen[hu.pathname]) continue;
+      var t = text(n); if (!t) continue;
+      seen[hu.pathname] = 1; eps++;
+      items.push({ type: 'ep', url: hu.origin + hu.pathname.replace(/\/?$/, '/'), title: t, num: +m[1] });
+    }
+    if (eps < 1) return null;
+    var work = text(doc.querySelector('.p-novel__title, .novel_title'));
+    if (!work) work = (doc.title || '').split(' - ')[0].trim();
+    var pager = findPager(doc, url);
+    var pageNo = +(u.searchParams.get('p') || 1);
+    return { kind: 'toc', url: url, base: base, work: work, items: items, page: pageNo,
+             prev: pager.prev, next: pager.next };
+  }
+  function parseAny(doc, url) { return parse(doc, url) || parseToc(doc, url); }
+
+  /* 作品ごとに最後に読んだ話（目次の「続きから」用） */
+  function tocBase(url) { var m = new URL(url, location.href).pathname.match(/^(.*\/)\d+\/?$/); return m ? m[1] : null; }
+  function rememberLast(data) {
+    var b = tocBase(data.url); if (!b) return;
+    var m = load('last', {}); delete m[b];
+    m[b] = { url: data.url, title: data.subtitle || '', num: data.number || '' };
+    var k = Object.keys(m); while (k.length > 200) delete m[k.shift()];
+    save('last', m);
   }
 
   /* ---------- styles ---------- */
@@ -158,7 +197,17 @@
     '#ndr-bar .ndr-info{flex:2;display:flex;align-items:center;justify-content:center;color:var(--ndr-mute);font-size:12px;font-variant-numeric:tabular-nums;}',
     '#ndr-toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 14px);transform:translateX(-50%);z-index:5;background:var(--ndr-panel);color:var(--ndr-fg);',
     '  border:1px solid var(--ndr-line);border-radius:999px;padding:8px 16px;font:13px -apple-system,"Hiragino Sans",sans-serif;opacity:0;transition:opacity .2s;pointer-events:none;}',
-    '#ndr-toast.ndr-show{opacity:1;}'
+    '#ndr-toast.ndr-show{opacity:1;}',
+    '#ndr-root .ndr-toc{list-style:none;margin:0;padding:0;font-family:-apple-system,"Hiragino Sans",sans-serif;font-size:16px;line-height:1.5;}',
+    '#ndr-root .ndr-toc li{margin:0;border-bottom:1px solid var(--ndr-line);}',
+    '#ndr-root .ndr-toc a{display:flex;gap:12px;align-items:baseline;padding:15px 2px;color:var(--ndr-fg);text-decoration:none;}',
+    '#ndr-root .ndr-toc a .ndr-t{flex:1;}',
+    '#ndr-root .ndr-toc a .ndr-s{font-size:12px;color:var(--ndr-accent);white-space:nowrap;}',
+    '#ndr-root .ndr-toc a.ndr-done{color:var(--ndr-mute);}',
+    '#ndr-root .ndr-toc a.ndr-done .ndr-s{color:var(--ndr-mute);}',
+    '#ndr-root .ndr-toc .ndr-ch{padding:26px 2px 8px;font-size:13px;font-weight:600;color:var(--ndr-mute);border-bottom:1px solid var(--ndr-line);}',
+    '#ndr-root .ndr-resume{display:block;margin:0 0 1.6em;padding:14px 16px;border:1px solid var(--ndr-accent);border-radius:12px;color:var(--ndr-fg);text-decoration:none;font-family:-apple-system,"Hiragino Sans",sans-serif;font-size:15px;line-height:1.5;}',
+    '#ndr-root .ndr-resume small{display:block;color:var(--ndr-accent);font-size:12px;margin-bottom:2px;}'
   ].join('\n');
 
   /* ---------- DOM helpers ---------- */
@@ -219,13 +268,16 @@
     var r = ratio();
     progress.style.width = (r * 100).toFixed(2) + '%';
     if (info) info.textContent = Math.round(r * 100) + '%';
+    if (current.kind !== 'ep') return;
     clearTimeout(saveTimer);
     saveTimer = setTimeout(function () { setPos(current.url, r); }, 250);
   }
 
   /* ---------- render ---------- */
   function render(data, restore) {
+    if (data.kind === 'toc') return renderToc(data);
     current = data;
+    rememberLast(data);
     page.textContent = '';
     var head = el('header', { id: 'ndr-head' }, [
       data.work ? el('p', { id: 'ndr-work', text: data.work }) : null,
@@ -256,6 +308,39 @@
     else onScroll();
     if (data.next) prefetch(data.next);
   }
+  function renderToc(data) {
+    current = data;
+    page.textContent = '';
+    page.appendChild(el('header', { id: 'ndr-head' }, [
+      el('p', { id: 'ndr-num', text: data.page > 1 ? '目次 ' + data.page + 'ページ' : '目次' }),
+      data.work ? el('h1', { id: 'ndr-sub', text: data.work }) : null
+    ]));
+    var last = load('last', {})[data.base];
+    if (last) {
+      page.appendChild(el('a', { 'class': 'ndr-resume', href: last.url }, [
+        el('small', { text: '続きから読む' }),
+        D.createTextNode((last.num ? last.num + '  ' : '') + (last.title || last.url))
+      ]));
+    }
+    var pos = load('pos', {}), list = el('ul', { 'class': 'ndr-toc' });
+    data.items.forEach(function (it) {
+      if (it.type === 'chapter') { list.appendChild(el('li', { 'class': 'ndr-ch', text: it.text })); return; }
+      var r = pos[posKey(it.url)], cls = '', st = '';
+      if (r >= 0.95) { cls = 'ndr-done'; st = '既読'; } else if (r >= 0.01) { st = Math.round(r * 100) + '%'; }
+      if (last && posKey(last.url) === posKey(it.url)) st = '読書中' + (st && cls !== 'ndr-done' ? ' ' + st : '');
+      list.appendChild(el('li', null, [el('a', { href: it.url, 'class': cls }, [
+        el('span', { 'class': 'ndr-t', text: it.title }), st ? el('span', { 'class': 'ndr-s', text: st }) : null
+      ])]));
+    });
+    page.appendChild(list);
+    if (data.prev || data.next) page.appendChild(el('nav', { id: 'ndr-foot' }, [
+      navBtn('前のページ', data.prev), navBtn('次のページ', data.next, true)
+    ]));
+    var bp = bar.querySelector('[data-nav=prev]'), bn = bar.querySelector('[data-nav=next]');
+    toggleDisabled(bp, !data.prev); toggleDisabled(bn, !data.next);
+    D.title = (data.work || '目次') + ' - 目次';
+    W.scrollTo(0, 0); onScroll();
+  }
   function toggleDisabled(b, off) { if (b) { if (off) b.setAttribute('disabled', ''); else b.removeAttribute('disabled'); } }
   function navBtn(label, url, primary) {
     var b = el('button', { type: 'button', 'class': 'ndr-btn' + (primary ? ' ndr-primary' : ''), text: label });
@@ -284,11 +369,11 @@
     if (loading) return;
     var target = new URL(url, location.href);
     if (target.origin !== location.origin) { location.href = target.href; return; }
-    if (current) setPos(current.url, ratio());
+    if (current && current.kind === 'ep') setPos(current.url, ratio());
     loading = true; showToast('読み込み中…');
     fetchDoc(target.href).then(function (doc) {
-      var data = parse(doc, target.href);
-      if (!data) throw new Error('not an episode');
+      var data = parseAny(doc, target.href);
+      if (!data) throw new Error('not readable');
       if (push) history.pushState({ ndr: true }, '', target.href);
       setUI(false);
       render(data, true);
@@ -351,6 +436,11 @@
     toast = el('div', { id: 'ndr-toast', role: 'status', 'aria-live': 'polite' });
     root = el('div', { id: 'ndr-root', lang: 'ja' }, [progress, page, buildBar(), toast]);
     root.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a[href]');
+      if (a && page.contains(a) && !a.target && !e.metaKey && !e.ctrlKey) {
+        var href = abs(a.getAttribute('href'), current ? current.url : location.href);
+        if (href && new URL(href).origin === location.origin) { e.preventDefault(); go(href, true); return; }
+      }
       if (e.target.closest && e.target.closest('a,img,button')) return;
       var sel = W.getSelection && W.getSelection();
       if (sel && String(sel).length) return;
@@ -362,13 +452,13 @@
     applyVars();
     W.addEventListener('scroll', onScroll, { passive: true });
     W.addEventListener('popstate', onPop);
-    W.addEventListener('pagehide', function () { if (current && api.on) setPos(current.url, ratio()); });
+    W.addEventListener('pagehide', function () { if (current && current.kind === 'ep' && api.on) setPos(current.url, ratio()); });
     render(data, true);
     api.on = true;
   }
 
   function disable() {
-    if (current) setPos(current.url, ratio());
+    if (current && current.kind === 'ep') setPos(current.url, ratio());
     W.removeEventListener('scroll', onScroll);
     W.removeEventListener('popstate', onPop);
     root.remove(); styleEl.remove();
@@ -385,16 +475,16 @@
   var startUrl = location.href;
   var api = { version: VERSION, on: false, toggle: function () {
     if (dimMode) { D.documentElement.classList.toggle('ndr-dim'); return; }
-    if (api.on) disable(); else enable(parse(D, location.href) || current);
+    if (api.on) disable(); else enable(parseAny(D, location.href) || current);
   } };
   W.__ndr = api;
 
   var dimMode = false;
-  var first = parse(D, location.href);
+  var first = parseAny(D, location.href);
   if (first) {
     enable(first);
   } else {
-    /* 話ページ以外（目次・トップなど）は色を反転するだけの簡易ダークにする */
+    /* 話ページ・目次以外（トップ・ランキングなど）は色を反転するだけの簡易ダークにする */
     dimMode = true;
     D.documentElement.classList.add('ndr-dim');
     styleEl = el('style', { id: 'ndr-style' }); styleEl.textContent = CSS; D.head.appendChild(styleEl);

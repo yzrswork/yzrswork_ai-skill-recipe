@@ -112,8 +112,9 @@
     <li><strong>ダークな読書画面</strong>：ダーク／黒（有機EL向け）／セピアの3色。ルビ・前書き・後書き・挿絵もそのまま表示。</li>
     <li><strong>読みやすさの調整</strong>：文字サイズ（13〜30px）、行間、明朝／ゴシック。設定は次回も残ります。</li>
     <li><strong>そのまま次の話へ</strong>：「次の話へ」を押すと、読書画面のまま次話を読み込みます（次話は先読み）。</li>
+    <li><strong>目次も暗いまま</strong>：「目次」を押すと暗い目次が開き、どの話を選んでも読書画面のまま読めます。読みかけの話には％、読み終えた話には「既読」がつきます。</li>
     <li><strong>続きから</strong>：話ごとに読んだ位置を覚えていて、開き直すと続きの位置に戻ります。</li>
-    <li><strong>目次やトップでも</strong>：話ページ以外では、色を反転した簡易ダークに切り替えます。</li>
+    <li><strong>目次から始めても</strong>：目次ページで起動すると暗い目次になり、「続きから読む」で前回の話に戻れます。トップやランキングでは色を反転した簡易ダークになります。</li>
   </ul>
 
   <h2 id="install"><span class="num">02</span>iPhoneに入れる</h2>
@@ -152,7 +153,20 @@
     <tr><th>もう一度実行</th><td>元のなろうのページに戻ります</td></tr>
   </table>
 
-  <h2><span class="num">04</span>注意</h2>
+  <h2 id="auto"><span class="num">04</span>毎回のタップをなくす（自動起動）</h2>
+  <p>無料アプリ「Userscripts」を入れると、なろうの話や目次を開いただけで自動で読書画面になります。📖から起動する必要がなくなります。</p>
+  <ol class="steps">
+    <li><strong>App Storeで「Userscripts」（作者 Justin Wasack）を入れて、一度開く。</strong></li>
+    <li><strong>設定アプリ →「アプリ」→「Safari」→「機能拡張」→「Userscripts」をオンにする。</strong><span class="where">「その他のWebサイト」を「許可」にする（なろうだけで動かしたいときは syosetu.com を開いたときに許可でもOK）</span></li>
+    <li><strong>Safariで下のボタンを押す。</strong><span class="where">スクリプトの中身が表示されます</span></li>
+    <li><strong>アドレスバー左の「ぷ」や「Aa」のボタン →「Userscripts」→「Install」（インストール）を押す。</strong></li>
+    <li><strong>なろうの話を開いて、自動で暗くなれば完了。</strong><span class="where">元のページを見たいときは、本文をタップ →「閉じる」</span></li>
+  </ol>
+  <div class="btns">
+    <a class="btn sub" href="narou-dark.user.js">自動起動スクリプトを開く</a>
+  </div>
+
+  <h2><span class="num">05</span>注意</h2>
   <div class="box">
     <span class="box-title">データはどこにも送りません</span>
     <p>このツールは開いているなろうのページの中だけで動きます。設定と読んだ位置は、そのiPhoneのSafariの中（syosetu.com 側の保存領域）にだけ残ります。サーバーもアカウントもありません。</p>
