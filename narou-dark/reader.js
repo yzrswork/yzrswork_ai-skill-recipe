@@ -5,7 +5,7 @@
  */
 (function () {
   'use strict';
-  var VERSION = '1.1.0';
+  var VERSION = '1.2.0';
   var NS = 'ndr';
   var W = window, D = document;
 
@@ -49,8 +49,10 @@
   function abs(href, base) { try { return new URL(href, base).href; } catch (e) { return null; } }
 
   function findPager(doc, base) {
-    var prev = null, next = null, toc = null;
+    var prev = null, next = null, toc = null, last = null;
     var p = doc.querySelector('.c-pager__item--before'), n = doc.querySelector('.c-pager__item--next');
+    var l = doc.querySelector('.c-pager__item--last');
+    if (l && l.getAttribute('href')) last = abs(l.getAttribute('href'), base);
     if (p && p.getAttribute('href')) prev = abs(p.getAttribute('href'), base);
     if (n && n.getAttribute('href')) next = abs(n.getAttribute('href'), base);
     var links = doc.querySelectorAll('.c-pager a, .novel_bn a, a');
@@ -60,6 +62,7 @@
       if (!prev && /^(<<\s*)?前(へ|の話)/.test(t)) prev = abs(h, base);
       if (!next && /^次(へ|の話)/.test(t)) next = abs(h, base);
       if (!toc && /^目次$/.test(t)) toc = abs(h, base);
+      if (!last && /^最後へ/.test(t)) last = abs(h, base);
     }
     /* URL から推測（/ncode/N/ 形式）。リンクとして実在するものだけ採用する */
     var m = new URL(base).pathname.match(/^(.*\/)(\d+)\/?$/);
@@ -74,7 +77,7 @@
         if (!toc && path === m[1]) toc = u;
       }
     }
-    return { prev: prev, next: next, toc: toc };
+    return { prev: prev, next: next, toc: toc, last: last };
   }
 
   function parse(doc, url) {
@@ -113,7 +116,9 @@
     }
     if (work === subtitle) work = '';
     var pager = findPager(doc, url);
+    var nm = number.match(/(\d+)\s*\/\s*(\d+)/);
     return { kind: 'ep', url: url, work: work, subtitle: subtitle, number: number,
+             base: tocBase(url), cur: nm ? +nm[1] : 0, total: nm ? +nm[2] : 0,
              preface: preface, body: body, after: after,
              prev: pager.prev, next: pager.next, toc: pager.toc };
   }
@@ -142,8 +147,10 @@
     if (!work) work = (doc.title || '').split(' - ')[0].trim();
     var pager = findPager(doc, url);
     var pageNo = +(u.searchParams.get('p') || 1);
+    var maxNum = 0;
+    items.forEach(function (it) { if (it.num > maxNum) maxNum = it.num; });
     return { kind: 'toc', url: url, base: base, work: work, items: items, page: pageNo,
-             prev: pager.prev, next: pager.next };
+             prev: pager.prev, next: pager.next, lastPage: pager.last, maxNum: maxNum };
   }
   function parseAny(doc, url) { return parse(doc, url) || parseToc(doc, url); }
 
@@ -207,6 +214,8 @@
     '#ndr-root .ndr-toc a.ndr-done .ndr-s{color:var(--ndr-mute);}',
     '#ndr-root .ndr-toc .ndr-ch{padding:26px 2px 8px;font-size:13px;font-weight:600;color:var(--ndr-mute);border-bottom:1px solid var(--ndr-line);}',
     '#ndr-root .ndr-resume{display:block;margin:0 0 1.6em;padding:14px 16px;border:1px solid var(--ndr-accent);border-radius:12px;color:var(--ndr-fg);text-decoration:none;font-family:-apple-system,"Hiragino Sans",sans-serif;font-size:15px;line-height:1.5;}',
+    '#ndr-jump{display:flex;gap:8px;margin:0 0 1.6em;font-size:14px;}',
+    '#ndr-jump .ndr-btn{font-size:14px;padding:12px 6px;white-space:nowrap;}',
     '#ndr-root .ndr-resume small{display:block;color:var(--ndr-accent);font-size:12px;margin-bottom:2px;}'
   ].join('\n');
 
@@ -300,6 +309,7 @@
     ]));
     var bp = bar.querySelector('[data-nav=prev]'), bn = bar.querySelector('[data-nav=next]');
     toggleDisabled(bp, !data.prev); toggleDisabled(bn, !data.next);
+    [].forEach.call(bar.querySelectorAll('[data-jump]'), function (j) { toggleDisabled(j, !data.base); });
     D.title = (data.subtitle || data.work || 'なろう夜読み') + (data.work && data.subtitle ? ' - ' + data.work : '');
 
     var r = restore ? getPos(data.url) : 0;
@@ -322,6 +332,11 @@
         D.createTextNode((last.num ? last.num + '  ' : '') + (last.title || last.url))
       ]));
     }
+    page.appendChild(el('nav', { id: 'ndr-jump' }, [
+      navBtn('1話目', epUrl(data.base, 1)),
+      jumpBtn('話数指定', jumpTo),
+      jumpBtn('最新話へ »', jumpLatest, true)
+    ]));
     var pos = load('pos', {}), list = el('ul', { 'class': 'ndr-toc' });
     data.items.forEach(function (it) {
       if (it.type === 'chapter') { list.appendChild(el('li', { 'class': 'ndr-ch', text: it.text })); return; }
@@ -338,10 +353,57 @@
     ]));
     var bp = bar.querySelector('[data-nav=prev]'), bn = bar.querySelector('[data-nav=next]');
     toggleDisabled(bp, !data.prev); toggleDisabled(bn, !data.next);
+    [].forEach.call(bar.querySelectorAll('[data-jump]'), function (j) { toggleDisabled(j, false); });
     D.title = (data.work || '目次') + ' - 目次';
     W.scrollTo(0, 0); onScroll();
   }
+  /* ---------- 話数ジャンプ（大作向け） ---------- */
+  function epUrl(base, n) { return location.origin + base + n + '/'; }
+  function knownTotal(data, cb) {
+    if (!data) return cb(0);
+    if (data.kind === 'ep') {
+      if (data.total) return cb(data.total);
+      if (!data.toc) return cb(0);
+      return fetchDoc(data.toc).then(function (d) { knownTotal(parseToc(d, data.toc), cb); }, function () { cb(0); });
+    }
+    if (data.lastPage && data.lastPage !== data.url) {
+      return fetchDoc(data.lastPage).then(function (d) {
+        var t = parseToc(d, data.lastPage); cb(t ? t.maxNum : 0);
+      }, function () { cb(0); });
+    }
+    if (!data.next) return cb(data.maxNum);
+    /* 「最後へ」が無い目次は、次のページをたどる（最大60ページ） */
+    var hops = 0;
+    (function walk(t) {
+      if (!t.next || ++hops > 60) return cb(t.next ? 0 : t.maxNum);
+      fetchDoc(t.next).then(function (d) { var n = parseToc(d, t.next); if (n) walk(n); else cb(0); }, function () { cb(0); });
+    })(data);
+  }
+  function jumpLatest() {
+    var data = current; if (!data || !data.base) return;
+    showToast('最新話を探しています…');
+    knownTotal(data, function (n) {
+      if (n) go(epUrl(data.base, n), true);
+      else showToast('最新話を見つけられませんでした');
+    });
+  }
+  function jumpTo() {
+    var data = current; if (!data || !data.base) return;
+    knownTotal(data, function (n) {
+      var cur = data.kind === 'ep' && data.cur ? data.cur : '';
+      var ans = W.prompt('何話へ移動しますか？' + (n ? '（1〜' + n + '）' : ''), cur);
+      if (ans === null) return;
+      var k = parseInt(String(ans).replace(/[０-９]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); }), 10);
+      if (!k || k < 1 || (n && k > n)) { showToast('1〜' + (n || '最新話') + ' の数字を入れてください'); return; }
+      go(epUrl(data.base, k), true);
+    });
+  }
   function toggleDisabled(b, off) { if (b) { if (off) b.setAttribute('disabled', ''); else b.removeAttribute('disabled'); } }
+  function jumpBtn(label, fn, primary) {
+    var b = el('button', { type: 'button', 'class': 'ndr-btn' + (primary ? ' ndr-primary' : ''), text: label });
+    b.addEventListener('click', function (e) { e.stopPropagation(); fn(); });
+    return b;
+  }
   function navBtn(label, url, primary) {
     var b = el('button', { type: 'button', 'class': 'ndr-btn' + (primary ? ' ndr-primary' : ''), text: label });
     if (!url) b.setAttribute('disabled', '');
@@ -408,6 +470,11 @@
           setSetting('lh', steps[(i + 1) % steps.length]); showToast('行間 ' + settings.lh);
         }),
         b('書体', { 'data-font': '' }, function () { setSetting('font', settings.font === 'mincho' ? 'gothic' : 'mincho'); })
+      ]),
+      el('div', { 'class': 'ndr-row' }, [
+        b('1話目', { 'data-jump': '' }, function () { if (current && current.base) go(epUrl(current.base, 1), true); }),
+        b('話数指定', { 'data-jump': '' }, jumpTo),
+        b('最新話 »', { 'data-jump': '' }, jumpLatest)
       ]),
       el('div', { 'class': 'ndr-row' }, Object.keys(THEMES).map(function (k) {
         return b(THEMES[k].label, { 'data-theme': k }, function () { setSetting('theme', k); });

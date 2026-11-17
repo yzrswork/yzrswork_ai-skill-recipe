@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         なろう夜読み (自動起動)
 // @description  小説家になろうの話ページと目次を開いたら、自動でダークモードの読書画面にする。
-// @version      1.1.0
+// @version      1.2.0
 // @match        https://ncode.syosetu.com/*
 // @match        https://novel18.syosetu.com/*
 // @run-at       document-end
