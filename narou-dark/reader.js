@@ -5,7 +5,7 @@
  */
 (function () {
   'use strict';
-  var VERSION = '1.2.0';
+  var VERSION = '1.3.0';
   var NS = 'ndr';
   var W = window, D = document;
 
@@ -140,7 +140,7 @@
       if (!m || seen[hu.pathname]) continue;
       var t = text(n); if (!t) continue;
       seen[hu.pathname] = 1; eps++;
-      items.push({ type: 'ep', url: hu.origin + hu.pathname.replace(/\/?$/, '/'), title: t, num: +m[1] });
+      items.push({ type: 'ep', url: hu.origin + hu.pathname.replace(/\/?$/, '/'), title: t, num: +m[1], date: epDate(n, doc) });
     }
     if (eps < 1) return null;
     var work = text(doc.querySelector('.p-novel__title, .novel_title'));
@@ -151,6 +151,15 @@
     items.forEach(function (it) { if (it.num > maxNum) maxNum = it.num; });
     return { kind: 'toc', url: url, base: base, work: work, items: items, page: pageNo,
              prev: pager.prev, next: pager.next, lastPage: pager.last, maxNum: maxNum };
+  }
+  /* 目次の各話の投稿日（新: .p-eplist__update / 旧: .long_update）。「改」は改稿あり */
+  function epDate(a, doc) {
+    var box = a.closest('.p-eplist__sublist, dl.novel_sublist2, li, tr, dl') || a.parentElement;
+    if (!box || box === doc.body) return null;
+    var d = box.querySelector('.p-eplist__update, .long_update');
+    var t = d ? text(d) : (text(box).length < 200 ? text(box) : '');
+    var m = t.match(/(\d{4})\/(\d{1,2})\/(\d{1,2})/);
+    return m ? { ymd: m[1] + '/' + ('0' + m[2]).slice(-2) + '/' + ('0' + m[3]).slice(-2), rev: /改/.test(t) } : null;
   }
   function parseAny(doc, url) { return parse(doc, url) || parseToc(doc, url); }
 
@@ -207,8 +216,10 @@
     '#ndr-toast.ndr-show{opacity:1;}',
     '#ndr-root .ndr-toc{list-style:none;margin:0;padding:0;font-family:-apple-system,"Hiragino Sans",sans-serif;font-size:16px;line-height:1.5;}',
     '#ndr-root .ndr-toc li{margin:0;border-bottom:1px solid var(--ndr-line);}',
-    '#ndr-root .ndr-toc a{display:flex;gap:12px;align-items:baseline;padding:15px 2px;color:var(--ndr-fg);text-decoration:none;}',
+    '#ndr-root .ndr-toc a{display:flex;gap:12px;align-items:baseline;padding:11px 2px;color:var(--ndr-fg);text-decoration:none;}',
     '#ndr-root .ndr-toc a .ndr-t{flex:1;}',
+    '#ndr-root .ndr-toc .ndr-d{display:block;margin-top:3px;font-size:11px;line-height:1.3;color:var(--ndr-mute);font-variant-numeric:tabular-nums;letter-spacing:.02em;}',
+    '#ndr-root .ndr-tocstat{margin:1.4em 0 0;font-family:-apple-system,"Hiragino Sans",sans-serif;font-size:12px;color:var(--ndr-mute);text-align:center;}',
     '#ndr-root .ndr-toc a .ndr-s{font-size:12px;color:var(--ndr-accent);white-space:nowrap;}',
     '#ndr-root .ndr-toc a.ndr-done{color:var(--ndr-mute);}',
     '#ndr-root .ndr-toc a.ndr-done .ndr-s{color:var(--ndr-mute);}',
@@ -319,10 +330,20 @@
     if (data.next) prefetch(data.next);
   }
   function renderToc(data) {
+    /* 2ページ目以降で開いたときは、1ページ目から全話を並べ直す */
+    if (data.page > 1) {
+      var firstUrl = location.origin + data.base;
+      return fetchDoc(firstUrl).then(function (d) {
+        var t = parseToc(d, firstUrl);
+        if (!t) throw new Error('toc');
+        if (location.href === data.url) history.replaceState({ ndr: true }, '', firstUrl);
+        renderToc(t);
+      }).catch(function () { data.page = 1; renderToc(data); });
+    }
     current = data;
     page.textContent = '';
     page.appendChild(el('header', { id: 'ndr-head' }, [
-      el('p', { id: 'ndr-num', text: data.page > 1 ? '目次 ' + data.page + 'ページ' : '目次' }),
+      el('p', { id: 'ndr-num', text: '目次' }),
       data.work ? el('h1', { id: 'ndr-sub', text: data.work }) : null
     ]));
     var last = load('last', {})[data.base];
@@ -338,24 +359,56 @@
       jumpBtn('最新話へ »', jumpLatest, true)
     ]));
     var pos = load('pos', {}), list = el('ul', { 'class': 'ndr-toc' });
-    data.items.forEach(function (it) {
-      if (it.type === 'chapter') { list.appendChild(el('li', { 'class': 'ndr-ch', text: it.text })); return; }
-      var r = pos[posKey(it.url)], cls = '', st = '';
-      if (r >= 0.95) { cls = 'ndr-done'; st = '既読'; } else if (r >= 0.01) { st = Math.round(r * 100) + '%'; }
-      if (last && posKey(last.url) === posKey(it.url)) st = '読書中' + (st && cls !== 'ndr-done' ? ' ' + st : '');
-      list.appendChild(el('li', null, [el('a', { href: it.url, 'class': cls }, [
-        el('span', { 'class': 'ndr-t', text: it.title }), st ? el('span', { 'class': 'ndr-s', text: st }) : null
-      ])]));
-    });
+    var status = el('p', { 'class': 'ndr-tocstat' }), count = 0, seenEp = {}, lastCh = '', pendingCh = null;
+    function add(items) {
+      items.forEach(function (it) {
+        /* 章名は新しい話が続くときだけ出す（ページの頭でくり返される章名を重ねない） */
+        if (it.type === 'chapter') { pendingCh = it.text; return; }
+        if (seenEp[it.url]) return;
+        if (pendingCh !== null && pendingCh !== lastCh) list.appendChild(el('li', { 'class': 'ndr-ch', text: pendingCh }));
+        if (pendingCh !== null) lastCh = pendingCh;
+        pendingCh = null;
+        seenEp[it.url] = 1; count++;
+        var r = pos[posKey(it.url)], cls = '', st = '';
+        if (r >= 0.95) { cls = 'ndr-done'; st = '既読'; } else if (r >= 0.01) { st = Math.round(r * 100) + '%'; }
+        if (last && posKey(last.url) === posKey(it.url)) st = '読書中' + (st && cls !== 'ndr-done' ? ' ' + st : '');
+        list.appendChild(el('li', null, [el('a', { href: it.url, 'class': cls }, [
+          el('span', { 'class': 'ndr-t' }, [
+            D.createTextNode(it.title),
+            it.date ? el('span', { 'class': 'ndr-d', text: it.date.ymd + (it.date.rev ? '（改）' : '') }) : null
+          ]),
+          st ? el('span', { 'class': 'ndr-s', text: st }) : null
+        ])]));
+      });
+    }
+    add(data.items);
     page.appendChild(list);
-    if (data.prev || data.next) page.appendChild(el('nav', { id: 'ndr-foot' }, [
-      navBtn('前のページ', data.prev), navBtn('次のページ', data.next, true)
-    ]));
+    page.appendChild(status);
     var bp = bar.querySelector('[data-nav=prev]'), bn = bar.querySelector('[data-nav=next]');
-    toggleDisabled(bp, !data.prev); toggleDisabled(bn, !data.next);
+    toggleDisabled(bp, true); toggleDisabled(bn, true);
     [].forEach.call(bar.querySelectorAll('[data-jump]'), function (j) { toggleDisabled(j, false); });
     D.title = (data.work || '目次') + ' - 目次';
     W.scrollTo(0, 0); onScroll();
+
+    /* 続きの目次ページを順に読み込んで、1つの一覧につなげる（最大100ページ） */
+    var hops = 0;
+    (function more(t) {
+      if (current !== data) return;
+      if (!t.next || ++hops > 100) {
+        status.textContent = '全' + count + '話' + (t.next ? '（ここまで表示）' : '');
+        if (!t.next) { data.next = null; data.lastPage = null; }
+        return;
+      }
+      status.textContent = count + '話まで表示・続きを読み込み中…';
+      fetchDoc(t.next).then(function (d) {
+        if (current !== data) return;
+        var n = parseToc(d, t.next);
+        if (!n) { status.textContent = count + '話まで表示（続きを読み込めませんでした）'; return; }
+        add(n.items);
+        if (n.maxNum > data.maxNum) data.maxNum = n.maxNum;
+        more(n);
+      }, function () { status.textContent = count + '話まで表示（続きを読み込めませんでした）'; });
+    })(data);
   }
   /* ---------- 話数ジャンプ（大作向け） ---------- */
   function epUrl(base, n) { return location.origin + base + n + '/'; }
@@ -366,9 +419,10 @@
       if (!data.toc) return cb(0);
       return fetchDoc(data.toc).then(function (d) { knownTotal(parseToc(d, data.toc), cb); }, function () { cb(0); });
     }
-    if (data.lastPage && data.lastPage !== data.url) {
-      return fetchDoc(data.lastPage).then(function (d) {
-        var t = parseToc(d, data.lastPage); cb(t ? t.maxNum : 0);
+    var lp = data.lastPage;
+    if (lp && lp !== data.url) {
+      return fetchDoc(lp).then(function (d) {
+        var t = parseToc(d, lp); cb(t ? t.maxNum : 0);
       }, function () { cb(0); });
     }
     if (!data.next) return cb(data.maxNum);
@@ -474,6 +528,7 @@
       el('div', { 'class': 'ndr-row' }, [
         b('1話目', { 'data-jump': '' }, function () { if (current && current.base) go(epUrl(current.base, 1), true); }),
         b('話数指定', { 'data-jump': '' }, jumpTo),
+        b('目次', { 'data-jump': '' }, function () { if (current && current.base) go(location.origin + current.base, true); }),
         b('最新話 »', { 'data-jump': '' }, jumpLatest)
       ]),
       el('div', { 'class': 'ndr-row' }, Object.keys(THEMES).map(function (k) {
