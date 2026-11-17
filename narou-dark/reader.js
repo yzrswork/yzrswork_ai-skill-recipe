@@ -5,7 +5,7 @@
  */
 (function () {
   'use strict';
-  var VERSION = '1.0.0';
+  var VERSION = '1.0.1';
   var NS = 'ndr';
   var W = window, D = document;
 
@@ -92,9 +92,19 @@
       var np = doc.querySelector('#novel_p'); if (np) preface.push(np);
       var na = doc.querySelector('#novel_a'); if (na) after.push(na);
     }
+    if (!body.length) {
+      /* スマホ版など別構成でも、なろうの本文行は p#L1, 前書き p#Lp1, 後書き p#La1 */
+      var l1 = doc.getElementById('L1');
+      if (l1 && l1.parentElement) body.push(l1.parentElement);
+      var lp = doc.getElementById('Lp1');
+      if (lp && lp.parentElement && preface.indexOf(lp.parentElement) < 0) preface.push(lp.parentElement);
+      var la = doc.getElementById('La1');
+      if (la && la.parentElement && after.indexOf(la.parentElement) < 0) after.push(la.parentElement);
+    }
     if (!body.length) return null;
 
     var subtitle = text(doc.querySelector('.p-novel__title, .novel_subtitle, .novel_title'));
+    if (!subtitle) { var dt = (doc.title || '').split(' - '); if (dt.length > 1) subtitle = dt.slice(1).join(' - ').trim(); }
     var number = text(doc.querySelector('.p-novel__number, #novel_no'));
     var work = text(doc.querySelector('.c-announce a[href], .contents1 a[href]'));
     if (!work) {
