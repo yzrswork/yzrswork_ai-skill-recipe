@@ -5,7 +5,7 @@
  */
 (function () {
   'use strict';
-  var VERSION = '1.5.0';
+  var VERSION = '1.6.0';
   var NS = 'ndr';
   var W = window, D = document;
 
@@ -241,6 +241,12 @@
     '#ndr-root .ndr-toc .ndr-ch{padding:26px 2px 8px;font-size:13px;font-weight:600;color:var(--ndr-mute);border-bottom:1px solid var(--ndr-line);}',
     '#ndr-root .ndr-resume{display:block;margin:0 0 1.6em;padding:14px 16px;border:1px solid var(--ndr-accent);border-radius:12px;color:var(--ndr-fg);text-decoration:none;font-family:' + UI_FONT + ';font-size:15px;line-height:1.5;}',
     '#ndr-root .ndr-resume small{display:block;color:var(--ndr-accent);font-size:12px;margin-bottom:2px;}',
+    '#ndr-root .ndr-gh{display:flex;align-items:center;gap:10px;width:100%;padding:15px 2px;border:0;background:none;color:var(--ndr-fg);font:600 15px ' + UI_FONT + ';text-align:left;cursor:pointer;}',
+    '#ndr-root .ndr-gh .ndr-chev{flex:none;width:1em;color:var(--ndr-accent);}',
+    '#ndr-root .ndr-gh .ndr-t{flex:1;}',
+    '#ndr-root .ndr-gh .ndr-s{font-weight:400;font-size:12px;color:var(--ndr-mute);}',
+    '#ndr-root .ndr-gb{list-style:none;margin:0 0 12px;padding:0 0 0 1.1em;border-top:1px solid var(--ndr-line);}',
+    '#ndr-root .ndr-gb li:last-child{border-bottom:0;}',
     '#ndr-root .ndr-jump{display:flex;gap:8px;margin:0 0 1.6em;font-size:14px;}',
     '#ndr-root .ndr-jump .ndr-btn{font-size:14px;padding:12px 6px;white-space:nowrap;}',
     '#ndr-root .ndr-find{display:flex;gap:8px;margin:0 0 1.8em;}',
@@ -537,26 +543,56 @@
       jumpBtn('最新話へ »', jumpLatest, true)
     ]));
     var pos = load('pos', {}), list = el('ul', { 'class': 'ndr-toc' });
-    var status = el('p', { 'class': 'ndr-tocstat' }), count = 0, seenEp = {}, lastCh = '', pendingCh = null;
+    var status = el('p', { 'class': 'ndr-tocstat' }), count = 0, seenEp = {}, curCh = '', pendingCh = null;
+    /* 100話ごとの区切り。読書中の話がある区切りだけ開いておく */
+    var GROUP = 100, groups = {};
+    var lm = last && last.url.match(/\/(\d+)\/?$/), openG = lm ? Math.floor((+lm[1] - 1) / GROUP) : 0;
+    function group(num) {
+      var g = Math.floor((Math.max(1, num) - 1) / GROUP);
+      if (groups[g]) return groups[g];
+      var range = el('span', { 'class': 'ndr-t' }), meta = el('span', { 'class': 'ndr-s' });
+      var head = el('button', { type: 'button', 'class': 'ndr-gh', 'aria-expanded': 'false' }, [
+        el('span', { 'class': 'ndr-chev', text: '▸' }), range, meta
+      ]);
+      var body = el('ul', { 'class': 'ndr-gb' });
+      body.hidden = true;
+      var G = groups[g] = { from: 0, to: 0, n: 0, done: 0, lastCh: '', head: head, body: body, range: range, meta: meta };
+      head.addEventListener('click', function (e) { e.stopPropagation(); setOpen(G, body.hidden); });
+      /* 区切りは話数の順に並べる */
+      var li = el('li', { 'class': 'ndr-grp', 'data-g': String(g) }, [head, body]), after = null;
+      each(list.children, function (c) { if (!after && +c.getAttribute('data-g') > g) after = c; });
+      list.insertBefore(li, after);
+      if (g === openG) setOpen(G, true);
+      return G;
+    }
+    function setOpen(G, on) {
+      G.body.hidden = !on;
+      G.head.setAttribute('aria-expanded', String(on));
+      G.head.firstChild.textContent = on ? '▾' : '▸';
+    }
     function add(items) {
       items.forEach(function (it) {
-        /* 章名は新しい話が続くときだけ出す（ページの頭でくり返される章名を重ねない） */
         if (it.type === 'chapter') { pendingCh = it.text; return; }
         if (seenEp[it.url]) return;
-        if (pendingCh !== null && pendingCh !== lastCh) list.appendChild(el('li', { 'class': 'ndr-ch', text: pendingCh }));
-        if (pendingCh !== null) lastCh = pendingCh;
-        pendingCh = null;
+        if (pendingCh !== null) { curCh = pendingCh; pendingCh = null; }
         seenEp[it.url] = 1; count++;
+        var G = group(it.num);
+        /* 章名は区切りの中で変わったときだけ出す（区切りの頭では今の章名をもう一度出す） */
+        if (curCh && curCh !== G.lastCh) { G.body.appendChild(el('li', { 'class': 'ndr-ch', text: curCh })); G.lastCh = curCh; }
         var r = pos[posKey(it.url)], cls = '', st = '';
-        if (r >= 0.95) { cls = 'ndr-done'; st = '既読'; } else if (r >= 0.01) { st = Math.round(r * 100) + '%'; }
-        if (last && posKey(last.url) === posKey(it.url)) st = '読書中' + (st && cls !== 'ndr-done' ? ' ' + st : '');
-        list.appendChild(el('li', null, [el('a', { href: it.url, 'class': cls }, [
+        if (r >= 0.95) { cls = 'ndr-done'; st = '既読'; G.done++; } else if (r >= 0.01) { st = Math.round(r * 100) + '%'; }
+        if (last && posKey(last.url) === posKey(it.url)) { st = '読書中' + (st && cls !== 'ndr-done' ? ' ' + st : ''); G.reading = true; }
+        G.body.appendChild(el('li', null, [el('a', { href: it.url, 'class': cls }, [
           el('span', { 'class': 'ndr-t' }, [
             D.createTextNode(it.title),
             it.date ? el('span', { 'class': 'ndr-d', text: it.date.ymd + (it.date.rev ? '（改）' : '') }) : null
           ]),
           st ? el('span', { 'class': 'ndr-s', text: st }) : null
         ])]));
+        G.n++;
+        G.from = G.from ? Math.min(G.from, it.num) : it.num; G.to = Math.max(G.to, it.num);
+        G.range.textContent = G.from + '〜' + G.to + '話';
+        G.meta.textContent = (G.reading ? '読書中 · ' : '') + (G.done ? '既読 ' + G.done + '/' + G.n : G.n + '話');
       });
     }
     add(data.items);
