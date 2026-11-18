@@ -5,7 +5,7 @@
  */
 (function () {
   'use strict';
-  var VERSION = '1.4.0';
+  var VERSION = '1.5.0';
   var NS = 'ndr';
   var W = window, D = document;
 
@@ -168,8 +168,8 @@
   function tocBase(url) { var m = new URL(url, location.href).pathname.match(/^(.*\/)\d+\/?$/); return m ? m[1] : null; }
   function rememberLast(data) {
     var b = tocBase(data.url); if (!b) return;
-    var m = load('last', {}); delete m[b];
-    m[b] = { url: data.url, title: data.subtitle || '', num: data.number || '' };
+    var m = load('last', {}), old = m[b] || {}; delete m[b];
+    m[b] = { url: data.url, title: data.subtitle || '', num: data.number || '', work: data.work || old.work || '', at: Date.now() };
     var k = Object.keys(m); while (k.length > 200) delete m[k.shift()];
     save('last', m);
   }
@@ -242,7 +242,18 @@
     '#ndr-root .ndr-resume{display:block;margin:0 0 1.6em;padding:14px 16px;border:1px solid var(--ndr-accent);border-radius:12px;color:var(--ndr-fg);text-decoration:none;font-family:' + UI_FONT + ';font-size:15px;line-height:1.5;}',
     '#ndr-root .ndr-resume small{display:block;color:var(--ndr-accent);font-size:12px;margin-bottom:2px;}',
     '#ndr-root .ndr-jump{display:flex;gap:8px;margin:0 0 1.6em;font-size:14px;}',
-    '#ndr-root .ndr-jump .ndr-btn{font-size:14px;padding:12px 6px;white-space:nowrap;}'
+    '#ndr-root .ndr-jump .ndr-btn{font-size:14px;padding:12px 6px;white-space:nowrap;}',
+    '#ndr-root .ndr-find{display:flex;gap:8px;margin:0 0 1.8em;}',
+    '#ndr-root .ndr-find input{flex:1;min-width:0;height:48px;padding:0 14px;border:1px solid var(--ndr-line);border-radius:12px;background:rgba(255,255,255,.04);color:var(--ndr-fg);font:16px ' + UI_FONT + ';outline:none;-webkit-appearance:none;}',
+    '#ndr-root .ndr-find input:focus{border-color:var(--ndr-accent);}',
+    '#ndr-root .ndr-find .ndr-btn{flex:0 0 4.5em;}',
+    '#ndr-root .ndr-cap{margin:2.2em 0 .6em;font:600 12px ' + UI_FONT + ';color:var(--ndr-mute);letter-spacing:.04em;}',
+    '#ndr-root .ndr-shelf li{display:flex;align-items:center;gap:6px;}',
+    '#ndr-root .ndr-shelf li>a:first-child{flex:1;min-width:0;}',
+    '#ndr-root .ndr-shelf .ndr-mini{flex:none;padding:8px 10px;border:1px solid var(--ndr-line);border-radius:10px;color:var(--ndr-mute);font:12px ' + UI_FONT + ';text-decoration:none;background:none;}',
+    '#ndr-root .ndr-links{display:flex;flex-wrap:wrap;gap:8px;}',
+    '#ndr-root .ndr-links a{flex:1 1 40%;}',
+    '#ndr-root .ndr-empty{font:14px ' + UI_FONT + ';color:var(--ndr-mute);padding:1em 0;}'
   ].join('\n');
 
   /* ---------- DOM helpers ---------- */
@@ -343,7 +354,7 @@
     if (!current) return;
     var r = ratio();
     progress.style.width = (r * 100).toFixed(2) + '%';
-    if (current.kind !== 'ep') { info.textContent = '目次'; return; }
+    if (current.kind !== 'ep') { info.textContent = current.kind === 'shelf' ? '本棚' : '目次'; return; }
     var left = minutesLeft(r);
     if (paged()) {
       pageno.textContent = (pg.idx + 1) + ' / ' + pg.pages;
@@ -467,7 +478,7 @@
     toggleDisabled(bar.querySelector('[data-nav=next]'), !(ep && d.next));
     each(bar.querySelectorAll('[data-jump]'), function (j) { toggleDisabled(j, !(d && d.base)); });
     D.title = ep ? (d.subtitle || d.work || 'なろう夜読み') + (d.work && d.subtitle ? ' - ' + d.work : '')
-                 : (d.work || '目次') + ' - 目次';
+                 : d.kind === 'shelf' ? '本棚 - なろう夜読み' : (d.work || '目次') + ' - 目次';
   }
 
   /* opts: { restore: 保存位置へ, r: この割合へ, atEnd: 最後へ } */
@@ -574,6 +585,80 @@
       }, function () { status.textContent = count + '話まで表示（続きを読み込めませんでした）'; });
     })(data);
   }
+  /* ---------- 本棚: 最近読んだ作品・URLやNコードで開く・なろうで探す ---------- */
+  function ago(t) {
+    if (!t) return '';
+    var m = (Date.now() - t) / 60000;
+    if (m < 60) return 'さっき';
+    if (m < 60 * 24) return Math.floor(m / 60) + '時間前';
+    if (m < 60 * 24 * 30) return Math.floor(m / 1440) + '日前';
+    var d = new Date(t); return d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate();
+  }
+  function openQuery(q) {
+    q = String(q || '').trim();
+    if (!q) return;
+    var m = q.match(/(ncode|novel18)\.syosetu\.com\/(n\d{4}[a-z]{1,3})(?:\/(\d+))?/i);
+    if (m) {
+      var url = 'https://' + m[1].toLowerCase() + '.syosetu.com/' + m[2].toLowerCase() + '/' + (m[3] ? m[3] + '/' : '');
+      if (new URL(url).origin === location.origin) go(url, true); else location.href = url;
+      return;
+    }
+    if (/^n\d{4}[a-z]{1,3}$/i.test(q)) { go(location.origin + '/' + q.toLowerCase() + '/', true); return; }
+    location.href = 'https://yomou.syosetu.com/search.php?word=' + encodeURIComponent(q);
+  }
+  function renderShelf() {
+    if (current && current.kind === 'ep') setPos(current.url, ratio());
+    var back = current && current.kind !== 'shelf' ? current : current && current.back;
+    var data = { kind: 'shelf', back: back };
+    current = data; segs = []; active = 0;
+    D.documentElement.classList.remove('ndr-paged');
+    page.textContent = '';
+    page.appendChild(el('header', { 'class': 'ndr-head' }, [
+      el('p', { 'class': 'ndr-num', text: '本棚' }),
+      el('h1', { 'class': 'ndr-sub', text: '作品を選ぶ' })
+    ]));
+    if (back) page.appendChild(el('nav', { 'class': 'ndr-jump' }, [
+      jumpBtn('‹ ' + (back.kind === 'ep' ? (back.subtitle || '読書') : (back.work || '目次')) + ' に戻る', function () { render(back, { restore: true }); })
+    ]));
+    var input = el('input', { type: 'search', placeholder: 'URL・Nコード・キーワード', enterkeyhint: 'go', autocapitalize: 'off', autocomplete: 'off', 'aria-label': 'URL・Nコード・キーワード' });
+    var form = el('form', { 'class': 'ndr-find' }, [input, el('button', { type: 'submit', 'class': 'ndr-btn ndr-primary', text: '開く' })]);
+    form.addEventListener('submit', function (e) { e.preventDefault(); input.blur(); openQuery(input.value); });
+    page.appendChild(form);
+
+    page.appendChild(el('p', { 'class': 'ndr-cap', text: '最近読んだ作品' }));
+    var last = load('last', {}), keys = Object.keys(last).reverse();
+    if (!keys.length) page.appendChild(el('p', { 'class': 'ndr-empty', text: 'まだありません。読んだ作品がここに並びます。' }));
+    var list = el('ul', { 'class': 'ndr-toc ndr-shelf' });
+    keys.forEach(function (k) {
+      var it = last[k], li;
+      var del = el('button', { type: 'button', 'class': 'ndr-mini', 'aria-label': '本棚から外す', text: '×' });
+      del.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var m = load('last', {}); delete m[k]; save('last', m); li.remove();
+      });
+      li = el('li', null, [
+        el('a', { href: it.url }, [el('span', { 'class': 'ndr-t' }, [
+          D.createTextNode(it.work || k.replace(/\//g, '')),
+          el('span', { 'class': 'ndr-d', text: '続き：' + [it.num, it.title].filter(Boolean).join(' ') + (it.at ? ' · ' + ago(it.at) : '') })
+        ])]),
+        el('a', { href: location.origin + k, 'class': 'ndr-mini', text: '目次' }),
+        del
+      ]);
+      list.appendChild(li);
+    });
+    page.appendChild(list);
+
+    page.appendChild(el('p', { 'class': 'ndr-cap', text: 'なろうで探す（なろうのページへ移動）' }));
+    page.appendChild(el('nav', { 'class': 'ndr-links' }, [
+      el('a', { 'class': 'ndr-btn', href: 'https://yomou.syosetu.com/rank/top/', text: 'ランキング' }),
+      el('a', { 'class': 'ndr-btn', href: 'https://yomou.syosetu.com/search.php?order=new', text: '新着' }),
+      el('a', { 'class': 'ndr-btn', href: 'https://syosetu.com/favnovelmain/list/', text: 'ブックマーク' }),
+      el('a', { 'class': 'ndr-btn', href: 'https://syosetu.com/', text: 'なろうトップ' })
+    ]));
+    syncBar();
+    W.scrollTo(0, 0); updateInfo();
+  }
+
   /* ---------- 話数ジャンプ（大作向け） ---------- */
   function epUrl(base, n) { return location.origin + base + n + '/'; }
   function knownTotal(data, cb) {
@@ -711,6 +796,7 @@
         ])
       ]),
       row(null, [
+        b('本棚', null, function () { setUI(false); renderShelf(); }),
         b('表示設定', null, function () { root.classList.toggle('ndr-opts-on'); }),
         b('閉じる', null, function () { api.toggle(); })
       ])
@@ -727,7 +813,7 @@
       var href = abs(a.getAttribute('href'), current ? current.url : location.href);
       if (href && new URL(href).origin === location.origin) { e.preventDefault(); go(href, true); return; }
     }
-    if (e.target.closest && e.target.closest('a,img,button')) return;
+    if (e.target.closest && e.target.closest('a,img,button,input,form')) return;
     if (Date.now() - swallowClick < 500) return;
     var sel = W.getSelection && W.getSelection();
     if (sel && String(sel).length) return;
