@@ -2,7 +2,7 @@
 // @name         X Bookmark Logger
 // @name:ja      X ブックマークロガー
 // @namespace    https://yzrswork.github.io/yzrswork_ai-skill-recipe/
-// @version      1.0.1
+// @version      1.1.0
 // @description  Log your X (Twitter) bookmarks to a GitHub repository (Obsidian vault) as Markdown files.
 // @description:ja Xでブックマークしたツイートを自動的にGitHubリポジトリ（Obsidian Vault）へMarkdownとして保存します。
 // @author       yzrswork
@@ -30,6 +30,9 @@
  *   記録は localStorage キューに積み、GitHub contents API で1件=1 Markdownファイルとして
  *   直列コミットする。GM_xmlhttpRequest が使えない環境(iOS Userscripts の page ワールド)では
  *   キューに積むだけにし、コンパニオンスクリプト(x-bookmark-uploader.user.js)が送信を担当する。
+ *   送信の前に GitHub trees API で保存先フォルダ(archive/ などのサブフォルダを含む)の
+ *   ファイル名から投稿IDを集め、同じIDが既にあれば保存しない。ハンドル名の変更や
+ *   archive/ への移動でパスが変わっても、同じ投稿を二重に保存しないため。
  */
 
 (function () {
@@ -414,15 +417,75 @@
     };
   }
 
+  function repoApiBase(config) {
+    return 'https://api.github.com/repos/' + encodeURIComponent(config.owner) + '/' + encodeURIComponent(config.repo);
+  }
+
+  function normFolder(folder) { return String(folder || '').replace(/^\/+|\/+$/g, ''); }
+
   function putFile(config, path, content, message) {
-    const url = 'https://api.github.com/repos/' + encodeURIComponent(config.owner) + '/' +
-      encodeURIComponent(config.repo) + '/contents/' +
-      path.split('/').map(encodeURIComponent).join('/');
+    const url = repoApiBase(config) + '/contents/' + path.split('/').map(encodeURIComponent).join('/');
     return gmFetch('PUT', url, githubHeaders(config.token), JSON.stringify({
       message: message,
       content: b64encodeUTF8(content),
       branch: config.branch || 'main',
     }));
+  }
+
+  // 保存済み投稿IDの照合。
+  // 保存済みファイル名の末尾「_<投稿ID>.md」から投稿IDを取り出す(buildFilename の逆)。
+  // records/ や summaries/ のように末尾がIDでないファイルは null。
+  function idFromPath(path) {
+    const m = /_(\d+)\.md$/.exec(String(path || ''));
+    return m ? m[1] : null;
+  }
+
+  // trees API の tree 配列から、ファイル(blob)の投稿IDを集める
+  function savedIdsFromTree(entries) {
+    const ids = new Set();
+    for (const e of entries || []) {
+      if (!e || e.type !== 'blob') continue;
+      const id = idFromPath(e.path);
+      if (id) ids.add(id);
+    }
+    return ids;
+  }
+
+  function parseJSON(text) {
+    try { return JSON.parse(text); } catch (e) { return null; }
+  }
+
+  // 保存先フォルダ(archive/ などのサブフォルダを含む)にある投稿IDを GitHub trees API で集める。
+  // ブランチの最上位ツリーから保存先フォルダを1段ずつたどり、最後にそのフォルダを再帰で取る。
+  // 戻り値: { ok: true, ids: Set } / { ok: false, status, truncated }。通信エラーは reject。
+  async function fetchSavedIds(config) {
+    const base = repoApiBase(config) + '/git/trees/';
+    const headers = githubHeaders(config.token);
+    let ref = encodeURIComponent(config.branch || 'main');
+    for (const seg of normFolder(config.folder).split('/').filter(Boolean)) {
+      const res = await gmFetch('GET', base + ref, headers);
+      const json = res.status === 200 ? parseJSON(res.text) : null;
+      if (!json || !Array.isArray(json.tree)) return { ok: false, status: res.status };
+      const dir = json.tree.find((e) => e && e.type === 'tree' && e.path === seg);
+      if (!dir) {
+        // 一覧が切り詰められていなければ、保存先フォルダはまだ無い(=保存済みは0件)
+        return json.truncated ? { ok: false, status: res.status, truncated: true } : { ok: true, ids: new Set() };
+      }
+      ref = encodeURIComponent(dir.sha);
+    }
+    const res = await gmFetch('GET', base + ref + '?recursive=1', headers);
+    const json = res.status === 200 ? parseJSON(res.text) : null;
+    if (!json || !Array.isArray(json.tree)) return { ok: false, status: res.status };
+    // 上限(10万件・7MB)を超えて切り詰められた一覧では照合できないので、送らずに止める
+    if (json.truncated) return { ok: false, status: res.status, truncated: true };
+    return { ok: true, ids: savedIdsFromTree(json.tree) };
+  }
+
+  function savedIdsErrorMessage(r) {
+    if (r.truncated) return '保存済みの一覧が大きすぎて取得しきれません(trees APIの上限)';
+    if (r.status === 401 || r.status === 403) return '認証エラー(' + r.status + '): PATを確認してください';
+    if (r.status === 404) return 'リポジトリかブランチが見つかりません(404): owner/repo/branch/PAT権限を確認';
+    return '保存済みの一覧を取得できません(' + r.status + '): 後で再送します';
   }
 
   // 多重フラッシュ防止ロック(タブ間・メイン/コンパニオン間で共有)
@@ -457,13 +520,33 @@
 
     flushing = true;
     try {
+      // 送る前に保存先の投稿IDを集める。取れなければ重複を防げないので送らない(キューに残す)
+      let saved;
+      try {
+        saved = await fetchSavedIds(config);
+      } catch (e) {
+        setStatus('error', '通信エラー: 後で再送します');
+        return;
+      }
+      if (!saved.ok) {
+        setStatus('error', savedIdsErrorMessage(saved));
+        return;
+      }
+      const savedIds = saved.ids;
+      const folder = normFolder(config.folder);
       let backoff = 2000;
       while (true) {
         const queue = getQueue();
         if (!queue.length) { setStatus('ok', '送信完了'); break; }
         const record = queue[0];
         refreshLock();
-        const folder = (config.folder || '').replace(/^\/+|\/+$/g, '');
+        if (savedIds.has(String(record.id))) {
+          // 同じ投稿IDのファイルが保存先にある(ハンドル名の変更や archive/ への移動でパスが違っても)
+          markLogged(record.id);
+          setQueue(getQueue().filter((r) => r.id !== record.id));
+          setStatus('ok', '既に記録済み: ' + record.id);
+          continue;
+        }
         const path = (folder ? folder + '/' : '') + buildFilename(record);
         let res;
         try {
@@ -478,7 +561,7 @@
           setStatus('ok', '保存: ' + path);
           backoff = 2000;
         } else if (res.status === 422) {
-          // 同名ファイルが既に存在 = 記録済み(正常系)
+          // 同名ファイルが既に存在 = 記録済み(一覧の取得後に別端末が保存した場合など)
           markLogged(record.id);
           setQueue(getQueue().filter((r) => r.id !== record.id));
           setStatus('ok', '既に記録済み: ' + record.id);
@@ -687,7 +770,7 @@
     });
     panelEl.querySelector('#xbm-clearidx').addEventListener('click', () => {
       lsSet(LS.LOGGED, []);
-      setPanelStatus('記録済みインデックスをクリアしました（重複はGitHub側の同名ファイル検知で防止されます）');
+      setPanelStatus('記録済みインデックスをクリアしました（重複はGitHub側の保存済み投稿IDとの照合で防止されます）');
     });
 
     updateBadge();
@@ -779,6 +862,8 @@
     bookmarkEntryIds: bookmarkEntryIds,
     buildMarkdown: buildMarkdown,
     buildFilename: buildFilename,
+    idFromPath: idFromPath,
+    savedIdsFromTree: savedIdsFromTree,
     b64encodeUTF8: b64encodeUTF8,
     route: route,
     flushQueue: flushQueue,
