@@ -3,7 +3,6 @@ on:
   pull_request:
     paths:
       - "x-bookmark-logger.user.js"
-      - "x-bookmark-uploader.user.js"
       - "tests/x-bookmark.test.mjs"
       - ".github/workflows/x-bookmark-tests.yml"
 permissions:

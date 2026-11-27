@@ -2,7 +2,7 @@
 // @name         X Bookmark Logger
 // @name:ja      X ブックマークロガー
 // @namespace    https://yzrswork.github.io/yzrswork_ai-skill-recipe/
-// @version      1.1.0
+// @version      1.2.0
 // @description  Log your X (Twitter) bookmarks to a GitHub repository (Obsidian vault) as Markdown files.
 // @description:ja Xでブックマークしたツイートを自動的にGitHubリポジトリ（Obsidian Vault）へMarkdownとして保存します。
 // @author       yzrswork
@@ -28,8 +28,8 @@
  *   - Bookmarks タイムライン(/i/bookmarks のスクロール) → 差分同期
  *   タイムライン系レスポンスから「ツイートキャッシュ」を作り、本文・作者を補完。
  *   記録は localStorage キューに積み、GitHub contents API で1件=1 Markdownファイルとして
- *   直列コミットする。GM_xmlhttpRequest が使えない環境(iOS Userscripts の page ワールド)では
- *   キューに積むだけにし、コンパニオンスクリプト(x-bookmark-uploader.user.js)が送信を担当する。
+ *   直列コミットする。送信には GM_xmlhttpRequest が要るので、PC のユーザースクリプトマネージャー
+ *   (Tampermonkey 等)専用。iOS 用のアップローダーは 1.2.0 で廃止した。
  *   送信の前に GitHub trees API で保存先フォルダ(archive/ などのサブフォルダを含む)の
  *   ファイル名から投稿IDを集め、同じIDが既にあれば保存しない。ハンドル名の変更や
  *   archive/ への移動でパスが変わっても、同じ投稿を二重に保存しないため。
@@ -56,7 +56,6 @@
     CACHE: 'xbm.tweetcache',
     STATUS: 'xbm.status',
     LOCK: 'xbm.lock',
-    CAP: 'xbm.cap_gm',
   };
 
   function lsGet(key, fallback) {
@@ -68,9 +67,6 @@
   function lsSet(key, value) {
     try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* quota/private mode */ }
   }
-
-  // コンパニオン(uploader)に「メイン側でGM送信できるか」を伝える
-  lsSet(LS.CAP, gmRequest ? '1' : '0');
 
   // ───────────────────────── 設定 ─────────────────────────
 
@@ -382,13 +378,7 @@
     queue.push(record);
     setQueue(queue);
     log('queued', tweet.id, source);
-    notifyQueue();
     flushQueue();
-  }
-
-  // コンパニオン(contentワールド)へキュー追加を通知(DOMイベントはワールド間で共有される)
-  function notifyQueue() {
-    try { document.dispatchEvent(new CustomEvent('xbm:queue')); } catch (e) { /* noop */ }
   }
 
   // ───────────────────────── GitHub コミット層 ─────────────────────────
@@ -488,7 +478,7 @@
     return '保存済みの一覧を取得できません(' + r.status + '): 後で再送します';
   }
 
-  // 多重フラッシュ防止ロック(タブ間・メイン/コンパニオン間で共有)
+  // 多重フラッシュ防止ロック(タブ間で共有)
   function acquireLock() {
     const now = Date.now();
     const lock = lsGet(LS.LOCK, 0);
@@ -507,7 +497,10 @@
   let flushing = false;
 
   async function flushQueue() {
-    if (!gmRequest) return; // iOS等: コンパニオンが送信を担当
+    if (!gmRequest) {
+      if (getQueue().length) setStatus('error', 'この環境では送信できません(GM_xmlhttpRequestが使えません)');
+      return;
+    }
     if (flushing) return;
     const config = getConfig();
     if (!configValid(config)) {
@@ -590,7 +583,7 @@
   function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
   async function testConnection(config) {
-    if (!gmRequest) return { ok: false, msg: 'この環境からは送信不可(iOSはアップローダー側が送信します)' };
+    if (!gmRequest) return { ok: false, msg: 'この環境では送信できません(GM_xmlhttpRequestが使えません)' };
     try {
       const url = 'https://api.github.com/repos/' + encodeURIComponent(config.owner) + '/' + encodeURIComponent(config.repo);
       const res = await gmFetch('GET', url, githubHeaders(config.token));
@@ -765,7 +758,6 @@
     });
     panelEl.querySelector('#xbm-flush').addEventListener('click', () => {
       setPanelStatus('送信中… (' + getQueue().length + '件)');
-      notifyQueue();
       flushQueue();
     });
     panelEl.querySelector('#xbm-clearidx').addEventListener('click', () => {
@@ -814,7 +806,7 @@
     const q = getQueue().length;
     let msg = '未送信: ' + q + '件';
     if (st && st.msg) msg += ' / ' + st.msg;
-    if (!gmRequest) msg += ' / この環境(iOS等)ではアップローダーが送信します';
+    if (!gmRequest) msg += ' / この環境では送信できません';
     setPanelStatus(msg);
   }
 
