@@ -2,7 +2,7 @@
 // @name         X Bookmark Logger – Uploader (iOS companion)
 // @name:ja      X ブックマークロガー – アップローダー (iOS用)
 // @namespace    https://yzrswork.github.io/yzrswork_ai-skill-recipe/
-// @version      1.0.0
+// @version      1.1.0
 // @description  Companion uploader for X Bookmark Logger. Required on iOS Userscripts app, where GM APIs are unavailable in the page world.
 // @description:ja X Bookmark Logger のコンパニオン。iOSのUserscriptsアプリではpageワールドでGM APIが使えないため、こちらがGitHubへの送信を担当します。
 // @author       yzrswork
@@ -24,6 +24,8 @@
  * 本体(x-bookmark-logger.user.js)が localStorage に積んだキューを監視し、
  * GitHub contents API へ直列コミットする。本体側でGM送信が可能な環境
  * (PCのTampermonkey/Violentmonkey等)では何もしない。
+ * 送信前に保存先フォルダ(archive/ などを含む)の投稿IDを GitHub trees API で集め、
+ * 同じIDが既にあれば保存しない(本体と同じ照合)。
  */
 
 (function () {
@@ -118,15 +120,69 @@
       });
     });
   }
-  function putFile(config, path, content, message) {
-    const url = 'https://api.github.com/repos/' + encodeURIComponent(config.owner) + '/' +
-      encodeURIComponent(config.repo) + '/contents/' + path.split('/').map(encodeURIComponent).join('/');
-    return gmFetch('PUT', url, {
-      'Authorization': 'Bearer ' + config.token,
+  function githubHeaders(token) {
+    return {
+      'Authorization': 'Bearer ' + token,
       'Accept': 'application/vnd.github+json',
       'X-GitHub-Api-Version': '2022-11-28',
       'Content-Type': 'application/json',
-    }, JSON.stringify({ message: message, content: b64encodeUTF8(content), branch: config.branch || 'main' }));
+    };
+  }
+  function repoApiBase(config) {
+    return 'https://api.github.com/repos/' + encodeURIComponent(config.owner) + '/' + encodeURIComponent(config.repo);
+  }
+  function normFolder(folder) { return String(folder || '').replace(/^\/+|\/+$/g, ''); }
+  function putFile(config, path, content, message) {
+    const url = repoApiBase(config) + '/contents/' + path.split('/').map(encodeURIComponent).join('/');
+    return gmFetch('PUT', url, githubHeaders(config.token),
+      JSON.stringify({ message: message, content: b64encodeUTF8(content), branch: config.branch || 'main' }));
+  }
+
+  // 保存済み投稿IDの照合(本体と同一ロジック)。
+  // 保存済みファイル名の末尾「_<投稿ID>.md」から投稿IDを取り出す。末尾がIDでないファイルは null。
+  function idFromPath(path) {
+    const m = /_(\d+)\.md$/.exec(String(path || ''));
+    return m ? m[1] : null;
+  }
+  function savedIdsFromTree(entries) {
+    const ids = new Set();
+    for (const e of entries || []) {
+      if (!e || e.type !== 'blob') continue;
+      const id = idFromPath(e.path);
+      if (id) ids.add(id);
+    }
+    return ids;
+  }
+  function parseJSON(text) {
+    try { return JSON.parse(text); } catch (e) { return null; }
+  }
+  // 保存先フォルダ(サブフォルダを含む)の投稿IDを trees API で集める。
+  // 戻り値: { ok: true, ids: Set } / { ok: false, status, truncated }。通信エラーは reject。
+  async function fetchSavedIds(config) {
+    const base = repoApiBase(config) + '/git/trees/';
+    const headers = githubHeaders(config.token);
+    let ref = encodeURIComponent(config.branch || 'main');
+    for (const seg of normFolder(config.folder).split('/').filter(Boolean)) {
+      const res = await gmFetch('GET', base + ref, headers);
+      const json = res.status === 200 ? parseJSON(res.text) : null;
+      if (!json || !Array.isArray(json.tree)) return { ok: false, status: res.status };
+      const dir = json.tree.find((e) => e && e.type === 'tree' && e.path === seg);
+      if (!dir) {
+        return json.truncated ? { ok: false, status: res.status, truncated: true } : { ok: true, ids: new Set() };
+      }
+      ref = encodeURIComponent(dir.sha);
+    }
+    const res = await gmFetch('GET', base + ref + '?recursive=1', headers);
+    const json = res.status === 200 ? parseJSON(res.text) : null;
+    if (!json || !Array.isArray(json.tree)) return { ok: false, status: res.status };
+    if (json.truncated) return { ok: false, status: res.status, truncated: true };
+    return { ok: true, ids: savedIdsFromTree(json.tree) };
+  }
+  function savedIdsErrorMessage(r) {
+    if (r.truncated) return '保存済みの一覧が大きすぎて取得しきれません(trees APIの上限)';
+    if (r.status === 401 || r.status === 403) return '認証エラー(' + r.status + '): PATを確認してください';
+    if (r.status === 404) return 'リポジトリかブランチが見つかりません(404): owner/repo/branch/PAT権限を確認';
+    return '保存済みの一覧を取得できません(' + r.status + '): 後で再送します';
   }
 
   function acquireLock() {
@@ -153,13 +209,32 @@
 
     flushing = true;
     try {
+      // 送る前に保存先の投稿IDを集める。取れなければ重複を防げないので送らない(キューに残す)
+      let saved;
+      try {
+        saved = await fetchSavedIds(config);
+      } catch (e) {
+        setStatus('error', '通信エラー: 後で再送します');
+        return;
+      }
+      if (!saved.ok) {
+        setStatus('error', savedIdsErrorMessage(saved));
+        return;
+      }
+      const savedIds = saved.ids;
+      const folder = normFolder(config.folder);
       let backoff = 2000;
       while (true) {
         const queue = getQueue();
         if (!queue.length) { setStatus('ok', '送信完了'); break; }
         const record = queue[0];
         refreshLock();
-        const folder = (config.folder || '').replace(/^\/+|\/+$/g, '');
+        if (savedIds.has(String(record.id))) {
+          markLogged(record.id);
+          setQueue(getQueue().filter((r) => r.id !== record.id));
+          setStatus('ok', '既に記録済み: ' + record.id);
+          continue;
+        }
         const path = (folder ? folder + '/' : '') + buildFilename(record);
         let res;
         try {
